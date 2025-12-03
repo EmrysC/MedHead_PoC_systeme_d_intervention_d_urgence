@@ -72,5 +72,5 @@ CREATE TABLE UniteSoins (
 
     -- Contrainte d'unicité on ne veut pas de doublons
     UNIQUE (hopital_id, specialisation_id, latitude, longitude)
-    
+
 )ENGINE=InnoDB;
