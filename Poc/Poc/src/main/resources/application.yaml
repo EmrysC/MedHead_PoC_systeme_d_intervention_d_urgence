@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: Poc
+  datasource:
+    url: jdbc:mariadb://localhost:3307/poc_db
+    username: root
+    password: example
+    driver-class-name: org.mariadb.jdbc.Driver
+ 

@@ -1,0 +1,37 @@
+# Use root/example as user/password credentials
+
+#src : https://hub.docker.com/_/mariadb
+#      https://www.youtube.com/watch?v=k6Nmt-l1Bzc&t=1000s
+
+# Pour faire les dockers : 
+# 1 Installer docker et docker-compose sur votre machine  verrifier avec docker "docker --version" 
+# 2 Lancer docker desktop
+# 3 Se placer dans le dossier contenant le fichier compose.yaml ("cd Poc/Poc/src/main/resources")
+# 4 Lancer la commande "docker-compose up -d" pour lancer les contenes en arrière plan
+# 5 Pour vérifier que les conteneurs sont bien lancés : "docker ps"
+
+# Se connecter à la base de donnée avec adminer :
+# Ouvrir un navigateur web et aller à l'adresse "http://localhost:8081
+# Saisir les informations de connexion :
+#   Serveur def : resources-db-1 (meme nom que dans "docker ps")
+#   Utilisateur def : root
+#   Mot de passe : example
+#   Base de donnée : laisser vide pour afficher toutes les bases de données 
+# http://localhost:8081/?server=resources-db-1&username=root
+
+
+version: '3.8'
+services:
+  db:
+    image: mariadb:12.1
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: example
+    ports:
+      - 3307:3306
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
