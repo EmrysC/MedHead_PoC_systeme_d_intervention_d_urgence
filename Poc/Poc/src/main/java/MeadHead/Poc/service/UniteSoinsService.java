@@ -32,4 +32,11 @@ public class UniteSoinsService {
         return this.uniteSoinsRepository.findAll();
     }
 
+    public List<UniteSoins> rechercherLitDisponible(String nomSpecialisation) { 
+    return this.uniteSoinsRepository.findBySpecialisationNomAndLitsDisponiblesGreaterThan(
+        nomSpecialisation, 
+        0 
+    );
+}
+
 }
