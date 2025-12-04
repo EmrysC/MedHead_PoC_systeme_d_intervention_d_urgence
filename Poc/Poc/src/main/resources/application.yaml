@@ -6,6 +6,16 @@ spring:
     username: root
     password: example
     driver-class-name: org.mariadb.jdbc.Driver
+  jpa: 
+    hibernate:
+      ddl-auto: update 
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect 
+        format_sql: true
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl 
+          implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl
 
 server:
   servlet:

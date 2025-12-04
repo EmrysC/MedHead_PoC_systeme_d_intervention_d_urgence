@@ -7,7 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "GroupeSpecialite")
+@Table(name = "groupe_specialite")
 public class GroupeSpecialite {
 
     @Id

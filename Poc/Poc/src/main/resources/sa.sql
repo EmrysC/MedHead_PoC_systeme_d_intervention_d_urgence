@@ -1,34 +1,33 @@
 
 
 
--- CRÉATION DE LA TABLE RÉFÉRENCÉE (GroupeSpecialite)
-DROP TABLE IF EXISTS GroupeSpecialite;
-CREATE TABLE GroupeSpecialite (
+-- CRÉATION DE LA TABLE RÉFÉRENCÉE (groupe_specialite)
+DROP TABLE IF EXISTS groupe_specialite;
+CREATE TABLE groupe_specialite (
     id SERIAL PRIMARY KEY, 
     nom VARCHAR(150) NOT NULL UNIQUE
-
 ) ENGINE=InnoDB;
 
 
 
--- CRÉATION DE LA TABLE RÉFÉRENÇANTE (Specialisation)
-DROP TABLE IF EXISTS Specialisation;
-CREATE TABLE Specialisation (
+-- CRÉATION DE LA TABLE RÉFÉRENÇANTE (specialisation)
+DROP TABLE IF EXISTS specialisation;
+CREATE TABLE specialisation (
     id SERIAL PRIMARY KEY,
     nom VARCHAR(150) NOT NULL UNIQUE,
     
-    -- Utilisation de BIGINT UNSIGNED pour correspondre à GroupeSpecialite.id
+    -- Utilisation de BIGINT UNSIGNED pour correspondre à groupe_specialite.id
     groupe_specialite_id BIGINT UNSIGNED NOT NULL, 
     CONSTRAINT fk_groupe_specialite
         FOREIGN KEY (groupe_specialite_id) 
-        REFERENCES GroupeSpecialite(id),
+        REFERENCES groupe_specialite(id),
 
 ) ENGINE=InnoDB;
 
 
 
-DROP TABLE IF EXISTS Hopital ;
-CREATE TABLE Hopital (
+DROP TABLE IF EXISTS hopital ;
+CREATE TABLE hopital (
     -- Clé primaire
     id SERIAL PRIMARY KEY,
     
@@ -40,22 +39,22 @@ CREATE TABLE Hopital (
 
 
 
-DROP TABLE IF EXISTS UniteSoins;
-CREATE TABLE UniteSoins (
+DROP TABLE IF EXISTS unite_soins;
+CREATE TABLE unite_soins (
     -- Clé primaire pour identifier l'unité spécifique
     id SERIAL PRIMARY KEY,
     
-    -- Clé étrangère vers la table Hopital
+    -- Clé étrangère vers la table hopital
     hopital_id BIGINT UNSIGNED NOT NULL,
     CONSTRAINT fk_hopital_id
         FOREIGN KEY (hopital_id) 
-        REFERENCES Hopital(id),
+        REFERENCES hopital(id),
     
-    -- Clé étrangère vers la table Specialisation
-    specialisation_id BIGINT UNSIGNED NOT NULL,
+    -- Clé étrangère vers la table specialisation
+    specialisation BIGINT UNSIGNED NOT NULL,
     CONSTRAINT fk_specialisation_id
         FOREIGN KEY (specialisation_id) 
-        REFERENCES Specialisation(id),
+        REFERENCES specialisation(id),
     
     -- Colonne pour l'adresse 
     adresse VARCHAR(512) , -- Champ pour l'adresse complète (ex: 1 Rue Victore Hugo, 38000 Paris)

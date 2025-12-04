@@ -15,7 +15,7 @@ import java.math.BigDecimal; // Utilisé pour le type NUMERIC/DECIMAL
 // La contrainte d'unicité (UNIQUE) est appliquée ici,
 // car elle implique plusieurs colonnes.
 @Table(
-    name = "UniteSoins", 
+    name = "unite_soins", 
     uniqueConstraints = @UniqueConstraint(
         columnNames = {"hopital_id", "specialisation_id", "latitude", "longitude"}
     )

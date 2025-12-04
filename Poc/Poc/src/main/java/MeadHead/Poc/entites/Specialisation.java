@@ -10,7 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Specialisation")
+@Table(name = "specialisation")
 public class Specialisation {
 
 
