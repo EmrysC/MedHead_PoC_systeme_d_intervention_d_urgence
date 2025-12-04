@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.bind.annotation.GetMapping;
 
 import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.repository.UniteSoinsRepository;
@@ -37,6 +37,18 @@ public class UniteSoinsService {
         nomSpecialisation, 
         0 
     );
+
+
+    private String distance getDistance(
+        @RequestParam double lat1, @RequestParam double lon1,
+        @RequestParam double lat2, @RequestParam double lon2) {
+
+        double distanceMeters = googleMapsClient.calculerDistance(lat1, lon1, lat2, lon2);
+
+
+        return distanceMeters / 1000; // Convertir en kilomètres
+
+    }
 }
 
 }
