@@ -1,5 +1,7 @@
 package MeadHead.Poc.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,14 @@ public class UniteSoinsService {
 
      public void creer(UniteSoins uniteSoins){
         this.uniteSoinsRepository.save(uniteSoins);
+    }
+
+    public UniteSoins trouverParId(Long id){
+        return this.uniteSoinsRepository.findById(id).orElse(null);
+    }
+
+    public List<UniteSoins> listerTous(){
+        return this.uniteSoinsRepository.findAll();
     }
 
 }

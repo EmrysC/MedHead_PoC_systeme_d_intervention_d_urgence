@@ -20,8 +20,7 @@ CREATE TABLE specialisation (
     groupe_specialite_id BIGINT UNSIGNED NOT NULL, 
     CONSTRAINT fk_groupe_specialite
         FOREIGN KEY (groupe_specialite_id) 
-        REFERENCES groupe_specialite(id),
-
+        REFERENCES groupe_specialite(id)
 ) ENGINE=InnoDB;
 
 
@@ -51,7 +50,7 @@ CREATE TABLE unite_soins (
         REFERENCES hopital(id),
     
     -- Clé étrangère vers la table specialisation
-    specialisation BIGINT UNSIGNED NOT NULL,
+    specialisation_id BIGINT UNSIGNED NOT NULL,
     CONSTRAINT fk_specialisation_id
         FOREIGN KEY (specialisation_id) 
         REFERENCES specialisation(id),
@@ -73,3 +72,6 @@ CREATE TABLE unite_soins (
     UNIQUE (hopital_id, specialisation_id, latitude, longitude)
 
 )ENGINE=InnoDB;
+
+
+

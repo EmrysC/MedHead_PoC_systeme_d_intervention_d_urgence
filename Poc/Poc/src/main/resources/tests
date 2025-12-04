@@ -1,0 +1,37 @@
+
+
+test post unite_soins ok
+
+
+INSERT INTO hopital (nom) VALUES 
+('Hôpital Général de la Ville'),
+('Centre Médical Saint-Pierre'),
+('Clinique des Champs-Élysées');    
+
+INSERT INTO groupe_specialite (nom) VALUES 
+('Cardiologie'),
+('Neurologie'),
+('Pédiatrie'),
+('Orthopédie');
+
+INSERT INTO specialisation (nom, groupe_specialite_id) VALUES 
+('Cardiologie Interventionnelle', 1),
+('Neurologie Pédiatrique', 2),
+('Pédiatrie Générale', 3),
+('Orthopédie Traumatologique', 4);
+
+
+
+POST localhost:8080/api/unitesoins
+{
+    "hopital": {
+        "id": 1 
+    },
+    "specialisation": {
+        "id": 1 
+    },
+    "adresse": "123 Rue de l'Urgence",
+    "litsDisponibles": 10,
+    "latitude": 45.1234567,
+    "longitude": 5.9876543
+}
