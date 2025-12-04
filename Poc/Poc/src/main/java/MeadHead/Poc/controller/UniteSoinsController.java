@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 
-import MeadHead.Poc.service.UniteSoinsService;
+
 import MeadHead.Poc.entites.UniteSoins;
+import MeadHead.Poc.repository.UniteSoinsRepository;
 
 
 
@@ -17,16 +18,16 @@ import MeadHead.Poc.entites.UniteSoins;
 @RequestMapping(path = "unitesoins")
 public class UniteSoinsController {
 
-    private UniteSoinsService uniteSoinsService;
+    private UniteSoinsRepository uniteSoinsRepository;
 
-    public UniteSoinsController(UniteSoinsService uniteSoinsService){
-        this.uniteSoinsService = uniteSoinsService;
+    public UniteSoinsController(UniteSoinsRepository uniteSoinsRepository){
+        this.uniteSoinsRepository = uniteSoinsRepository;
     }
 
 
     @ResponseStatus(value = HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public void creer(@RequestBody UniteSoins uniteSoins){
-
+        uniteSoinsRepository.save(uniteSoins);
     }
 }

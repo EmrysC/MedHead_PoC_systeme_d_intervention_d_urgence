@@ -60,5 +60,60 @@ public class UniteSoins {
         this.longitude = longitude;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Hopital getHopital() {
+        return hopital;
+    }
+
+    public void setHopital(Hopital hopital) {
+        this.hopital = hopital;
+    }
+
+    public Specialisation getSpecialisation() {
+        return specialisation;
+    }
+
+    public void setSpecialisation(Specialisation specialisation) {
+        this.specialisation = specialisation;
+    }
+
+    public String getAdresse() {
+        return adresse;
+    }
+
+    public void setAdresse(String adresse) {
+        this.adresse = adresse;
+    }
+
+    public Integer getLitsDisponibles() {
+        return litsDisponibles;
+    }
+
+    public void setLitsDisponibles(Integer litsDisponibles) {
+        this.litsDisponibles = litsDisponibles;
+    }
+
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
+    }
 
 }

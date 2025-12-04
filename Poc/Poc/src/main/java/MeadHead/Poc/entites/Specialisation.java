@@ -37,5 +37,28 @@ public class Specialisation {
         this.groupeSpecialite = groupeSpecialite;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
+    public String getNom() {
+        return nom;
+    }
+    
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+    
+    public GroupeSpecialite getGroupeSpecialite() {
+        return groupeSpecialite;
+    }
+
+    public void setGroupeSpecialite(GroupeSpecialite groupeSpecialite) {
+        this.groupeSpecialite = groupeSpecialite;
+    }
 
 }
