@@ -109,7 +109,7 @@ INSERT INTO unite_soins (hopital_id, specialisation_id, adresse, lits_disponible
     }
 ]
 
--- test get http://localhost:8080/api/trajets/optimises?lat=45.18719605665046&lon=5.68936461721841&specialisation=Cardiologie%20Interventionnelle -> ok
+-- test get http://localhost:8080/api/unitesoins/trajets_optimises?lat=45.18719605665046&lon=5.68936461721841&specialisation=Cardiologie%20Interventionnelle -> ok
 
 
 [
@@ -141,6 +141,144 @@ INSERT INTO unite_soins (hopital_id, specialisation_id, adresse, lits_disponible
         },
         "hopital": "Centre Médical Saint-Pierre",
         "litsDisponibles": 8,
+        "specialisation": "Cardiologie Interventionnelle"
+    }
+]
+
+
+
+-- test http://localhost:8080/api/unitesoins/trajets_optimises?lat=45.18719605665046&lon=5.68936461721841&specialisation=Cardiologie%20Interventionnelle
+-- avec les 2 derniers sans lits donc pas affichés & triers par distance -> ok
+
+INSERT INTO unite_soins (hopital_id, specialisation_id, adresse, lits_disponibles, latitude, longitude) VALUES 
+(3, 1, '42 Rue du Cœur, 75008 Paris', 7, 48.8722, 2.3023), 
+(1, 1, '200 Avenue de l\'Urgence, 69007 Lyon', 12, 45.7538, 4.8436), 
+(1, 1, '100 Quai de la Garonne, 33800 Bordeaux', 5, 44.8329, -0.5540),
+(2, 1, '50 Rue de la Bonne Mère, 13007 Marseille', 3, 43.2847, 5.3857), 
+(3, 1, '25 Allée du Capitole, 31000 Toulouse', 9, 43.6053, 1.4442), 
+(1, 1, '15 Boulevard de la Liberté, 59800 Lille', 15, 50.6372, 3.0789), 
+(2, 1, '8 Place Royale, 44000 Nantes', 0, 47.2163, -1.5562), 
+(3, 1, '9 Avenue des Vosges, 67000 Strasbourg', 0, 48.5833, 7.7516);
+
+[
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 45.1234567,
+                "longitude": 5.9876543
+            },
+            "destinationAdresse": "123 Rue de l'Urgence",
+            "distanceMetres": 46995,
+            "dureeSecondes": 2618,
+            "trajetValide": true
+        },
+        "hopital": "Hôpital Général de la Ville",
+        "litsDisponibles": 10,
+        "specialisation": "Cardiologie Interventionnelle"
+    },
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 45.7538,
+                "longitude": 4.8436
+            },
+            "destinationAdresse": "200 Avenue de l'Urgence, 69007 Lyon",
+            "distanceMetres": 103011,
+            "dureeSecondes": 3938,
+            "trajetValide": true
+        },
+        "hopital": "Hôpital Général de la Ville",
+        "litsDisponibles": 12,
+        "specialisation": "Cardiologie Interventionnelle"
+    },
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 43.2847,
+                "longitude": 5.3857
+            },
+            "destinationAdresse": "50 Rue de la Bonne Mère, 13007 Marseille",
+            "distanceMetres": 309228,
+            "dureeSecondes": 10337,
+            "trajetValide": true
+        },
+        "hopital": "Centre Médical Saint-Pierre",
+        "litsDisponibles": 3,
+        "specialisation": "Cardiologie Interventionnelle"
+    },
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 43.6053,
+                "longitude": 1.4442
+            },
+            "destinationAdresse": "25 Allée du Capitole, 31000 Toulouse",
+            "distanceMetres": 529506,
+            "dureeSecondes": 16182,
+            "trajetValide": true
+        },
+        "hopital": "Clinique des Champs-Élysées",
+        "litsDisponibles": 9,
+        "specialisation": "Cardiologie Interventionnelle"
+    },
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 48.8722,
+                "longitude": 2.3023
+            },
+            "destinationAdresse": "42 Rue du Cœur, 75008 Paris",
+            "distanceMetres": 579797,
+            "dureeSecondes": 18210,
+            "trajetValide": true
+        },
+        "hopital": "Clinique des Champs-Élysées",
+        "litsDisponibles": 7,
+        "specialisation": "Cardiologie Interventionnelle"
+    },
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 44.8329,
+                "longitude": -0.554
+            },
+            "destinationAdresse": "100 Quai de la Garonne, 33800 Bordeaux",
+            "distanceMetres": 657024,
+            "dureeSecondes": 20189,
+            "trajetValide": true
+        },
+        "hopital": "Hôpital Général de la Ville",
+        "litsDisponibles": 5,
+        "specialisation": "Cardiologie Interventionnelle"
+    },
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 44.8394,
+                "longitude": -0.5756
+            },
+            "destinationAdresse": "88 Boulevard du Cœur, 33000 Bordeaux",
+            "distanceMetres": 663069,
+            "dureeSecondes": 20613,
+            "trajetValide": true
+        },
+        "hopital": "Centre Médical Saint-Pierre",
+        "litsDisponibles": 8,
+        "specialisation": "Cardiologie Interventionnelle"
+    },
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 50.6372,
+                "longitude": 3.0789
+            },
+            "destinationAdresse": "15 Boulevard de la Liberté, 59800 Lille",
+            "distanceMetres": 800445,
+            "dureeSecondes": 22926,
+            "trajetValide": true
+        },
+        "hopital": "Hôpital Général de la Ville",
+        "litsDisponibles": 15,
         "specialisation": "Cardiologie Interventionnelle"
     }
 ]

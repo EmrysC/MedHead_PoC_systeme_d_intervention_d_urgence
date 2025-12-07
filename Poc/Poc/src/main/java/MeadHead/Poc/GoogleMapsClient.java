@@ -1,4 +1,4 @@
-package MeadHead.Poc.service;
+package MeadHead.Poc;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -11,9 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import MeadHead.Poc.DestinationCalculee;
-import MeadHead.Poc.PositionGPS;
-import MeadHead.Poc.UniteeSoinsTrajet;
 import MeadHead.Poc.entites.UniteSoins;
 
 import com.fasterxml.jackson.databind.JsonNode;
