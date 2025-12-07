@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal; // Utilisé pour le type NUMERIC/DECIMAL
+import java.util.stream.Collectors;
 
 @Entity
 // La contrainte d'unicité (UNIQUE) est appliquée ici,

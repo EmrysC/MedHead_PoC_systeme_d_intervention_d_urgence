@@ -22,6 +22,7 @@ spring:
 server:
   servlet:
     context-path: /api
-
-
-  
+google:
+  api:
+    key: ${local.google.api.key}
+    url: https://maps.googleapis.com/maps/api/distancematrix/json

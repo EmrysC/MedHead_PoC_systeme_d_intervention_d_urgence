@@ -1,7 +1,12 @@
 package MeadHead.Poc.service;
 
 import java.util.List;
+
 import org.springframework.stereotype.Service;
+
+
+import MeadHead.Poc.PositionGPS;
+import MeadHead.Poc.UniteeSoinsTrajet;
 import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.repository.UniteSoinsRepository;
 
@@ -9,9 +14,11 @@ import MeadHead.Poc.repository.UniteSoinsRepository;
 public class UniteSoinsService {
 
     private final UniteSoinsRepository uniteSoinsRepository;
+    private final GoogleMapsClient googleMapsClient;
 
-    public UniteSoinsService(UniteSoinsRepository uniteSoinsRepository) {
+    public UniteSoinsService(UniteSoinsRepository uniteSoinsRepository, GoogleMapsClient googleMapsClient) {
         this.uniteSoinsRepository = uniteSoinsRepository;
+        this.googleMapsClient = googleMapsClient;
     }
 
 
@@ -34,5 +41,21 @@ public class UniteSoinsService {
             nomSpecialisation, 
             0 
         );
+    }
+
+
+    public List<UniteeSoinsTrajet> calculerTrajetsOptimises(String specialisationNom, double origineLat, double origineLon) {
+        
+
+        // Récupérer les destinations (Unités de Soins)
+        List<UniteSoins> unitesDisponibles = this.rechercherLitDisponible(specialisationNom);
+        if (unitesDisponibles.isEmpty()) {
+            return List.of(); 
+        }
+
+        PositionGPS PositionGpsOrigine = new PositionGPS(origineLat, origineLon);
+
+        return googleMapsClient.calculeerTrajetsOptimises(PositionGpsOrigine, unitesDisponibles);
+
     }
 }

@@ -18,7 +18,9 @@ public class PositionGPS {
 
     @Override
     public String toString() {
-        return this.latitude + "," + this.longitude;
+
+        return this.getLatitude() + "," + this.getLongitude(); 
+
     }
 
 }
