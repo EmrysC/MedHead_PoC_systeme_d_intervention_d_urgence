@@ -1,7 +1,6 @@
 
 
--- test post unite_soins    ->  ok
-
+-- test POST localhost:8080/api/unitesoins   -> ok
 
 INSERT INTO hopital (nom) VALUES 
 ('Hôpital Général de la Ville'),
@@ -20,9 +19,6 @@ INSERT INTO specialisation (nom, groupe_specialite_id) VALUES
 ('Pédiatrie Générale', 3),
 ('Orthopédie Traumatologique', 4);
 
-
-
-POST localhost:8080/api/unitesoins
 {
     "hopital": {
         "id": 1 
@@ -36,8 +32,9 @@ POST localhost:8080/api/unitesoins
     "longitude": 5.9876543
 }
 
--- test get localhost:8080/api/unitesoins   -> ok
--- test get localhost:8080/api/unitesoins/1 -> ok
+
+-- test get localhost:8080/api/unitesoins/2 -> ok
+
 
 INSERT INTO unite_soins (hopital_id, specialisation_id, adresse, lits_disponibles, latitude, longitude) VALUES 
     (2, 2, '45 Avenue de la Vitesse, 33000 Bordeaux', 5, 44.837789, -0.57918),
@@ -46,5 +43,104 @@ INSERT INTO unite_soins (hopital_id, specialisation_id, adresse, lits_disponible
     (2, 1, '88 Boulevard du Cœur, 33000 Bordeaux', 8, 44.8394, -0.5756),
     (2, 4, '46 Avenue de la Vitesse, 33000 Bordeaux', 12, 44.8379, -0.5790);
 
+{
+    "hopital": {
+        "nom": "Centre Médical Saint-Pierre",
+        "id": 2
+    },
+    "specialisation": {
+        "nom": "Neurologie Pédiatrique",
+        "groupeSpecialite": {
+            "nom": "Neurologie",
+            "id": 2
+        },
+        "id": 2
+    },
+    "adresse": "45 Avenue de la Vitesse, 33000 Bordeaux",
+    "litsDisponibles": 5,
+    "latitude": 44.8377890,
+    "longitude": -0.5791800,
+    "id": 2
+}
 
--- test get localhost:8080/api/unitesoins/recherche_lit_dispo?specialisation=Cardiologie Interventionnelle  -> ok
+
+
+-- test http://localhost:8080/api/unitesoins/recherche_lit_dispo?specialisation=Cardiologie%20Interventionnelle   -> ok
+
+
+[
+    {
+        "hopital": {
+            "nom": "Hôpital Général de la Ville",
+            "id": 1
+        },
+        "specialisation": {
+            "nom": "Cardiologie Interventionnelle",
+            "groupeSpecialite": {
+                "nom": "Cardiologie",
+                "id": 1
+            },
+            "id": 1
+        },
+        "adresse": "123 Rue de l'Urgence",
+        "litsDisponibles": 10,
+        "latitude": 45.1234567,
+        "longitude": 5.9876543,
+        "id": 1
+    },
+    {
+        "hopital": {
+            "nom": "Centre Médical Saint-Pierre",
+            "id": 2
+        },
+        "specialisation": {
+            "nom": "Cardiologie Interventionnelle",
+            "groupeSpecialite": {
+                "nom": "Cardiologie",
+                "id": 1
+            },
+            "id": 1
+        },
+        "adresse": "88 Boulevard du Cœur, 33000 Bordeaux",
+        "litsDisponibles": 8,
+        "latitude": 44.8394000,
+        "longitude": -0.5756000,
+        "id": 5
+    }
+]
+
+-- test get http://localhost:8080/api/trajets/optimises?lat=45.18719605665046&lon=5.68936461721841&specialisation=Cardiologie%20Interventionnelle -> ok
+
+
+[
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 45.1234567,
+                "longitude": 5.9876543
+            },
+            "destinationAdresse": "123 Rue de l'Urgence",
+            "distanceMetres": 46995,
+            "dureeSecondes": 2665,
+            "trajetValide": true
+        },
+        "hopital": "Hôpital Général de la Ville",
+        "litsDisponibles": 10,
+        "specialisation": "Cardiologie Interventionnelle"
+    },
+    {
+        "destinationCalculee": {
+            "destinationPosition": {
+                "latitude": 44.8394,
+                "longitude": -0.5756
+            },
+            "destinationAdresse": "88 Boulevard du Cœur, 33000 Bordeaux",
+            "distanceMetres": 667164,
+            "dureeSecondes": 21591,
+            "trajetValide": true
+        },
+        "hopital": "Centre Médical Saint-Pierre",
+        "litsDisponibles": 8,
+        "specialisation": "Cardiologie Interventionnelle"
+    }
+]

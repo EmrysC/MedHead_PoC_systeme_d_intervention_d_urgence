@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: local
   application:
     name: Poc
   datasource:
@@ -21,6 +23,5 @@ server:
   servlet:
     context-path: /api
 
- api:
-  google:
-    maps-key: ${GOOGLE_MAPS_KEY:default_key}
+
+  
