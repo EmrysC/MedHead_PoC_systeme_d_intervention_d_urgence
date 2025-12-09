@@ -6,7 +6,7 @@
 # Pour faire les dockers : 
 # 1 Installer docker et docker-compose sur votre machine  verrifier avec docker "docker --version" 
 # 2 Lancer docker desktop
-# 3 Se placer dans le dossier contenant le fichier compose.yaml ("cd Poc/Poc/src/main/resources")
+# 3 Se placer dans le dossier contenant le fichier compose.yaml ("cd D:\MedHead_PoC_systeme_d_intervention_d_urgence\Poc\Poc\src\main\resources")
 # 4 Lancer la commande "docker-compose up -d" pour lancer les contenes en arrière plan
 # 5 Pour vérifier que les conteneurs sont bien lancés : "docker ps"
 
@@ -17,7 +17,9 @@
 #   Utilisateur def : root
 #   Mot de passe : example
 #   Base de donnée : laisser vide pour afficher toutes les bases de données 
+# Lancer PocApplication.java pour que la base de donnée se crée automatiquement
 # http://localhost:8081/?server=resources-db-1&username=root
+
 
 
 version: '3.8'

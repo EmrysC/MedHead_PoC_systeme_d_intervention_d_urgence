@@ -8,7 +8,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "specialisation")
 public class Specialisation {
@@ -28,37 +36,5 @@ public class Specialisation {
     )
     private GroupeSpecialite groupeSpecialite; 
 
-    // Constructeurs
-    public Specialisation() {
-    }
-
-    public Specialisation(String nom, GroupeSpecialite groupeSpecialite) {
-        this.nom = nom;
-        this.groupeSpecialite = groupeSpecialite;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getNom() {
-        return nom;
-    }
-    
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-    
-    public GroupeSpecialite getGroupeSpecialite() {
-        return groupeSpecialite;
-    }
-
-    public void setGroupeSpecialite(GroupeSpecialite groupeSpecialite) {
-        this.groupeSpecialite = groupeSpecialite;
-    }
 
 }

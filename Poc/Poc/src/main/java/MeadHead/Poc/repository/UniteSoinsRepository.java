@@ -1,8 +1,7 @@
 package MeadHead.Poc.repository;
+import  MeadHead.Poc.entites.UniteSoins;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import MeadHead.Poc.entites.UniteSoins;
 
 import java.util.List;
 

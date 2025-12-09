@@ -1,7 +1,15 @@
-package MeadHead.Poc;
+package MeadHead.Poc.Gestion_position_trajet;
 
 import MeadHead.Poc.entites.UniteSoins;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UniteeSoinsTrajet {
 
 
@@ -17,19 +25,5 @@ public class UniteeSoinsTrajet {
         this.litsDisponibles = unite_soins.getLitsDisponibles();
         this.destinationCalculee = destinationCalculee;
     }
-
-    public String getHopital() {
-        return hopital;
-    }
-    public String getSpecialisation() {
-        return specialisation;
-    }
-    public int getLitsDisponibles() {
-        return litsDisponibles;
-    }
-    public DestinationCalculee getDestinationCalculee() {
-        return destinationCalculee;
-    }
-
 
 }

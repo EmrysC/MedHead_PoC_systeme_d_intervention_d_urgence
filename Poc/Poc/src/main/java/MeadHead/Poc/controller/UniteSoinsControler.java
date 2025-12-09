@@ -13,21 +13,21 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import MeadHead.Poc.UniteeSoinsTrajet;
+import MeadHead.Poc.Gestion_position_trajet.UniteeSoinsTrajet;
 import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.repository.UniteSoinsRepository;
 import MeadHead.Poc.service.UniteSoinsService;
 
 @RestController
 @RequestMapping(path = "unitesoins")
-public class UniteSoinsController {
+public class UniteSoinsControler {
 
 
     private final UniteSoinsService uniteSoinsService;
 
     private UniteSoinsRepository uniteSoinsRepository;
 
-    public UniteSoinsController(UniteSoinsRepository uniteSoinsRepository, UniteSoinsService uniteSoinsService) {
+    public UniteSoinsControler(UniteSoinsRepository uniteSoinsRepository, UniteSoinsService uniteSoinsService) {
         this.uniteSoinsRepository = uniteSoinsRepository;
         this.uniteSoinsService = uniteSoinsService;
     }

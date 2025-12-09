@@ -1,4 +1,4 @@
-package MeadHead.Poc;
+package MeadHead.Poc.Gestion_position_trajet;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import MeadHead.Poc.entites.UniteSoins;
@@ -19,8 +19,7 @@ import java.net.URLEncoder;
 
 //https://developers.google.com/maps/documentation/distance-matrix/overview?hl=fr
 //https://developers.google.com/maps/documentation/distance-matrix/distance-matrix?hl=fr#maps_http_distancematrix_latlng-sh
-
-@Service
+@Component
 public class GoogleMapsClient {
 
     private final RestTemplate restTemplate;
@@ -52,7 +51,7 @@ public class GoogleMapsClient {
 
     }
 
-    public JsonNode appelerDistanceMatrix(String origins, String destinations) {
+    private JsonNode appelerDistanceMatrix(String origins, String destinations) {
 
         String encodedOrigins = URLEncoder.encode(origins, StandardCharsets.UTF_8);
         String encodedDestinations = URLEncoder.encode(destinations, StandardCharsets.UTF_8);
@@ -138,6 +137,7 @@ public class GoogleMapsClient {
             // Création du DTO final
             resultats.add(new UniteeSoinsTrajet(unitee, dc));
         }
+
         return resultats;
     }
 }

@@ -5,9 +5,9 @@ import java.util.Comparator;
 
 import org.springframework.stereotype.Service;
 
-import MeadHead.Poc.GoogleMapsClient;
-import MeadHead.Poc.PositionGPS;
-import MeadHead.Poc.UniteeSoinsTrajet;
+import MeadHead.Poc.Gestion_position_trajet.GoogleMapsClient;
+import MeadHead.Poc.Gestion_position_trajet.PositionGPS;
+import MeadHead.Poc.Gestion_position_trajet.UniteeSoinsTrajet;
 import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.repository.UniteSoinsRepository;
 

@@ -18,7 +18,6 @@ spring:
         naming:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl 
           implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl
-
 server:
   servlet:
     context-path: /api
@@ -26,3 +25,8 @@ google:
   api:
     key: ${local.google.api.key}
     url: https://maps.googleapis.com/maps/api/distancematrix/json
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.web.FilterChainProxy: DEBUG

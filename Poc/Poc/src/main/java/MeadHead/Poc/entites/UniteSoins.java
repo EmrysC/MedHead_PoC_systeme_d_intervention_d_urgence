@@ -10,7 +10,15 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal; // Utilisé pour le type NUMERIC/DECIMAL
-import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 
 @Entity
 // La contrainte d'unicité (UNIQUE) est appliquée ici,
@@ -48,73 +56,5 @@ public class UniteSoins {
     @Column(name = "longitude", precision = 10, scale = 7, nullable = false)
     private BigDecimal longitude;
 
-    // Constructeur 
-    public UniteSoins() {
-    }
-
-    public UniteSoins(Hopital hopital, Specialisation specialisation, String adresse, Integer litsDisponibles, BigDecimal latitude, BigDecimal longitude) {
-        this.hopital = hopital;
-        this.specialisation = specialisation;
-        this.adresse = adresse;
-        this.litsDisponibles = litsDisponibles;
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Hopital getHopital() {
-        return hopital;
-    }
-
-    public void setHopital(Hopital hopital) {
-        this.hopital = hopital;
-    }
-
-    public Specialisation getSpecialisation() {
-        return specialisation;
-    }
-
-    public void setSpecialisation(Specialisation specialisation) {
-        this.specialisation = specialisation;
-    }
-
-    public String getAdresse() {
-        return adresse;
-    }
-
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
-    }
-
-    public Integer getLitsDisponibles() {
-        return litsDisponibles;
-    }
-
-    public void setLitsDisponibles(Integer litsDisponibles) {
-        this.litsDisponibles = litsDisponibles;
-    }
-
-    public BigDecimal getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(BigDecimal latitude) {
-        this.latitude = latitude;
-    }
-
-    public BigDecimal getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(BigDecimal longitude) {
-        this.longitude = longitude;
-    }
 
 }
