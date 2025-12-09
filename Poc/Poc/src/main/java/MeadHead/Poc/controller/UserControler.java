@@ -1,12 +1,15 @@
 package MeadHead.Poc.controller;
 
+import java.util.Map;
+
 import MeadHead.Poc.service.UserService;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import MeadHead.Poc.dto.LoginRequestDto;
+import MeadHead.Poc.dto.UserLoginDto;
+import MeadHead.Poc.securite.JwtService;
 import MeadHead.Poc.dto.UserCreationDto;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -28,34 +31,36 @@ public class UserControler {
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
+    private JwtService jwtService;
 
     @PostMapping(path = "connection")
-    public void connection(@RequestBody LoginRequestDto loginRequestDto) {
+
+    public Map<String, String> connection(@RequestBody UserLoginDto loginRequestDto) {
 
         log.info("Tentative de connexion pour l'utilisateur: " + loginRequestDto.getEmail());
 
-        // CRÉATION DU JETON D'AUTHENTIFICATION (Email & Mot de passe en clair)
-        Authentication authentication = authenticationManager.authenticate(
+
+        final Authentication authenticate = this.authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequestDto.getEmail(),
                         loginRequestDto.getPassword()));
 
-        log.info(loginRequestDto.getEmail() + " " + authentication.isAuthenticated());
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
 
-        // STOCKAGE DU JETON DANS LE CONTEXTE DE SÉCURITÉ
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        Map<String, String> tokenMap = jwtService.generateToken(loginRequestDto.getEmail());
 
-        log.info("Utilisateur " + loginRequestDto.getEmail() + " authentifié avec succès.");
+        log.info("Résultat Authentifié: " + authenticate.isAuthenticated()); // Log de confirmation
 
+        return tokenMap;
     }
 
     @PostMapping(path = "creation")
     public void creation(@RequestBody UserCreationDto userDto) {
 
         log.info("Tentative de creation pour l'utilisateur: " + userDto.getEmail());
-        
+
         userService.createUser(userDto);
-        
+
         log.info("Création réussie pour l'utilisateur: " + userDto.getEmail());
 
     }
