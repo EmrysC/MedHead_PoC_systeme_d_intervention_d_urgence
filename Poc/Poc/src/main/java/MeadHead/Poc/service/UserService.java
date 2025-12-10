@@ -37,7 +37,7 @@ public class UserService implements UserDetailsService{
         user.setEmail(userDto.getEmail());
         user.setNom(userDto.getNom());
         user.setPrenom(userDto.getPrenom());
-        user.setRoles("ROLE_USER");
+        user.setRole("ROLE_USER");
         user.setActive(true);
         String mdpCrypt = this.bCryptPasswordEncoder.encode(userDto.getPassword());
         user.setPassword(mdpCrypt);
@@ -47,15 +47,20 @@ public class UserService implements UserDetailsService{
 
   @Override
     public User loadUserByUsername(String email) throws UsernameNotFoundException {
+
+        System.out.println("--- SERVICE TRACE: TENTATIVE DE CHARGEMENT DE L'UTILISATEUR ---");
+        System.out.println("--- SERVICE TRACE: EMAIL REÇU DU JWT: " + email);
         
         // On utilise l'email comme identifiant unique
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         // Si l'utilisateur n'est pas trouvé, on lance l'exception standard
         if (userOptional.isEmpty()) {
+            System.out.println("--- SERVICE TRACE: ÉCHEC: Utilisateur non trouvé en base de données.");
             throw new UsernameNotFoundException("Utilisateur non trouvé avec l'e-mail : " + email);
         }
 
+        System.out.println("--- SERVICE TRACE: SUCCÈS: Utilisateur trouvé et chargé." );
         // On retourne l'entité User (qui implémente UserDetails)
         return userOptional.get(); 
     }

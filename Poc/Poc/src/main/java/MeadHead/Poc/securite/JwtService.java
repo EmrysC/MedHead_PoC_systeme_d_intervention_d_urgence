@@ -3,8 +3,9 @@ package MeadHead.Poc.securite;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
-
 import io.jsonwebtoken.security.Keys;
+
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 
 import MeadHead.Poc.entites.User;
@@ -15,6 +16,14 @@ import lombok.RequiredArgsConstructor;
 import java.util.Map;
 import java.util.Date;
 import java.time.Instant;
+
+import java.util.function.Function;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+
+import io.jsonwebtoken.io.Decoders;
+import java.nio.charset.StandardCharsets;
+
 
 @RequiredArgsConstructor
 @Service
@@ -42,7 +51,7 @@ public class JwtService {
                 "nom", user.getNom(),
                 "prenom", user.getPrenom(),
                 "email", user.getEmail(),
-                "roles", user.getAuthorities().toString());
+                "role", user.getAuthorities().iterator().next().getAuthority()); 
 
         final Instant now = Instant.now();
         final Instant expirationInstant = now.plusMillis(expirationTime);
@@ -58,9 +67,52 @@ public class JwtService {
         return Map.of("Bearer", bearer);
     }
 
-    private Key getJwtSecretKey() {
+private Key getJwtSecretKey() {
 
-        return Keys.hmacShaKeyFor(JwtSecretKey.getBytes());
+    return Keys.hmacShaKeyFor(JwtSecretKey.getBytes(StandardCharsets.UTF_8));
+}
+
+    public String extractedEmail(String token) {
+
+        return extractClaim(token, Claims::getSubject);
     }
+
+    public boolean isTokenExpired(String token) {
+        final Date expiration = extractClaim(token, Claims::getExpiration);
+
+        if (expiration == null) {
+            return true;
+        }
+
+        return expiration.before(new Date());
+    }
+
+public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    final Claims claims = extractAllClaims(token);
+    
+    if (claims == null) { 
+        return null; 
+    }
+    
+    return claimsResolver.apply(claims);
+}
+
+    private Claims extractAllClaims(String token) {
+
+        System.out.println("JwtSecretKey" + JwtSecretKey);
+
+        try {
+            return Jwts.parser()
+                    .setSigningKey(getJwtSecretKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+
+            System.err.println("Erreur de validation/parsing JWT : " + e.getMessage());
+            return null;
+        }
+    }
+
 
 }

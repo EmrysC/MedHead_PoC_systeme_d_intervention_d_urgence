@@ -22,7 +22,7 @@ server:
   servlet:
     context-path: /api
   jwt:
-    secret-key: ${local.spring.jwt.secret}
+    secret-key: ${local.jwt.secret}
     expiration: 864000000 # 1 jour en ms 
 google:
   api:

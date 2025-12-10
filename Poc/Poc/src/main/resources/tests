@@ -282,3 +282,35 @@ INSERT INTO unite_soins (hopital_id, specialisation_id, adresse, lits_disponible
         "specialisation": "Cardiologie Interventionnelle"
     }
 ]
+
+
+
+-- test de creation de comptes utilisateurs -> ok
+
+POST http://localhost:8080/api/user/creation
+{
+"email": "nouvel.utilrjjjiiisateur@domaine.com",
+"password": "MotDePasseSecret123",
+"nom": "Emrys",
+"prenom": "Callait"
+}
+
+-- test de connexion -> ok
+
+
+POST http://localhost:8080/api/user/connection
+{
+"email": "nouvel.utilrjjjiiisateur@domaine.com",
+"password": "MotDePasseSecret123"
+}
+
+
+
+Retour :[
+    {
+    "Bearer": "eyJhbGciOiJIUzI1NiJ9.eyJub20iOiJFbXJ5cyIsInByZW5vbSI6IkNhbGxhaXQiLCJyb2xlcyI6IltST0xFX1VTRVJdIiwiZW1haWwiOiJub3V2ZWwudXRpbHJqamppaWlzYXRldXJAZG9tYWluZS5jb20ifQ.csDIq3V8rAthNRXdMnRzYBLrn19TQLDZLBW3ea0hQ8U"
+}
+]
+
+Vérifier que le token JWT est bien généré et retourné lors de la connexion de l'utilisateur. sur https://www.jwt.io/
+mettre le bearer token dans la partie Encoded et la clé secrète dans la partie Verify Signature pour vérifier la validité du token.

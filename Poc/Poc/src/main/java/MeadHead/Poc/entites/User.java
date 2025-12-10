@@ -43,7 +43,7 @@ public class User implements UserDetails {
     private boolean active = true; // Compte actif par défaut
 
     @Column(name = "roles", nullable = false)
-    private String roles; // Rôles de l'utilisateur (ex: ROLE_USER, ROLE_ADMIN)
+    private String role; // Rôles de l'utilisateur (ex: ROLE_USER, ROLE_ADMIN)
 
     @Column(name = "Nom", nullable = false)
     private String nom;
@@ -51,12 +51,30 @@ public class User implements UserDetails {
     @Column(name = "Prenom", nullable = false)
     private String prenom;
 
-
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER")); 
+        String roleName = this.role; // Utilise le champ 'role' de l'entité
+
+        // Gérer les cas où le rôle est nul ou vide
+        if (roleName == null || roleName.trim().isEmpty()) {
+            return List.of();
+        }
+
+        // Nettoyage si le rôle est encodé par le JWT (ex: [ROLE_USER])
+        if (roleName.startsWith("[") && roleName.endsWith("]")) {
+            roleName = roleName.substring(1, roleName.length() - 1).replace("\"", "").trim();
+        }
+
+        String finalRole = roleName.split(",")[0].trim();
+
+        if (finalRole.isEmpty()) {
+            return List.of();
+        }
+
+        return List.of(new SimpleGrantedAuthority(finalRole));
+
     }
+
 
     @Override
     public String getPassword() {
