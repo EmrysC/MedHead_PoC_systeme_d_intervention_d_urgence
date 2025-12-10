@@ -1,6 +1,6 @@
 
 
--- test POST localhost:8080/api/unitesoins   -> ok
+-- test get localhost:8080/api/unitesoins   -> ok
 
 INSERT INTO hopital (nom) VALUES 
 ('Hôpital Général de la Ville'),
@@ -314,3 +314,68 @@ Retour :[
 
 Vérifier que le token JWT est bien généré et retourné lors de la connexion de l'utilisateur. sur https://www.jwt.io/
 mettre le bearer token dans la partie Encoded et la clé secrète dans la partie Verify Signature pour vérifier la validité du token.
+
+
+
+-- test get localhost:8080/api/specilites -> ok
+-- retour une liste de Groupe de spectiaisation / Spé
+
+INSERT INTO `specialisation` (`nom`, `groupe_specialite_id`) VALUES
+('Cardiologie Consultation', 1),
+('Cardiologie Rythmologie', 1),
+('Cardiologie Électrophysiologie', 1);
+
+[
+    {
+        "id": 1,
+        "nom": "Cardiologie",
+        "specialisations": [
+            {
+                "id": "5",
+                "nom": "Cardiologie Consultation"
+            },
+            {
+                "id": "1",
+                "nom": "Cardiologie Interventionnelle"
+            },
+            {
+                "id": "6",
+                "nom": "Cardiologie Rythmologie"
+            },
+            {
+                "id": "7",
+                "nom": "Cardiologie Électrophysiologie"
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "nom": "Neurologie",
+        "specialisations": [
+            {
+                "id": "2",
+                "nom": "Neurologie Pédiatrique"
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "nom": "Orthopédie",
+        "specialisations": [
+            {
+                "id": "4",
+                "nom": "Orthopédie Traumatologique"
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "nom": "Pédiatrie",
+        "specialisations": [
+            {
+                "id": "3",
+                "nom": "Pédiatrie Générale"
+            }
+        ]
+    }
+]

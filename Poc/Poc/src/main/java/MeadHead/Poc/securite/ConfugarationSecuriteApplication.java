@@ -53,6 +53,8 @@ public class ConfugarationSecuriteApplication {
 
                                                 .requestMatchers(HttpMethod.POST, "/reservation/lit").permitAll()
 
+                                                .requestMatchers(HttpMethod.GET, "/specilites").permitAll()
+
                                                 .anyRequest().authenticated())
 
                                 .sessionManagement(
