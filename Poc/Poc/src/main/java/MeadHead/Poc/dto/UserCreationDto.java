@@ -7,7 +7,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserCreationDto {
+public class UserCreationDTO {
     
 
     private String email;

@@ -15,9 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
 import MeadHead.Poc.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +49,9 @@ public class ConfugarationSecuriteApplication {
                                                 .requestMatchers(HttpMethod.GET, "/unitesoins").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/unitesoins/{id}").permitAll()
                                                 .requestMatchers(HttpMethod.GET, "/unitesoins/recherche_lit_dispo").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/trajets/optimises").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/unitesoins/trajets_optimises").permitAll()
+
+                                                .requestMatchers(HttpMethod.POST, "/reservation/lit").permitAll()
 
                                                 .anyRequest().authenticated())
 

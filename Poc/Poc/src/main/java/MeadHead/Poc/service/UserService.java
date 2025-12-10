@@ -1,7 +1,7 @@
 package MeadHead.Poc.service;
 
 import MeadHead.Poc.repository.UserRepository;
-import MeadHead.Poc.dto.UserCreationDto;
+import MeadHead.Poc.dto.UserCreationDTO;
 import MeadHead.Poc.entites.User;
 
 import lombok.AllArgsConstructor;
@@ -28,7 +28,7 @@ public class UserService implements UserDetailsService{
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
     private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
 
-    public User createUser(UserCreationDto userDto) {
+    public User createUser(UserCreationDTO userDto) {
 
         this.validateEmail(userDto.getEmail());
 

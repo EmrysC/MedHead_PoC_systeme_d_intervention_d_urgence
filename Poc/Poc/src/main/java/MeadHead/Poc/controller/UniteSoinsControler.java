@@ -39,6 +39,15 @@ public class UniteSoinsControler {
     }
 
     /**
+     * Endpoint qui renvoie la liste de toutes les unités de soins.
+     * Exemple: GET localhost:8080/api/unitesoins
+     */
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<UniteSoins> listerTous() {
+        return this.uniteSoinsRepository.findAll();
+    }
+
+    /**
      * Endpoint qui renvoie les détails d'une unité de soins par son ID.
      * Exemple: GET localhost:8080/api/unitesoins/2
      */
@@ -47,14 +56,6 @@ public class UniteSoinsControler {
         return this.uniteSoinsRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Endpoint qui renvoie la liste de toutes les unités de soins.
-     * Exemple: GET localhost:8080/api/unitesoins
-     */
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<UniteSoins> listerTous() {
-        return this.uniteSoinsRepository.findAll();
-    }
 
     /**
      * Endpoint qui renvoie les unités de soins avec des lits disponibles pour une

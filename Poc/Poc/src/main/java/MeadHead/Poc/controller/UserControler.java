@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import MeadHead.Poc.dto.UserLoginDto;
+import MeadHead.Poc.dto.UserLoginDTO;
 import MeadHead.Poc.securite.JwtService;
-import MeadHead.Poc.dto.UserCreationDto;
+import MeadHead.Poc.dto.UserCreationDTO;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import lombok.AllArgsConstructor;
@@ -35,7 +35,7 @@ public class UserControler {
 
     @PostMapping(path = "connection")
 
-    public Map<String, String> connection(@RequestBody UserLoginDto loginRequestDto) {
+    public Map<String, String> connection(@RequestBody UserLoginDTO loginRequestDto) {
 
         log.info("Tentative de connexion pour l'utilisateur: " + loginRequestDto.getEmail());
 
@@ -55,7 +55,7 @@ public class UserControler {
     }
 
     @PostMapping(path = "creation")
-    public void creation(@RequestBody UserCreationDto userDto) {
+    public void creation(@RequestBody UserCreationDTO userDto) {
 
         log.info("Tentative de creation pour l'utilisateur: " + userDto.getEmail());
 
