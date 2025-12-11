@@ -8,9 +8,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+
 import MeadHead.Poc.dto.ReservationRequestDTO;
 import MeadHead.Poc.service.ReservationService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(path = "reservation")

@@ -1,20 +1,19 @@
 package MeadHead.Poc.service;
 
-import MeadHead.Poc.entites.GroupeSpecialite;
-import MeadHead.Poc.repository.GroupeSpecialiteRepository;
-import MeadHead.Poc.dto.SpecialisationGroupeDTO;
-import MeadHead.Poc.service.GroupeSpecialiteService;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import MeadHead.Poc.dto.SpecialisationOptionDTO;
-
-import MeadHead.Poc.service.GroupeSpecialiteService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import MeadHead.Poc.entites.GroupeSpecialite;
+import MeadHead.Poc.repository.GroupeSpecialiteRepository;
+import MeadHead.Poc.dto.SpecialisationGroupeDTO;
+import MeadHead.Poc.service.GroupeSpecialiteService;
+import MeadHead.Poc.dto.SpecialisationOptionDTO;
+import MeadHead.Poc.service.GroupeSpecialiteService;
+
 
 @Service
 public class GroupeSpecialiteService {

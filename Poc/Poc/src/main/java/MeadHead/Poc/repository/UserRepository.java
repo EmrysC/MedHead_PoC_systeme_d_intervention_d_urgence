@@ -1,10 +1,11 @@
 package MeadHead.Poc.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.repository.CrudRepository;
 
 import MeadHead.Poc.entites.User;
 
-import java.util.Optional;
 
 public interface UserRepository extends CrudRepository<User, Long> {
 

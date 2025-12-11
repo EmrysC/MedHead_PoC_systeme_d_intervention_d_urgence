@@ -1,20 +1,21 @@
 package MeadHead.Poc.securite;
 
+import java.util.Collection;
+
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import MeadHead.Poc.service.UserService;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.FilterChain;
+
 import lombok.RequiredArgsConstructor;
-import java.util.Collection;
+
+import MeadHead.Poc.service.UserService;
 
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {

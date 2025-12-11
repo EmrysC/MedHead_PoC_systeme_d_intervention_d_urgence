@@ -2,25 +2,24 @@ package MeadHead.Poc.controller;
 
 import java.util.Map;
 
-import MeadHead.Poc.service.UserService;
-
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import MeadHead.Poc.dto.UserLoginDTO;
-import MeadHead.Poc.securite.JwtService;
-import MeadHead.Poc.dto.UserCreationDTO;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import MeadHead.Poc.service.UserService;
+import MeadHead.Poc.dto.UserLoginDTO;
+import MeadHead.Poc.securite.JwtService;
+import MeadHead.Poc.dto.UserCreationDTO;
+
 
 @Slf4j
 @AllArgsConstructor

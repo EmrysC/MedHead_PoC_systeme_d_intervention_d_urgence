@@ -1,26 +1,24 @@
 package MeadHead.Poc.securite;
 
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
-
-import io.jsonwebtoken.security.Keys;
-
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-
-import MeadHead.Poc.entites.User;
-import MeadHead.Poc.service.UserService;
-import io.jsonwebtoken.Jwts;
-import lombok.RequiredArgsConstructor;
-
+import java.time.Instant;
 import java.util.Map;
 import java.util.Date;
-import java.time.Instant;
-
 import java.util.function.Function;
+
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+
+import lombok.RequiredArgsConstructor;
+
+import MeadHead.Poc.entites.User;
+import MeadHead.Poc.service.UserService;
 
 
 @RequiredArgsConstructor

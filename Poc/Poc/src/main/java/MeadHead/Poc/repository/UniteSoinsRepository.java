@@ -1,9 +1,11 @@
 package MeadHead.Poc.repository;
-import  MeadHead.Poc.entites.UniteSoins;
+
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import  MeadHead.Poc.entites.UniteSoins;
+
 
 public interface UniteSoinsRepository extends JpaRepository<UniteSoins, Long> {
     

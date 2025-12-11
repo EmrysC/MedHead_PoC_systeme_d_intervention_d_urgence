@@ -1,21 +1,19 @@
 package MeadHead.Poc.service;
 
-import MeadHead.Poc.repository.UserRepository;
-import MeadHead.Poc.dto.UserCreationDTO;
-import MeadHead.Poc.entites.User;
-
-import lombok.AllArgsConstructor;
-
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
+import lombok.AllArgsConstructor;
 
-import java.util.Optional;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import MeadHead.Poc.repository.UserRepository;
+import MeadHead.Poc.dto.UserCreationDTO;
+import MeadHead.Poc.entites.User;
 
 
 @AllArgsConstructor

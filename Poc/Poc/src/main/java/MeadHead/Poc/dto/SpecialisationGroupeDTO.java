@@ -1,7 +1,8 @@
 package MeadHead.Poc.dto;
 
-import lombok.*;
 import java.util.List;
+
+import lombok.*;
 
 @Getter
 @Setter

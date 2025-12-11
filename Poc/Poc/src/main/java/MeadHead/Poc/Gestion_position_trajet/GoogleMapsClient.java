@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.net.URLEncoder;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -15,7 +16,6 @@ import MeadHead.Poc.entites.UniteSoins;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.net.URLEncoder;
 
 //https://developers.google.com/maps/documentation/distance-matrix/overview?hl=fr
 //https://developers.google.com/maps/documentation/distance-matrix/distance-matrix?hl=fr#maps_http_distancematrix_latlng-sh
