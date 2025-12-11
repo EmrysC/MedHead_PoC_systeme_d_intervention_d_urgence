@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 
 import MeadHead.Poc.service.UserService;
 
-
 /* https://youtu.be/awP1N0R9rx0?t=1911 */
 
 @Configuration
@@ -45,19 +44,32 @@ public class ConfugarationSecuriteApplication {
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .authorizeHttpRequests((requests) -> requests
 
-                                                .requestMatchers(HttpMethod.POST, "/user/connection").permitAll()
-                                                .requestMatchers(HttpMethod.POST, "/user/creation").permitAll()
+                                                .requestMatchers(HttpMethod.POST,
+                                                                "/user/connection",
+                                                                "/user/creation")
+                                                .permitAll()
 
-                                                .requestMatchers(HttpMethod.GET, "/unitesoins").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/unitesoins/{id}").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/unitesoins/recherche_lit_dispo").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/unitesoins/trajets_optimises").permitAll()
+                                                .requestMatchers(HttpMethod.GET,
+                                                                "/unitesoins",
+                                                                "/unitesoins/{id}",
+                                                                "/unitesoins/recherche_lit_dispo",
+                                                                "/unitesoins/trajets_optimises")
+                                                .permitAll()
 
                                                 .requestMatchers(HttpMethod.POST, "/reservation/lit").permitAll()
 
                                                 .requestMatchers(HttpMethod.GET, "/specilites").permitAll()
 
                                                 .requestMatchers(HttpMethod.GET, "/actuator").permitAll()
+
+                                                .requestMatchers(
+                                                                "/v3/api-docs/**",
+                                                                "/v2/api-docs/**",
+                                                                "/swagger-ui.html",
+                                                                "/swagger-ui/**",
+                                                                "/swagger-resources/**",
+                                                                "/webjars/**")
+                                                .permitAll()
 
                                                 .anyRequest().authenticated())
 

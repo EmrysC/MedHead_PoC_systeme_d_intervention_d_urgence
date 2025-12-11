@@ -379,3 +379,6 @@ INSERT INTO `specialisation` (`nom`, `groupe_specialite_id`) VALUES
         ]
     }
 ]
+
+
+swager :  http://localhost:8080/api/swagger-ui/index.html#/unite-soins-controler/listerTous
