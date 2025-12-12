@@ -22,7 +22,6 @@ public class UniteSoinsService {
         this.googleMapsClient = googleMapsClient;
     }
 
-
     public void creer(UniteSoins uniteSoins) {
         this.uniteSoinsRepository.save(uniteSoins);
     }
@@ -31,41 +30,39 @@ public class UniteSoinsService {
         return this.uniteSoinsRepository.findById(id).orElse(null);
     }
 
-
     public List<UniteSoins> listerTous() {
         return this.uniteSoinsRepository.findAll();
     }
 
     public List<UniteSoins> rechercherLitDisponible(String nomSpecialisation) {
-        // La valeur '0' passée comme deuxième argument assure que LitsDisponibles > 0 est vérifié.
+        // La valeur '0' passée comme deuxième argument assure que LitsDisponibles > 0
+        // est vérifié.
         return this.uniteSoinsRepository.findBySpecialisationNomAndLitsDisponiblesGreaterThan(
-            nomSpecialisation, 
-            0 
-        );
+                nomSpecialisation,
+                0);
     }
 
-
-    public List<UniteeSoinsTrajet> calculerTrajetsOptimises(String specialisationNom, double origineLat, double origineLon) {
-        
+    public List<UniteeSoinsTrajet> calculerTrajetsOptimises(String specialisationNom, double origineLat,
+            double origineLon) {
 
         List<UniteSoins> unitesDisponibles = this.rechercherLitDisponible(specialisationNom);
         if (unitesDisponibles.isEmpty()) {
-            return List.of(); 
+            return List.of();
         }
 
         PositionGPS PositionGpsOrigine = new PositionGPS(origineLat, origineLon);
 
-       List<UniteeSoinsTrajet> trajetsCalcules =  googleMapsClient.calculeerTrajetsOptimises(PositionGpsOrigine, unitesDisponibles);
+        List<UniteeSoinsTrajet> trajetsCalcules = googleMapsClient.calculeerTrajetsOptimises(PositionGpsOrigine,
+                unitesDisponibles);
 
-       if (trajetsCalcules.isEmpty()) {
-        return List.of(); 
+        if (trajetsCalcules.isEmpty()) {
+            return List.of();
         }
 
-    trajetsCalcules.sort(
-        Comparator.comparingLong(trajet -> trajet.getDestinationCalculee().getDistanceMetres())
-    );
+        trajetsCalcules.sort(
+                Comparator.comparingLong(trajet -> trajet.getDestinationCalculee().getDistanceMetres()));
 
-    return trajetsCalcules;
-  
-}
+        return trajetsCalcules;
+
+    }
 }
