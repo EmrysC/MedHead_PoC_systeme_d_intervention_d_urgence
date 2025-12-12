@@ -10,8 +10,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 import jakarta.persistence.CascadeType;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.*;
 
 @Getter
 @Setter
@@ -23,10 +24,11 @@ public class GroupeSpecialite {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;   
+    private Long id;
     private String nom;
 
-    @OneToMany(mappedBy = "groupeSpecialite", cascade = CascadeType.ALL) 
+    @JsonIgnore // pour ne pas avoir de récursivité
+    @OneToMany(mappedBy = "groupeSpecialite", cascade = CascadeType.ALL)
     private List<Specialisation> specialisations;
 
 }

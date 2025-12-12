@@ -61,7 +61,6 @@ public class UniteSoinsService {
 
         trajetsCalcules.sort(
                 Comparator.comparingLong(trajet -> trajet.getDestinationCalculee().getDistanceMetres()));
-
         return trajetsCalcules;
 
     }
