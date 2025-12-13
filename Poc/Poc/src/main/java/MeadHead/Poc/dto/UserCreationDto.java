@@ -18,7 +18,7 @@ public class UserCreationDTO {
     private String email;
 
     @NotBlank(message = "Le mot de passe ne peut pas être vide.")
-    @Size(min = 8, message = "Le mot de passe doit contenir au moins 8 caractères.")
+    @Size(min = 8, max = 255, message = "Le mot de passe doit contenir au moins 8 caractères.")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,}$", message = "Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial.")
     @Schema(description = "Le mot de passe de l'utilisateur (1 majuscule, 1minuscule, 1 chiffre, 1 caractère spécial).", example = "MonPassSécurisé#2025")
     private String password;

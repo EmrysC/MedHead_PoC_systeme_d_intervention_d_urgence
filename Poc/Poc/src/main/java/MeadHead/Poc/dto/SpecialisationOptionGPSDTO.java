@@ -12,6 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 public class SpecialisationOptionGPSDTO {
 
+    @NotNull
     @Schema(description = "Identifiant unique de l'option de spécialisation", example = "1")
     private Long id;
 

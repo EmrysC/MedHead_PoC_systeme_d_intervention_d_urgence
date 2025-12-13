@@ -2,6 +2,7 @@ package MeadHead.Poc.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -11,6 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 public class SpecialisationOptionAdresseDTO {
 
+    @NotNull
     @Schema(description = "Identifiant unique de l'option GPS (lecture seule).", example = "1")
     private Long id;
 
