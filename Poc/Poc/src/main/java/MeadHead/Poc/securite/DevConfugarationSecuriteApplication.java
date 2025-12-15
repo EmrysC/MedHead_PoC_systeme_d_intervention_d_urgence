@@ -2,6 +2,7 @@ package MeadHead.Poc.securite;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -24,7 +25,8 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class ConfugarationSecuriteApplication {
+@Profile("dev")
+public class DevConfugarationSecuriteApplication {
 
     private final JwtService jwtService;
     private final UserService userService;
@@ -46,9 +48,23 @@ public class ConfugarationSecuriteApplication {
                         "/user/creation")
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
+                        "/unitesoins",
+                        "/unitesoins/{id}",
+                        "/unitesoins/recherche_lit_dispo",
+                        "/unitesoins/trajets_optimises",
                         "/unitesoins/trajets")
                 .authenticated()
                 .requestMatchers(HttpMethod.POST, "/reservation/lit").authenticated()
+                .requestMatchers(HttpMethod.GET, "/specilites").authenticated()
+                .requestMatchers(HttpMethod.GET, "/actuator").authenticated()
+                .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/v2/api-docs/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/webjars/**")
+                .authenticated()
                 .anyRequest().authenticated())
                 .sessionManagement(
                         httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
