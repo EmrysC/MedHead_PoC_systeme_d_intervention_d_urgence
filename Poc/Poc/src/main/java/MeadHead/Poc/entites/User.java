@@ -1,5 +1,4 @@
 /* https://www.youtube.com/watch?v=awP1N0R9rx0&t=10s */
-
 package MeadHead.Poc.entites;
 
 import java.util.Collection;
@@ -9,15 +8,16 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Column;
-
-import lombok.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -29,7 +29,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
@@ -72,7 +72,6 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority(finalRole));
 
     }
-
 
     @Override
     public String getPassword() {

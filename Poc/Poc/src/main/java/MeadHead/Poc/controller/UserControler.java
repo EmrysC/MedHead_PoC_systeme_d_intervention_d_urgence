@@ -77,12 +77,15 @@ public class UserControler {
     }
 
     // @formatter:off
-    @Operation(summary = "Création d'un nouvel utilisateur",
+    @Operation(
+        summary = "Création d'un nouvel utilisateur",
         description = "Enregistre un nouvel utilisateur avec les informations fournies.",
-        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Informations de l'utilisateur à créer.",
-        required = true,
-        content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-        schema = @Schema(implementation = UserCreationDTO.class))),
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Informations de l'utilisateur à créer.",
+            required = true,
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = UserCreationDTO.class))),
         responses = {
             
             // 200 SUCCESS (Utilisateur créé)
