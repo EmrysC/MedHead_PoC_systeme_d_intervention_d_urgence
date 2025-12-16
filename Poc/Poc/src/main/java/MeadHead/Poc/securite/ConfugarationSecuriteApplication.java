@@ -2,6 +2,7 @@ package MeadHead.Poc.securite;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -15,7 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import MeadHead.Poc.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Profile("!dev")
 public class ConfugarationSecuriteApplication {
 
     private final JwtService jwtService;
@@ -56,9 +58,9 @@ public class ConfugarationSecuriteApplication {
                 .authenticationProvider(authenticationProvider(
                         httpSecurity.getSharedObject(UserDetailsService.class),
                         bCryptPasswordEncoder()))
-                .addFilterAt(
+                .addFilterBefore(
                         jwtFilter(),
-                        SecurityContextHolderFilter.class)
+                        UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

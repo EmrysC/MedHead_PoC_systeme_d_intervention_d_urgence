@@ -105,6 +105,10 @@
             <version>3.0.0</version>
             <!--https://www.youtube.com/watch?v=2o_3hjUPAfQ&t=1701s!-->
         </dependency>
+        <dependency>
+    <groupId>jakarta.annotation</groupId>
+    <artifactId>jakarta.annotation-api</artifactId>
+</dependency>
     </dependencies>
 
     <build>

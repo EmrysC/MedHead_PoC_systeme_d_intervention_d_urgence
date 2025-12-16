@@ -32,6 +32,7 @@ public class SpecialisationTrajetDTO {
     private Double longitude;
 
     @Size(min = 5, max = 255, message = "L'adresse doit contenir entre 5 et 255 caractères.")
+    @Schema(description = "Adresse", example = "1 Av. Gustave Eiffel, 75007 Paris")
     private String adresse;
 
 }

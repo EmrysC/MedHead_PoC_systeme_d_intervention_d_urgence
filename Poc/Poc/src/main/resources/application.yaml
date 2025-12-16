@@ -22,11 +22,11 @@ server:
   servlet:
     context-path: /api
   jwt:
-    secret-key: ${local.jwt.secret}
+    secret-key: ${jwt.secret}
     expiration: 864000000 # 1 jour en ms 
 google:
   api:
-    key: ${local.google.api.key}
+    key: ${google.api.key}
     url: https://maps.googleapis.com/maps/api/distancematrix/json
 logging:
   level:

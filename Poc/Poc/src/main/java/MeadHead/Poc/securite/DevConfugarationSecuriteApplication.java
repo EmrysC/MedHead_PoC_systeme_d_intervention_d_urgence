@@ -16,7 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import MeadHead.Poc.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,9 @@ public class DevConfugarationSecuriteApplication {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain devSecurityFilterChain(HttpSecurity httpSecurity, AuthenticationProvider authenticationProvider,
+            PasswordEncoder passwordEncoder,
+            JwtFilter jwtFilter) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -69,12 +71,10 @@ public class DevConfugarationSecuriteApplication {
                 .sessionManagement(
                         httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider(
-                        httpSecurity.getSharedObject(UserDetailsService.class),
-                        bCryptPasswordEncoder()))
-                .addFilterAt(
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(
                         jwtFilter(),
-                        SecurityContextHolderFilter.class)
+                        UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

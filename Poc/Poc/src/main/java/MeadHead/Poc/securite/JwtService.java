@@ -1,25 +1,23 @@
 package MeadHead.Poc.securite;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Instant;
-import java.util.Map;
+import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 import java.util.function.Function;
 
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
-
-import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import MeadHead.Poc.entites.User;
 import MeadHead.Poc.service.UserService;
-
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
@@ -32,6 +30,12 @@ public class JwtService {
 
     @Value("${server.jwt.secret-key}")
     private String JwtSecretKey;
+    private Key signingKey;
+
+    @PostConstruct // on la charge pour ne pas la reculculer à chaque appel
+    public void init() {
+        this.signingKey = generateSigningKey();
+    }
 
     public Map<String, String> generateToken(String email) {
 
@@ -47,26 +51,30 @@ public class JwtService {
                 "nom", user.getNom(),
                 "prenom", user.getPrenom(),
                 "email", user.getEmail(),
-                "role", user.getAuthorities().iterator().next().getAuthority()); 
+                "role", user.getAuthorities().iterator().next().getAuthority());
 
         final Instant now = Instant.now();
         final Instant expirationInstant = now.plusMillis(expirationTime);
 
         final String bearer = Jwts.builder()
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(expirationInstant))
-                .setSubject(user.getEmail())
-                .setClaims(claims)
-                .signWith(getJwtSecretKey())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expirationInstant))
+                .subject(user.getEmail())
+                .claims(claims)
+                .signWith(this.signingKey)
                 .compact();
 
         return Map.of("Bearer", bearer);
     }
 
-private Key getJwtSecretKey() {
+    private Key generateSigningKey() {
 
-    return Keys.hmacShaKeyFor(JwtSecretKey.getBytes(StandardCharsets.UTF_8));
-}
+        System.out.println("--- KEY USED FOR SIGN/VALIDATION: " + JwtSecretKey + " ---");
+
+        byte[] keyBytes = Base64.getUrlDecoder().decode(JwtSecretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
+
+    }
 
     public String extractedEmail(String token) {
 
@@ -83,32 +91,33 @@ private Key getJwtSecretKey() {
         return expiration.before(new Date());
     }
 
-public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-    final Claims claims = extractAllClaims(token);
-    
-    if (claims == null) { 
-        return null; 
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+
+        if (claims == null) {
+            return null;
+        }
+
+        return claimsResolver.apply(claims);
     }
-    
-    return claimsResolver.apply(claims);
-}
 
     private Claims extractAllClaims(String token) {
 
-        System.out.println("JwtSecretKey" + JwtSecretKey);
+        System.out.println("JwtSecretKey : " + JwtSecretKey);
 
         try {
             return Jwts.parser()
-                    .setSigningKey(getJwtSecretKey())
+                    .verifyWith((javax.crypto.SecretKey) this.signingKey)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (io.jsonwebtoken.security.SignatureException | io.jsonwebtoken.ExpiredJwtException e) {
+            System.err.println("Erreur de validation/parsing JWT : " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            return null;
         } catch (JwtException e) {
-
-            System.err.println("Erreur de validation/parsing JWT : " + e.getMessage());
+            System.err.println("Erreur de validation/parsing JWT (générique) : " + e.getClass().getSimpleName() + " - " + e.getMessage());
             return null;
         }
     }
-
 
 }

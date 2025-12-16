@@ -2,6 +2,7 @@ package MeadHead.Poc.controller;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +48,7 @@ public class UniteSoinsControler {
      * Endpoint qui renvoie la liste de toutes les unités de soins. Exemple: GET
      * localhost:8080/api/unitesoins
      */
+    @Profile("dev")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UniteSoins> listerTous() {
         return this.uniteSoinsRepository.findAll();
@@ -56,6 +58,7 @@ public class UniteSoinsControler {
      * Endpoint qui renvoie les détails d'une unité de soins par son ID.
      * Exemple: GET localhost:8080/api/unitesoins/2
      */
+    @Profile("dev")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public UniteSoins trouverParId(@PathVariable Long id) {
         return this.uniteSoinsRepository.findById(id).orElse(null);
@@ -66,6 +69,7 @@ public class UniteSoinsControler {
      * une spécialisation donnée. Exemple: GET
      * http://localhost:8080/api/unitesoins/recherche_lit_dispo?specialisation=Cardiologie%20Interventionnelle
      */
+    @Profile("dev")
     @GetMapping(path = "/recherche_lit_dispo", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UniteSoins> rechercherLitDisponible(@RequestParam("specialisation") String nomSpecialisation) {
         return this.uniteSoinsRepository.findBySpecialisationNomAndLitsDisponiblesGreaterThan(
@@ -73,21 +77,6 @@ public class UniteSoinsControler {
                 0);
     }
 
-    /**
-     * Endpoint qui renvoie la liste enrichie des trajets optimisés vers les
-     * unités de soins disposant de lits pour une spécialisation donnée, à
-     * partir d'une position GPS. Exemple: GET
-     * http://localhost:8080/api/trajets_optimises?lat=45.18719605665046&lon=5.68936461721841&specialisation=Cardiologie%20Interventionnelle
-     */
-    /* 
-    @GetMapping("/trajets_optimises")
-    public List<UniteeSoinsTrajetDTO> obtenirTrajetsOptimises(
-            @RequestParam("lat") double lat,
-            @RequestParam("lon") double lon,
-            @RequestParam("specialisation") String specialisationNom) {
-
-        return this.uniteSoinsService.calculerTrajetsOptimises(specialisationNom, lat, lon);
-    }*/
     // @formatter:off
     @Operation(
             summary = "Ajouter une position GPS",
