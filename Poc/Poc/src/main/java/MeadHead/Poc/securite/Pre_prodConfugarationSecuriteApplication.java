@@ -25,8 +25,8 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Profile("!dev")
-public class ConfugarationSecuriteApplication {
+@Profile("pre_pod")
+public class Pre_prodConfugarationSecuriteApplication {
 
     private final JwtService jwtService;
     private final UserService userService;
@@ -43,15 +43,11 @@ public class ConfugarationSecuriteApplication {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                .requestMatchers(HttpMethod.POST,
-                        "/user/connection",
-                        "/user/creation")
-                .permitAll()
-                .requestMatchers(HttpMethod.GET,
-                        "/unitesoins/trajets")
-                .authenticated()
+                .requestMatchers(HttpMethod.POST, "/user/connection", "/user/creation").permitAll()
+                .requestMatchers(HttpMethod.GET, "/unitesoins/trajets").authenticated()
                 .requestMatchers(HttpMethod.POST, "/reservation/lit").authenticated()
-                .anyRequest().authenticated())
+                .requestMatchers(HttpMethod.GET, "/specilites").authenticated()
+                .anyRequest().denyAll())
                 .sessionManagement(
                         httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

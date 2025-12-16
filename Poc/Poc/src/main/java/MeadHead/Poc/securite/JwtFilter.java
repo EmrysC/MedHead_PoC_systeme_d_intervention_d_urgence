@@ -27,8 +27,6 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws java.io.IOException, jakarta.servlet.ServletException {
 
-        System.out.println("--- JwtFilter: Traitement de la requête pour URL: " + request.getRequestURI() + " ---");
-
         String token = null;
         String email = null;
         boolean isTokenExpired = true;
@@ -42,10 +40,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         UserDetails userDetails = null;
 
-        System.out.println("token: " + token);
-        System.out.println("email: " + email);
-        System.out.println("isTokenExpired: " + isTokenExpired);
-        System.out.println("Context is null: " + (SecurityContextHolder.getContext().getAuthentication() == null));
         if (token != null
                 && !isTokenExpired
                 && email != null
@@ -61,16 +55,12 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        System.out.println("userDetails: " + userDetails);
         if (userDetails != null) {
-
-            System.out.println("JwtFilter: CONTEXTE DE SÉCURITÉ DÉFINI pour: " + userDetails.getUsername());
 
             // Vérification de robustesse des autorités (déjà présente dans votre code)
             Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
             // S'assurer que les autorités ne sont pas nulles/vides pour l'état authentifié
-            System.out.println("authorities: " + authorities);
             if (authorities != null && !authorities.isEmpty()) {
 
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
@@ -81,8 +71,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }
-
-        System.out.println("--- JwtFilter: FIN du traitement. Passage au filtre suivant. ---");
 
         filterChain.doFilter(request, response);
 

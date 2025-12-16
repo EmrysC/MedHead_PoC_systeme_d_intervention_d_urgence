@@ -19,6 +19,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
+// test JWT https://www.jwt.io/
 @RequiredArgsConstructor
 @Service
 public class JwtService {
@@ -32,7 +33,7 @@ public class JwtService {
     private String JwtSecretKey;
     private Key signingKey;
 
-    @PostConstruct // on la charge pour ne pas la reculculer à chaque appel
+    @PostConstruct // on charge la clé pour ne pas la reculculer à chaque appel
     public void init() {
         this.signingKey = generateSigningKey();
     }
@@ -69,8 +70,6 @@ public class JwtService {
 
     private Key generateSigningKey() {
 
-        System.out.println("--- KEY USED FOR SIGN/VALIDATION: " + JwtSecretKey + " ---");
-
         byte[] keyBytes = Base64.getUrlDecoder().decode(JwtSecretKey);
         return Keys.hmacShaKeyFor(keyBytes);
 
@@ -103,8 +102,6 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
 
-        System.out.println("JwtSecretKey : " + JwtSecretKey);
-
         try {
             return Jwts.parser()
                     .verifyWith((javax.crypto.SecretKey) this.signingKey)
@@ -112,10 +109,8 @@ public class JwtService {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (io.jsonwebtoken.security.SignatureException | io.jsonwebtoken.ExpiredJwtException e) {
-            System.err.println("Erreur de validation/parsing JWT : " + e.getClass().getSimpleName() + " - " + e.getMessage());
             return null;
         } catch (JwtException e) {
-            System.err.println("Erreur de validation/parsing JWT (générique) : " + e.getClass().getSimpleName() + " - " + e.getMessage());
             return null;
         }
     }
