@@ -52,7 +52,7 @@ public class JwtService {
                 "nom", user.getNom(),
                 "prenom", user.getPrenom(),
                 "email", user.getEmail(),
-                "role", user.getAuthorities().iterator().next().getAuthority());
+                "role", user.getRole());
 
         final Instant now = Instant.now();
         final Instant expirationInstant = now.plusMillis(expirationTime);

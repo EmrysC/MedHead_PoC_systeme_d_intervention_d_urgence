@@ -2,23 +2,20 @@
 package MeadHead.Poc.entites;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import jakarta.persistence.CollectionTable;
+import MeadHead.Poc.enums.TypeDeRole;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -46,10 +43,9 @@ public class User implements UserDetails {
     @Column(name = "active", nullable = false)
     private boolean active = true; // Compte actif par défaut
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
-    private Set<String> roles = new HashSet<>(Set.of("ROLE_USER", "ROLE_ADMIN", "ROLE_HOPITAL"));
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private TypeDeRole role = TypeDeRole.ROLE_USER;
 
     @Column(name = "Nom", nullable = false)
     private String nom;
@@ -59,9 +55,10 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        if (this.role == null) {
+            return List.of();
+        }
+        return List.of(new SimpleGrantedAuthority(this.role.name()));
     }
 
     @Override

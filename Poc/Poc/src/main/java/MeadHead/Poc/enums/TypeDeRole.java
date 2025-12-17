@@ -1,7 +1,7 @@
 package MeadHead.Poc.enums;
 
 public enum TypeDeRole {
-    UTILISATEUR,
-    ADMINISTRATEUR,
-    CENTRE_DE_SOIN
+    ROLE_USER,
+    ROLE_HOPITAL,
+    ROLE_ADMIN
 }
