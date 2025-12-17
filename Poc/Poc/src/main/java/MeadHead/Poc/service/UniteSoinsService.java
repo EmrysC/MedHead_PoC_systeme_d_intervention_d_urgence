@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import MeadHead.Poc.Gestion_position_trajet.GoogleMapsClient;
 import MeadHead.Poc.Gestion_position_trajet.UniteeSoinsTrajetDTO;
@@ -28,6 +29,7 @@ public class UniteSoinsService {
     private final GoogleMapsClient googleMapsClient;
     private final SpecialisationService specialisationService;
 
+    @Transactional
     public void creer(UniteSoins uniteSoins) {
         this.uniteSoinsRepository.save(uniteSoins);
     }
@@ -40,48 +42,12 @@ public class UniteSoinsService {
         return this.uniteSoinsRepository.findAll();
     }
 
-    /* 
-    public List<UniteSoins> rechercherLitDisponible(String nomSpecialisation) {
-        // La valeur '0' passée comme deuxième argument assure que LitsDisponibles > 0
-        // est vérifié.
-        return this.uniteSoinsRepository.findBySpecialisationNomAndLitsDisponiblesGreaterThan(
-                nomSpecialisation,
-                0);
-    } */
     public List<UniteSoins> rechercherLitDisponible(Long idSpecialisation) {
         return this.uniteSoinsRepository.findBySpecialisationIdAndLitsDisponiblesGreaterThan(
                 idSpecialisation,
                 0);
     }
 
-    /*
-     * public List<UniteeSoinsTrajetDTO> calculerTrajetsOptimises(String
-     * specialisationNom, double origineLat,
-     * double origineLon) {
-     * 
-     * List<UniteSoins> unitesDisponibles =
-     * this.rechercherLitDisponible(specialisationNom);
-     * if (unitesDisponibles.isEmpty()) {
-     * return List.of();
-     * }
-     * 
-     * PositionGPS PositionGpsOrigine = new PositionGPS(origineLat, origineLon);
-     * 
-     * List<UniteeSoinsTrajetDTO> trajetsCalcules =
-     * googleMapsClient.calculeerTrajetsOptimises(PositionGpsOrigine,
-     * unitesDisponibles);
-     * 
-     * if (trajetsCalcules.isEmpty()) {
-     * return List.of();
-     * }
-     * 
-     * trajetsCalcules.sort(
-     * Comparator.comparingLong(trajet ->
-     * trajet.getDestinationCalculee().getDistanceMetres()));
-     * return trajetsCalcules;
-     * 
-     * }
-     */
     private TrajetResultatDTO calculerTrajets(SpecialisationTrajetDTO specialisationTrajetDTO) {
 
         // Rechercher les lits disponibles

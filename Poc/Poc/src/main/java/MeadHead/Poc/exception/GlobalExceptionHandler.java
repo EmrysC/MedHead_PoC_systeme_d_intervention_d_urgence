@@ -15,6 +15,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import MeadHead.Poc.exception.exeption_list.EmailAlreadyExistsException;
+import MeadHead.Poc.exception.exeption_list.LitIndisponibleException;
+import MeadHead.Poc.exception.exeption_list.UniteSoinsNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -25,8 +27,25 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex, WebRequest request) {
 
         Map<String, String> errors = new HashMap<>();
+
+        // On récupère les erreurs sur les champs classiques (@NotNull, @Size...)
         ex.getBindingResult().getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+
+        // On récupère les erreurs globales ( @OneOfAddressOrGps)
+        ex.getBindingResult().getGlobalErrors()
+                .forEach(error -> {
+                    // on a défini un nom de propriété dans le validator, on l'utilise, 
+                    String key = (error.getCodes() != null && error.getCodes().length > 0)
+                            ? error.getCodes()[0].substring(error.getCodes()[0].lastIndexOf('.') + 1)
+                            : "erreur_logique";
+
+                    if (key.contains("DTO")) {
+                        key = "choix_localisation";
+                    }
+
+                    errors.put(key, error.getDefaultMessage());
+                });
 
         ErrorDetails errorDetails = new ErrorDetails(
                 LocalDateTime.now(),
@@ -34,7 +53,7 @@ public class GlobalExceptionHandler {
                 errors,
                 request.getDescription(false));
 
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST); // 400 bad request
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
     // Gestion des ressources non trouvées
@@ -114,6 +133,109 @@ public class GlobalExceptionHandler {
                 request.getDescription(false));
 
         return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN); // 403 Forbidden
+    }
+
+    // GESTION DES RESERVATIONS 
+    @ExceptionHandler(UniteSoinsNotFoundException.class)
+    public ResponseEntity<ErrorDetails> handleUniteSoinsNotFoundException(
+            UniteSoinsNotFoundException ex, WebRequest request) {
+
+        Map<String, String> singleErrorMap = Map.of(
+                "id_unite_soins", ex.getMessage());
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                "Ressource Introuvable",
+                singleErrorMap,
+                request.getDescription(false));
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND); // 404 Not Found
+    }
+
+    @ExceptionHandler(LitIndisponibleException.class)
+    public ResponseEntity<ErrorDetails> handleLitIndisponibleException(
+            LitIndisponibleException ex, WebRequest request) {
+
+        Map<String, String> singleErrorMap = Map.of(
+                "disponibilite_lit", ex.getMessage());
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                "Conflit de Réservation",
+                singleErrorMap,
+                request.getDescription(false));
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT); // 409 Conflict
+    }
+
+// Gestion de l'erreur de type (ex: "ABCD" au lieu d'un nombre)
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorDetails> handleTypeMismatch(
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex, WebRequest request) {
+
+        String parameterName = ex.getName();
+        String typeAttendu = (ex.getRequiredType() != null) ? ex.getRequiredType().getSimpleName() : "nombre";
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put(parameterName, String.format("La valeur saisie est invalide. Le champ '%s' doit être un %s.",
+                parameterName, typeAttendu));
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                "Erreur de format de paramètre",
+                errors,
+                request.getDescription(false));
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+// Gestion des paramètres obligatoires manquants 
+    @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorDetails> handleMissingParams(
+            org.springframework.web.bind.MissingServletRequestParameterException ex, WebRequest request) {
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put(ex.getParameterName(), "Ce paramètre est obligatoire dans l'URL.");
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                "Paramètre manquant",
+                errors,
+                request.getDescription(false));
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MeadHead.Poc.exception.exeption_list.ValidationManuelleException.class)
+    public ResponseEntity<Object> handleValidationManuelleException(
+            MeadHead.Poc.exception.exeption_list.ValidationManuelleException ex, WebRequest request) {
+
+        Map<String, String> errors = new HashMap<>();
+        org.springframework.validation.BindingResult result = ex.getBindingResult();
+
+        //récupère les erreurs sur les champs classiques (@NotNull, @DecimalMin...)
+        result.getFieldErrors().forEach(error
+                -> errors.put(error.getField(), error.getDefaultMessage()));
+
+        //récupère les erreurs globales (@OneOfAddressOrGps)
+        result.getGlobalErrors().forEach(error -> {
+            String key = (error.getCodes() != null && error.getCodes().length > 0)
+                    ? error.getCodes()[0].substring(error.getCodes()[0].lastIndexOf('.') + 1)
+                    : "choix_localisation";
+
+            if (key.contains("DTO")) {
+                key = "choix_localisation";
+            }
+            errors.put(key, error.getDefaultMessage());
+        });
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                "Erreur de validation des arguments",
+                errors,
+                request.getDescription(false));
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
     // GESTION GÉNÉRIQUE

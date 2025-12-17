@@ -5,6 +5,10 @@ import java.util.List;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 import MeadHead.Poc.dto.SpecialisationTrajetDTO;
 import MeadHead.Poc.dto.TrajetReponseDTO;
 import MeadHead.Poc.entites.UniteSoins;
+import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
 import MeadHead.Poc.repository.UniteSoinsRepository;
 import MeadHead.Poc.service.UniteSoinsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(path = "unitesoins")
@@ -33,11 +37,15 @@ public class UniteSoinsControler {
 
     private final UniteSoinsRepository uniteSoinsRepository;
 
-    public UniteSoinsControler(UniteSoinsRepository uniteSoinsRepository, UniteSoinsService uniteSoinsService) {
+    private final Validator validator;
+
+    public UniteSoinsControler(Validator validator, UniteSoinsRepository uniteSoinsRepository, UniteSoinsService uniteSoinsService) {
+        this.validator = validator;
         this.uniteSoinsRepository = uniteSoinsRepository;
         this.uniteSoinsService = uniteSoinsService;
     }
 
+    @Profile("dev")
     @ResponseStatus(value = HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public void creer(@RequestBody UniteSoins uniteSoins) {
@@ -79,35 +87,36 @@ public class UniteSoinsControler {
 
     // @formatter:off
     @Operation(
-            summary = "Ajouter une position GPS",
-            description = "Associe une nouvelle position GPS à une unité de soins existante via son ID.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Coordonnées GPS à associer.",
-                    required = true,
-                    content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = SpecialisationTrajetDTO.class))),
+            summary = "[PROD] Rechercher le trajet",
+            description = "Donne les trajets des unitées de soins disponible les plus proches",
             responses = {
-                // 200 SUCCESS
                 @ApiResponse(responseCode = "200", description = "Retourne les trajet en fonction des unité de soins disponibles"),
-
-                // 400 BAD REQUEST (Erreur de validation du DTO)
                 @ApiResponse(responseCode = "400", description = "Erreur de validation des champs (DTO non conforme).", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(example = "todo"))),
-
-                // 404 NOT FOUND (Aucune unité de soins ne correspond à cet ID)
                 @ApiResponse(responseCode = "404", description = "Unité de soins non trouvée.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(example = "todo"))),
-
-                // 409 CONFLICT (Lits indisponibles)
                 @ApiResponse(responseCode = "409", description = "Conflit : Unités de soins est trouvées, mais aucun lit n'est disponible.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(example = "todo"))),
-
-                // 503 SERVICE UNAVAILABLE (API Google en échec)
                 @ApiResponse(responseCode = "503", description = "Service de calcul de trajet indisponible ou aucune destination n'a pu être calculée.", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(example = "todo"))),})
     // @formatter:on
-    @GetMapping(path = "/trajets", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public TrajetReponseDTO ajouterPositionGps(
-            @Valid @RequestBody SpecialisationTrajetDTO specialisationTrajetDTO) {
+    @GetMapping(path = "/trajets", produces = MediaType.APPLICATION_JSON_VALUE)
+    public TrajetReponseDTO rechercherTrajet(
+            @RequestParam Long specialisationId,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) String adresse) throws MethodArgumentNotValidException {
 
-        return this.uniteSoinsService.calculerTrajetReponse(specialisationTrajetDTO);
+        // construit le DTO
+        SpecialisationTrajetDTO dto = new SpecialisationTrajetDTO(specialisationId, latitude, longitude, adresse);
 
+        // VALIDE MANUELLEMENT
+        // crée un objet "BindingResult" pour stocker les erreurs
+        BindingResult bindingResult = new BeanPropertyBindingResult(dto, "specialisationTrajetDTO");
+
+        // demande au validator de remplir le bindingResult avec les erreurs des annotations (@OneOfAddressOrGps)
+        validator.validate(dto, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            throw new ValidationManuelleException(bindingResult);
+        }
+
+        return this.uniteSoinsService.calculerTrajetReponse(dto);
     }
 }

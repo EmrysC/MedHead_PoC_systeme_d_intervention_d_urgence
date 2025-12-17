@@ -66,8 +66,8 @@ public class DevConfugarationSecuriteApplication {
                         "/swagger-ui/**",
                         "/swagger-resources/**",
                         "/webjars/**")
-                .authenticated()
-                .anyRequest().authenticated())
+                .permitAll()
+                .anyRequest().permitAll())
                 .sessionManagement(
                         httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

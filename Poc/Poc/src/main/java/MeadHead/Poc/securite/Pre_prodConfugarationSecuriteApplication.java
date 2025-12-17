@@ -43,10 +43,10 @@ public class Pre_prodConfugarationSecuriteApplication {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                .requestMatchers(HttpMethod.POST, "/user/connection", "/user/creation").permitAll()
+                .requestMatchers(HttpMethod.POST, "/user/creation", "/user/connection").permitAll()
+                .requestMatchers(HttpMethod.GET, "/specilites").authenticated()
                 .requestMatchers(HttpMethod.GET, "/unitesoins/trajets").authenticated()
                 .requestMatchers(HttpMethod.POST, "/reservation/lit").authenticated()
-                .requestMatchers(HttpMethod.GET, "/specilites").authenticated()
                 .anyRequest().denyAll())
                 .sessionManagement(
                         httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer

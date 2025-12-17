@@ -1,20 +1,20 @@
 package MeadHead.Poc.service;
 
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import lombok.AllArgsConstructor;
-
-import MeadHead.Poc.repository.UserRepository;
 import MeadHead.Poc.dto.UserCreationDTO;
 import MeadHead.Poc.entites.User;
 import MeadHead.Poc.exception.exeption_list.EmailAlreadyExistsException;
 import MeadHead.Poc.exception.exeption_list.EmailNotFoundException;
+import MeadHead.Poc.repository.UserRepository;
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Service
@@ -23,6 +23,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
+    @Transactional
     public User createUser(UserCreationDTO userDto) {
 
         if (userRepository.existsByEmail(userDto.getEmail())) {

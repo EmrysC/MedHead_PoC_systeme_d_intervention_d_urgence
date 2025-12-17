@@ -1,6 +1,10 @@
 package MeadHead.Poc.dto;
 
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -8,6 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 public class ReservationRequestDTO {
 
-private Long uniteSoinsId;
+    @NotNull(message = "L'identifiant de l'unité de soins ne peut pas être nul.")
+    private Long uniteSoinsId;
 
 }
