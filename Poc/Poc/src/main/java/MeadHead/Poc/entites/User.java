@@ -2,17 +2,23 @@
 package MeadHead.Poc.entites;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,8 +46,10 @@ public class User implements UserDetails {
     @Column(name = "active", nullable = false)
     private boolean active = true; // Compte actif par défaut
 
-    @Column(name = "roles", nullable = false)
-    private String role; // Rôles de l'utilisateur (ex: ROLE_USER, ROLE_ADMIN)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private Set<String> roles = new HashSet<>(Set.of("ROLE_USER", "ROLE_ADMIN", "ROLE_HOPITAL"));
 
     @Column(name = "Nom", nullable = false)
     private String nom;
@@ -51,26 +59,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String roleName = this.role; // Utilise le champ 'role' de l'entité
-
-        // Gérer les cas où le rôle est nul ou vide
-        if (roleName == null || roleName.trim().isEmpty()) {
-            return List.of();
-        }
-
-        // Nettoyage si le rôle est encodé par le JWT (ex: [ROLE_USER])
-        if (roleName.startsWith("[") && roleName.endsWith("]")) {
-            roleName = roleName.substring(1, roleName.length() - 1).replace("\"", "").trim();
-        }
-
-        String finalRole = roleName.split(",")[0].trim();
-
-        if (finalRole.isEmpty()) {
-            return List.of();
-        }
-
-        return List.of(new SimpleGrantedAuthority(finalRole));
-
+        return this.roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
 
     @Override
