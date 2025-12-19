@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -236,6 +237,73 @@ public class GlobalExceptionHandler {
                 request.getDescription(false));
 
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    // GESTION DE L'ABSENCE DE LITS (NoBedAvailableException)
+    @ExceptionHandler(MeadHead.Poc.exception.exeption_list.NoBedAvailableException.class)
+    public ResponseEntity<ErrorDetails> handleNoBedAvailableException(
+            MeadHead.Poc.exception.exeption_list.NoBedAvailableException ex, WebRequest request) {
+
+        // On récupère la map d'erreurs passée à l'exception
+        Map<String, String> errorsMap = ex.getErrors();
+
+        // Si la map est vide ou nulle, on met un message par défaut
+        if (errorsMap == null || errorsMap.isEmpty()) {
+            errorsMap = Map.of("disponibilite", ex.getMessage());
+        }
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                "Indisponibilité",
+                errorsMap,
+                request.getDescription(false));
+
+        // On retourne un 404 car la ressource (un lit) est introuvable pour ces critères
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+// GESTION DES ERREURS GOOGLE / SERVICES EXTERNES
+    @ExceptionHandler({
+        MeadHead.Poc.exception.exeption_list.GoogleMapsServiceFailureException.class,
+        MeadHead.Poc.exception.exeption_list.ExternalServiceFailureException.class
+    })
+    public ResponseEntity<ErrorDetails> handleGoogleMapsFailure(
+            Exception ex, WebRequest request) {
+
+        Map<String, String> errorsMap;
+
+        if (ex instanceof MeadHead.Poc.exception.exeption_list.GoogleMapsServiceFailureException googleEx) {
+            errorsMap = googleEx.getErrors();
+        } else if (ex instanceof MeadHead.Poc.exception.exeption_list.ExternalServiceFailureException externalEx) {
+            errorsMap = externalEx.getErrors();
+        } else {
+            errorsMap = Map.of("service_externe", ex.getMessage());
+        }
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                "Erreur de localisation ou de trajet",
+                errorsMap,
+                request.getDescription(false));
+
+        // On retourne 404 (Not Found) ou 502 (Bad Gateway) selon votre préférence
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorDetails> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex, WebRequest request) {
+
+        Map<String, String> errorsMap = Map.of(
+                "format", "Le format de la donnée est invalide. Vérifiez que les nombres ne contiennent pas de texte ou de caractères spéciaux.");
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                "Format JSON invalide",
+                errorsMap,
+                request.getDescription(false));
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST); // 400 Bad Request
     }
 
     // GESTION GÉNÉRIQUE

@@ -116,7 +116,22 @@ public class GoogleMapsClient {
                     JsonNode.class);
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                return responseEntity.getBody();
+
+                JsonNode body = responseEntity.getBody();
+
+                if (body != null) {
+                    String rootStatus = body.path("status").asText();
+
+                    // Si le statut n'est pas OK ou ZERO_RESULTS
+                    if (!rootStatus.equals("OK") && !rootStatus.equals("ZERO_RESULTS")) {
+                        String errorMsg = body.path("error_message").asText("Pas de message détaillé");
+                        throw new GoogleMapsServiceFailureException(
+                                Map.of("google_api_status", "Erreur Google: " + rootStatus + " - " + errorMsg)
+                        );
+                    }
+                }
+
+                return body;
             } else {
 
                 String errorMessage = String.format("Erreur HTTP reçue de Google Maps: %s. URL: %s",

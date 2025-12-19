@@ -23,7 +23,7 @@ server:
     context-path: /api
   jwt:
     secret-key: ${jwt.secret}
-    expiration: 864000000 # 1 jour en ms 
+    expiration: 1800000  # 30 minutes (30 * 60 * 1000)
 google:
   api:
     key: ${google.api.key}

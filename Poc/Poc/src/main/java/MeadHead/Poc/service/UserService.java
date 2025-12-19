@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import MeadHead.Poc.dto.UserCreationDTO;
 import MeadHead.Poc.entites.User;
+import MeadHead.Poc.enums.TypeDeRole;
 import MeadHead.Poc.exception.exeption_list.EmailAlreadyExistsException;
 import MeadHead.Poc.exception.exeption_list.EmailNotFoundException;
 import MeadHead.Poc.repository.UserRepository;
@@ -38,7 +39,7 @@ public class UserService implements UserDetailsService {
         user.setEmail(userDto.getEmail());
         user.setNom(userDto.getNom());
         user.setPrenom(userDto.getPrenom());
-        user.setRole("ROLE_USER");
+        user.setRole(TypeDeRole.ROLE_USER);
         user.setActive(true);
         String mdpCrypt = this.bCryptPasswordEncoder.encode(userDto.getPassword());
         user.setPassword(mdpCrypt);

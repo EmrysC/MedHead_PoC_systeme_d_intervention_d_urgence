@@ -3,24 +3,30 @@ package MeadHead.Poc.service;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import static org.mockito.Mockito.*;
-import org.mockito.quality.Strictness;
-
 import MeadHead.Poc.dto.UserCreationDTO;
 import MeadHead.Poc.entites.User;
+import MeadHead.Poc.enums.TypeDeRole;
 import MeadHead.Poc.exception.exeption_list.EmailAlreadyExistsException;
 import MeadHead.Poc.repository.UserRepository;
 
@@ -49,7 +55,7 @@ public class UserServiceTest {
         testUser = new User();
         testUser.setEmail("test@example.com");
         testUser.setPassword("encrypted_password");
-        testUser.setRole("ROLE_USER");
+        testUser.setRole(TypeDeRole.ROLE_USER);
     }
 
     @Test
