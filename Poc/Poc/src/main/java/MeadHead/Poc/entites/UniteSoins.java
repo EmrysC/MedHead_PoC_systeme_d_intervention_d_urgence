@@ -1,6 +1,6 @@
 package MeadHead.Poc.entites;
 
-import java.math.BigDecimal; 
+import java.math.BigDecimal;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,9 +11,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
- 
-import lombok.*;
-
+import jakarta.persistence.Version;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -24,20 +26,19 @@ import lombok.*;
 // La contrainte d'unicité (UNIQUE) est appliquée ici,
 // car elle implique plusieurs colonnes.
 @Table(
-    name = "unite_soins", 
-    uniqueConstraints = @UniqueConstraint(
-        columnNames = {"hopital_id", "specialisation_id", "latitude", "longitude"}
-    )
+        name = "unite_soins",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"hopital_id", "specialisation_id", "latitude", "longitude"}
+        )
 )
 public class UniteSoins {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "hopital_id") 
+    @JoinColumn(name = "hopital_id")
     private Hopital hopital;
 
     @ManyToOne(optional = false)
@@ -56,5 +57,7 @@ public class UniteSoins {
     @Column(name = "longitude", precision = 10, scale = 7, nullable = false)
     private BigDecimal longitude;
 
+    @Version
+    private Long version;
 
 }
