@@ -28,6 +28,7 @@ google:
   api:
     key: ${google.api.key}
     url: https://maps.googleapis.com/maps/api/distancematrix/json
+    limit-destinations: 25
 logging:
   level:
     org.springframework.web: DEBUG

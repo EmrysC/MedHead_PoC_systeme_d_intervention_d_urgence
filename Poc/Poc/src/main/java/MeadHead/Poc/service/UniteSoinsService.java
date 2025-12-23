@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,9 @@ public class UniteSoinsService {
     private final UniteSoinsRepository uniteSoinsRepository;
     private final GoogleMapsClient googleMapsClient;
     private final SpecialisationService specialisationService;
+
+    @Value("${google.api.limit-destinations}")
+    private int limitDestinations;
 
     @Transactional
     public void creer(UniteSoins uniteSoins) {
@@ -61,14 +65,27 @@ public class UniteSoinsService {
                             String.format("Aucun lit disponible pour la spécialisation id : %s", specialisationTrajetDTO.getSpecialisationId())));
         }
 
-        // Préparer l'objet PositionDTO de l'origine pour l'API
+        // Préparer l'objet PositionDTO 
         PositionDTO positionDTO = new PositionDTO(specialisationTrajetDTO);
+
+        // Tri vol d'oiseau N plus proches
+        String[] coordsOrigine = positionDTO.getPositionValid().split(",");
+        double latO = Double.parseDouble(coordsOrigine[0]);
+        double lonO = Double.parseDouble(coordsOrigine[1]);
+
+        List<UniteSoins> topNProches = uniteSoinsDisponibles.stream()
+                .sorted(Comparator.comparingDouble(u
+                        -> calculerDistanceVolOiseau(latO, lonO,
+                        u.getLatitude().doubleValue(),
+                        u.getLongitude().doubleValue())))
+                .limit(limitDestinations) // On ne garde que les N meilleurs pour Google Maps
+                .collect(Collectors.toList());
 
         // Calculer les trajets bruts
         TrajetResultatDTO trajetResultatAPI = TrajetResultatDTO.builder().build();
         trajetResultatAPI = googleMapsClient.calculeerTrajetsOptimises(
                 positionDTO,
-                uniteSoinsDisponibles);
+                topNProches);
 
         // Filtrer : Conserver uniquement les trajets qui sont valides
         List<UniteeSoinsTrajetDTO> uniteSoinsDisponiblesTrajetsValides = trajetResultatAPI.getUnitesSoinsTrajets()
@@ -110,6 +127,17 @@ public class UniteSoinsService {
                 .specialisationDetailDTO(details)
                 .trajetsCalculesValide(trajetsCalcules)
                 .build();
+    }
+
+    private double calculerDistanceVolOiseau(double lat1, double lon1, double lat2, double lon2) {
+        double earthRadius = 6371; // Rayon de la Terre en km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadius * c;
     }
 
 }

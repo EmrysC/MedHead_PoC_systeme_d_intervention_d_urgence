@@ -201,4 +201,5 @@ public class GoogleMapsClient {
 
         return resultats;
     }
+
 }

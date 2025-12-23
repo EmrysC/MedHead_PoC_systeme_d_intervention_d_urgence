@@ -22,6 +22,9 @@ import MeadHead.Poc.exception.exeption_list.UniteSoinsNotFoundException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @org.springframework.beans.factory.annotation.Value("${spring.profiles.active:prod}")
+    private String activeProfile;
+
     // Gestion des exceptions de Validation (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationExceptions(
@@ -270,23 +273,33 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorDetails> handleGoogleMapsFailure(
             Exception ex, WebRequest request) {
 
-        Map<String, String> errorsMap;
+        Map<String, String> finalErrors;
 
-        if (ex instanceof MeadHead.Poc.exception.exeption_list.GoogleMapsServiceFailureException googleEx) {
-            errorsMap = googleEx.getErrors();
-        } else if (ex instanceof MeadHead.Poc.exception.exeption_list.ExternalServiceFailureException externalEx) {
-            errorsMap = externalEx.getErrors();
+        if (isDev()) {
+            if (ex instanceof MeadHead.Poc.exception.exeption_list.GoogleMapsServiceFailureException googleEx) {
+                finalErrors = googleEx.getErrors();
+            } else if (ex instanceof MeadHead.Poc.exception.exeption_list.ExternalServiceFailureException externalEx) {
+                finalErrors = externalEx.getErrors();
+            } else {
+                finalErrors = Map.of("service_externe", ex.getMessage());
+            }
         } else {
-            errorsMap = Map.of("service_externe", ex.getMessage());
+            //  MODE PROD / PREPROD 
+            ex.printStackTrace(); // Log complet sur le serveur
+
+            finalErrors = Map.of(
+                    "service", "Le service de calcul d'itinéraire est temporairement indisponible.",
+                    "detail", "Une erreur technique est survenue lors de la communication avec le fournisseur."
+            );
         }
 
+        // Construit le retour avec la bonne Map (technique / sécurisée)
         ErrorDetails errorDetails = new ErrorDetails(
                 LocalDateTime.now(),
                 "Erreur de localisation ou de trajet",
-                errorsMap,
+                finalErrors,
                 request.getDescription(false));
 
-        // On retourne 404 (Not Found) ou 502 (Bad Gateway) selon votre préférence
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 
@@ -326,5 +339,9 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal server
         // error
+    }
+
+    private boolean isDev() {
+        return "dev".equals(activeProfile);
     }
 }
