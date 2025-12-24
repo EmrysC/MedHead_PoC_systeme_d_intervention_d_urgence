@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UniteeSoinsTrajetDTO {
 
-    private long idSpecialisation;
+    private long idUniteSoins;
     private long idHopital;
     private String nomHopital;
     private int litsDisponibles;
@@ -21,7 +21,7 @@ public class UniteeSoinsTrajetDTO {
     public UniteeSoinsTrajetDTO(UniteSoins unite_soins, DestinationCalculeeDTO destinationCalculee) {
         this.idHopital = unite_soins.getHopital().getId();
         this.nomHopital = unite_soins.getHopital().getNom();
-        this.idSpecialisation = unite_soins.getSpecialisation().getId();
+        this.idUniteSoins = unite_soins.getId();
         this.litsDisponibles = unite_soins.getLitsDisponibles();
         this.destinationCalculee = destinationCalculee;
     }
