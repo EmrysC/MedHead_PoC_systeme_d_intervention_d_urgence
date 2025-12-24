@@ -23,14 +23,26 @@ public class PositionDTO {
 
     public String getPositionValid() {
 
-        if (this.address != null && !this.address.trim().isEmpty()) {
+        if (adresseIsValid()) {
             return this.address;
         }
 
-        if (this.latitude != null && this.longitude != null) {
+        if (positionIsValid()) {
             return this.getLatitude() + "," + this.getLongitude();
         }
 
         return null;
+    }
+
+    public boolean OnlyAdresseIsValid() {
+        return adresseIsValid() && !positionIsValid();
+    }
+
+    private boolean adresseIsValid() {
+        return this.address != null && !this.address.trim().isEmpty();
+    }
+
+    private boolean positionIsValid() {
+        return this.latitude != null && this.longitude != null;
     }
 }

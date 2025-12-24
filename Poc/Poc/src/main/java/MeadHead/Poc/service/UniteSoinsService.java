@@ -68,19 +68,27 @@ public class UniteSoinsService {
         // Préparer l'objet PositionDTO 
         PositionDTO positionDTO = new PositionDTO(specialisationTrajetDTO);
 
-        // Tri vol d'oiseau N plus proches
-        String[] coordsOrigine = positionDTO.getPositionValid().split(",");
-        double latO = Double.parseDouble(coordsOrigine[0]);
-        double lonO = Double.parseDouble(coordsOrigine[1]);
+        List<UniteSoins> topNProches;
+        if (uniteSoinsDisponibles.size() > limitDestinations) {
 
-        List<UniteSoins> topNProches = uniteSoinsDisponibles.stream()
-                .sorted(Comparator.comparingDouble(u
-                        -> calculerDistanceVolOiseau(latO, lonO,
-                        u.getLatitude().doubleValue(),
-                        u.getLongitude().doubleValue())))
-                .limit(limitDestinations) // On ne garde que les N meilleurs pour Google Maps
-                .collect(Collectors.toList());
+            // Calculé la position GPS si on a seulemment l adresse
+            if (positionDTO.OnlyAdresseIsValid()) {
+                googleMapsClient.setPositionWithAdresse(positionDTO);
+            }
 
+            double latO = positionDTO.getLatitude();
+            double lonO = positionDTO.getLongitude();
+
+            topNProches = uniteSoinsDisponibles.stream()
+                    .sorted(Comparator.comparingDouble(u
+                            -> calculerDistanceVolOiseau(latO, lonO,
+                            u.getLatitude().doubleValue(),
+                            u.getLongitude().doubleValue())))
+                    .limit(limitDestinations) // On ne garde que les N meilleurs pour Google Maps
+                    .collect(Collectors.toList());
+        } else {
+            topNProches = uniteSoinsDisponibles;
+        }
         // Calculer les trajets bruts
         TrajetResultatDTO trajetResultatAPI = TrajetResultatDTO.builder().build();
         trajetResultatAPI = googleMapsClient.calculeerTrajetsOptimises(
@@ -110,9 +118,9 @@ public class UniteSoinsService {
                 .originePosition(trajetResultatAPI.getOriginePosition())
                 .build();
     }
-
     // Calcule les trajets et enrichit la réponse avec les détails du Groupe et de
     // la Spécialisation.
+
     public TrajetReponseDTO calculerTrajetReponse(SpecialisationTrajetDTO specialisationTrajetDTO) {
 
         // Construite SpecialisationDetailDTO

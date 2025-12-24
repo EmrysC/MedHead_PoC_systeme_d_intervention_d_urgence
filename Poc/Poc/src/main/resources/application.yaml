@@ -27,8 +27,10 @@ server:
 google:
   api:
     key: ${google.api.key}
-    url: https://maps.googleapis.com/maps/api/distancematrix/json
     limit-destinations: 25
+    url:
+      trajet: https://maps.googleapis.com/maps/api/distancematrix/json
+      positionGPS: https://maps.googleapis.com/maps/api/geocode/json
 logging:
   level:
     org.springframework.web: DEBUG

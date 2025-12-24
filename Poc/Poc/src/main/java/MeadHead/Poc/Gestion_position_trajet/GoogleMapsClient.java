@@ -30,30 +30,16 @@ public class GoogleMapsClient {
     @Value("${google.api.key}")
     private String googleApiKey;
 
-    @Value("${google.api.url}")
-    private String googleApiUrl;
+    @Value("${google.api.url.trajet}")
+    private String googleApiUrlTrajet;
+
+    @Value("${google.api.url.positionGPS}")
+    private String googleApiUrlPositionGPS;
 
     public GoogleMapsClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    /*
-    public List<UniteeSoinsTrajetDTO> calculeerTrajetsOptimises(PositionDTO positionDTO,
-            List<UniteSoins> unitesDisponibles) {
-
-        String destinations = unitesDisponibles.stream()
-                .map(u -> u.getLatitude() + "," + u.getLongitude())
-                .collect(Collectors.joining("|"));
-
-        JsonNode response = appelerDistanceMatrix(positionDTO.getPositionValid(), destinations);
-
-        if (response == null || response.at("/status").asText().equals("ZERO_RESULTS")) {
-            return List.of();
-        }
-
-        return traiterReponseGoogle(unitesDisponibles, response);
-
-    }  */
     public TrajetResultatDTO calculeerTrajetsOptimises(PositionDTO positionDTO,
             List<UniteSoins> unitesDisponibles) {
 
@@ -89,6 +75,57 @@ public class GoogleMapsClient {
                 .build();
     }
 
+    /**
+     * Appelle l'API Geocoding pour transformer l'adresse en coordonnées GPS et
+     * met à jour directement le PositionDTO fourni.
+     */
+    public void setPositionWithAdresse(PositionDTO positionDTO) {
+        // Sécurité : on vérifie que l'adresse n'est pas vide
+        if (positionDTO.getAddress() == null || positionDTO.getAddress().trim().isEmpty()) {
+            throw new GoogleMapsServiceFailureException(Map.of("adresse", "L'adresse fournie est vide."));
+        }
+
+        // Encodage de l'adresse pour l'URL
+        String encodedAddress = URLEncoder.encode(positionDTO.getAddress(), StandardCharsets.UTF_8);
+
+        // Construction de l'URL pour le service de Geocoding
+        String url = String.format("%s?address=%s&key=%s",
+                googleApiUrlPositionGPS, encodedAddress, googleApiKey);
+
+        try {
+            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    JsonNode.class);
+
+            JsonNode body = responseEntity.getBody();
+
+            if (body != null && body.path("status").asText().equals("OK")) {
+                // Extraction du premier résultat (le plus pertinent)
+                JsonNode location = body.path("results").get(0).path("geometry").path("location");
+
+                double lat = location.path("lat").asDouble();
+                double lng = location.path("lng").asDouble();
+
+                // Mise à jour du DTO par référence
+                positionDTO.setLatitude(lat);
+                positionDTO.setLongitude(lng);
+
+            } else {
+                String status = (body != null) ? body.path("status").asText() : "PAS_DE_REPONSE";
+                throw new GoogleMapsServiceFailureException(
+                        Map.of("geocoding_status", "Erreur Google Geocoding: " + status)
+                );
+            }
+
+        } catch (Exception e) {
+            throw new GoogleMapsServiceFailureException(
+                    Map.of("communication_geocoding", "Erreur lors de la récupération des coordonnées GPS"), e
+            );
+        }
+    }
+
     private JsonNode appelerDistanceMatrix(String origins, String destinations) {
 
         // Encodage
@@ -100,7 +137,7 @@ public class GoogleMapsClient {
         encodedDestinations = encodedDestinations.replace("%7C", "|");
 
 // Construction url
-        String url = googleApiUrl
+        String url = googleApiUrlTrajet
                 + "?origins=" + encodedOrigins
                 + "&destinations=" + encodedDestinations
                 + "&units=metric"
