@@ -49,6 +49,7 @@ public class JwtService {
     private Map<String, String> generateToken(User user) {
 
         final Map<String, Object> claims = Map.of(
+                "userId", user.getId(),
                 "nom", user.getNom(),
                 "prenom", user.getPrenom(),
                 "email", user.getEmail(),

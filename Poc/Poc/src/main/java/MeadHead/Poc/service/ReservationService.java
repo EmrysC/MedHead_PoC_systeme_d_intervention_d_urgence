@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import MeadHead.Poc.entites.Reservation;
 import MeadHead.Poc.entites.UniteSoins;
+import MeadHead.Poc.entites.User;
 import MeadHead.Poc.exception.exeption_list.LitIndisponibleException;
 import MeadHead.Poc.exception.exeption_list.UniteSoinsNotFoundException;
 import MeadHead.Poc.repository.ReservationRepository;
@@ -28,9 +29,9 @@ public class ReservationService {
             maxAttempts = 3,
             backoff = @Backoff(delay = 100)
     )
-    public void reserverLit(Long uniteSoinsId, String utilisateurEmail) {
+    public void reserverLit(Long uniteSoinsId, User user) {
 
-        // Chercher l'unité
+//  Chercher l'unité (on récupère l'objet complet)
         UniteSoins uniteSoins = uniteSoinsRepository.findById(uniteSoinsId)
                 .orElseThrow(() -> new UniteSoinsNotFoundException(uniteSoinsId));
 
@@ -39,14 +40,16 @@ public class ReservationService {
             throw new LitIndisponibleException(uniteSoinsId);
         }
 
-        // Modifier la valeur (DÉCRÉMENTER AVANT DE SAUVEGARDER)
+        // Modifier la valeur (Décrémentation)
         uniteSoins.setLitsDisponibles(uniteSoins.getLitsDisponibles() - 1);
 
-        // Enregistrer les modifications
+        // Enregistrer les modifications de l'unité
         uniteSoinsRepository.save(uniteSoins);
 
+        //  Créer la réservation 
+        Reservation nouvelleReservation = new Reservation(uniteSoins, user);
+
         // Enregistrer la réservation
-        Reservation nouvelleReservation = new Reservation(uniteSoinsId, utilisateurEmail);
         reservationRepository.save(nouvelleReservation);
 
     }

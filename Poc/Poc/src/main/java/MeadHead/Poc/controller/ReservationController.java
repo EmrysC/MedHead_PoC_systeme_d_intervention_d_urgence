@@ -2,13 +2,14 @@ package MeadHead.Poc.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import MeadHead.Poc.dto.ReservationRequestDTO;
+import MeadHead.Poc.entites.User;
 import MeadHead.Poc.service.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,15 +39,10 @@ public class ReservationController {
     // @formatter:on
     @PostMapping(value = "/lit", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> reserverLit(
-            @Valid @RequestBody ReservationRequestDTO dto) {
+            @Valid @RequestBody ReservationRequestDTO dto,
+            @AuthenticationPrincipal User user) {
 
-        // Récupérer l'identité de l'utilisateur connecté via Spring Security (JWT)
-        String utilisateurEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        // Appel au service pour effectuer la logique de réservation 
-        reservationService.reserverLit(
-                dto.getUniteSoinsId(),
-                utilisateurEmail);
+        reservationService.reserverLit(dto.getUniteSoinsId(), user);
 
         return ResponseEntity.noContent().build();
     }
