@@ -21,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import MeadHead.Poc.service.UserService;
 import lombok.RequiredArgsConstructor;
 
-/* https://youtu.be/awP1N0R9rx0?t=1911 */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor

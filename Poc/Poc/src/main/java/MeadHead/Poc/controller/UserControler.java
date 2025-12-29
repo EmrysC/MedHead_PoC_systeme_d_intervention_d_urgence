@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 @RestController
+@CrossOrigin(origins = "http://127.0.0.1:3000")
 @RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, path = "user")
 @Tag(name = "Gestion des Utilisateurs", description = "API pour l'authentification et la création de comptes utilisateurs.")
 public class UserControler {

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedHead Dispatch - Sélection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <style>
+        :root { 
+            --mh-primary: #0d6efd; 
+            --mh-bg: #fff; 
+            --mh-card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        body { 
+            background-color: var(--mh-bg); 
+            font-family: 'Inter', sans-serif; 
+            color: #2d3436;
+        }
+        
+        [v-cloak] { display: none; }
+
+        .header-mobile { 
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.75rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+        }
+
+        /* Barre de recherche */
+        .search-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .search-input {
+            border-radius: 12px;
+            padding-left: 2.8rem;
+            border: 1px solid #e0e0e0;
+            box-shadow: var(--mh-card-shadow);
+            height: 50px;
+        }
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+        }
+
+        /* Accordéon */
+        .accordion-item { 
+            border: none; 
+            margin-bottom: 1rem; 
+            border-radius: 12px !important; 
+            overflow: hidden; 
+            box-shadow: var(--mh-card-shadow);
+        }
+        .accordion-button { 
+            font-weight: 700; 
+            padding: 1.25rem;
+            color: #444;
+            background-color: white !important;
+        }
+        .accordion-button:not(.collapsed) { 
+            color: var(--mh-primary); 
+            box-shadow: none;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        /* Liste des spécialités */
+        .spec-list-item { 
+            padding: 0.85rem 1.25rem; 
+            border-bottom: 1px solid #f1f3f5; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            background: white;
+        }
+        .spec-list-item:last-child { border-bottom: none; }
+
+        /* Bouton Rechercher */
+        .btn-select {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 8px;
+            background-color: var(--mh-primary);
+            color: white;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .btn-select:hover { background-color: #0b5ed7; transform: translateY(-1px); }
+        .btn-select:active { transform: translateY(0); }
+
+        /* Barre de confirmation flottante */
+        .selection-toast { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 90%; 
+            max-width: 450px; 
+            z-index: 2000;
+        }
+
+        /* Animations */
+        .fade-enter-active, .fade-leave-active { transition: all 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; transform: translate(-50%, 20px); }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak>
+   
+    <main class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
+                
+                <div class="mb-4">
+                    <h2 class="fw-bold">Quelle est l'urgence ?</h2>
+                    <p class="text-muted">Sélectionnez le service approprié pour la prise en charge.</p>
+                </div>
+
+                <div class="search-container">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" v-model="searchQuery" 
+                           class="form-control search-input" 
+                           placeholder="Rechercher une spécialité (ex: Cardiologie)...">
+                </div>
+
+
+
+                <div  class="accordion" id="specialtyAccordion">
+                    <div v-for="category in filteredCategories" :key="category.id" class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" 
+                                    :class="{ collapsed: searchQuery === '' }"
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    :data-bs-target="'#collapse' + category.id">
+                                <i class="bi bi-grid-fill me-3 text-primary opacity-50"></i>
+                                {{ category.nom }}
+                            </button>
+                        </h2>
+                        <div :id="'collapse' + category.id" 
+                             class="accordion-collapse collapse" 
+                             :class="{ show: searchQuery !== '' }"
+                             data-bs-parent="#specialtyAccordion">
+                            <div class="accordion-body p-0 bg-light">
+                                <div class="list-group list-group-flush">
+                                    <div v-for="spec in category.specialisations" 
+                                         :key="spec.id"
+                                         class="spec-list-item">
+                                        <span class="text-dark fw-medium">{{ spec.nom }}</span>
+                                        <button @click="creerRedirection(spec)" class="btn-select">
+                                            Sélectionner
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="filteredCategories.length === 0" class="text-center py-5">
+                        <p class="text-muted">Aucun résultat pour "{{ searchQuery }}"</p>  <!-- normalement impossible-->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const { createApp, ref, onMounted, computed } = Vue;
+
+    createApp({
+        setup() {
+            const categories = ref([]);
+            const loading = ref(true);
+            const error = ref(null);
+            const selectedSpec = ref(null);
+            const searchQuery = ref('');
+
+            // Propriété de la recheche
+            const filteredCategories = computed(() => {
+                if (!searchQuery.value) return categories.value;
+                const query = searchQuery.value.toLowerCase();
+
+                return categories.value.map(cat => {
+                    const filteredSpecs = cat.specialisations.filter(spec => 
+                        spec.nom.toLowerCase().includes(query)
+                    );
+                    if (cat.nom.toLowerCase().includes(query) || filteredSpecs.length > 0) {
+                        return { ...cat, specialisations: filteredSpecs.length > 0 ? filteredSpecs : cat.specialisations };
+                    }
+                    return null;
+                }).filter(cat => cat !== null);
+            });
+
+            // call api
+            const fetchSpecialties = async () => {
+                loading.value = true;
+                error.value = null;
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    logout();
+                }
+
+                try {
+                    const response = await fetch('/api/specilites', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        categories.value = await response.json();
+                    } else if (response.status === 401 || response.status === 403) {
+                        logout();
+                    } else {
+                        throw new Error("Erreur de récupération des données");
+                    }
+                } catch (err) {
+                    console.error("Erreur API :", err);
+                    error.value = "Impossible de joindre le serveur.";
+                } finally {
+                    loading.value = false;
+                }
+            };
+
+
+const creerRedirection = (spec) => {
+    // On passe l'ID et le Nom en paramètres d'URL pour la page suivante
+    const id = spec.id;
+    const nom = encodeURIComponent(spec.nom);
+    
+    // Redirection vers la vue Thymeleaf
+    window.location.href = `/api/search-hospital?id=${id}&nom=${nom}`;
+};
+
+const logout = () => {
+    localStorage.removeItem('token');
+    window.location.href = "/api/login";
+};
+
+            onMounted(fetchSpecialties);
+
+            return { 
+                categories, loading, error, selectedSpec, searchQuery, 
+                filteredCategories, logout, creerRedirection, fetchSpecialties 
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
