@@ -72,13 +72,13 @@ class UniteSoinsControlerTest {
     @DisplayName("GET /trajets - 400 Erreur : Exception métier personnalisée")
     void rechercherTrajet_Echec_CustomException() throws Exception {
         when(uniteSoinsService.calculerTrajetReponse(any()))
-                .thenThrow(new ValidationManuelleException("Erreur de validation manuelle"));
+                .thenThrow(new ValidationManuelleException("Erreur de validation des arguments"));
 
         mockMvc.perform(get("/unitesoins/trajets")
                 .param("specialisationId", "1")
                 .param("adresse", "Paris"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Erreur de validation manuelle"));
+                .andExpect(jsonPath("$.message").value("Erreur de validation des arguments"));
     }
 
     @Test

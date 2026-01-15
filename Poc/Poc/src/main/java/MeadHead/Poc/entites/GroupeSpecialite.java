@@ -18,6 +18,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "groupe_specialite")
 public class GroupeSpecialite {

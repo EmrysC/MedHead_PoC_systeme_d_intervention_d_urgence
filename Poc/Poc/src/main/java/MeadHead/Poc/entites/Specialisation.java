@@ -8,32 +8,33 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import lombok.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "specialisation")
 public class Specialisation {
 
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "nom", nullable = false, unique = true, length = 150)
     private String nom;
 
-    @ManyToOne(optional = false) 
+    @ManyToOne(optional = false)
     @JoinColumn(
-        name = "groupe_specialite_id", 
-        referencedColumnName = "id" 
+            name = "groupe_specialite_id",
+            referencedColumnName = "id"
     )
-    private GroupeSpecialite groupeSpecialite; 
-
+    private GroupeSpecialite groupeSpecialite;
 
 }
