@@ -11,6 +11,11 @@ public class ValidationManuelleException extends RuntimeException {
         this.bindingResult = bindingResult;
     }
 
+    public ValidationManuelleException(String message) {
+        super(message);
+        this.bindingResult = null;
+    }
+
     public BindingResult getBindingResult() {
         return bindingResult;
     }

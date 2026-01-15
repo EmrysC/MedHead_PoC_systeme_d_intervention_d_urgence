@@ -25,9 +25,9 @@ import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
 import MeadHead.Poc.repository.UniteSoinsRepository;
 import MeadHead.Poc.service.UniteSoinsService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
 @RequestMapping(path = "unitesoins")

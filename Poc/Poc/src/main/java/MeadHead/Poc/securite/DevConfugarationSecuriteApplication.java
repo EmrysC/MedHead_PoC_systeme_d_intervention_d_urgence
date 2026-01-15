@@ -23,12 +23,16 @@ import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 @Profile("dev")
 public class DevConfugarationSecuriteApplication {
 
     private final JwtService jwtService;
     private final UserService userService;
+
+    public DevConfugarationSecuriteApplication(JwtService jwtService, UserService userService) {
+        this.jwtService = jwtService;
+        this.userService = userService;
+    }
 
     @Bean
     public JwtFilter jwtFilter() {
@@ -86,7 +90,9 @@ public class DevConfugarationSecuriteApplication {
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
             PasswordEncoder passwordEncoder) {
 
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
 
         return authProvider;

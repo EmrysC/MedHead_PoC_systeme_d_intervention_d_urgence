@@ -6,7 +6,6 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,9 +13,15 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @OneOfAddressOrGps
 public class SpecialisationTrajetDTO {
+
+    public SpecialisationTrajetDTO(Long specialisationId, Double latitude, Double longitude, String adresse) {
+        this.specialisationId = specialisationId;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.adresse = adresse;
+    }
 
     @NotNull
     @Schema(description = "Identifiant unique de l'option de spécialisation", example = "1")
