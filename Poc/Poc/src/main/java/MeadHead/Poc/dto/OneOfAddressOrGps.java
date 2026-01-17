@@ -1,4 +1,3 @@
-// Dans MeadHead.Poc.dto.OneOfAddressOrGps.java
 package MeadHead.Poc.dto;
 
 import java.lang.annotation.Documented;
