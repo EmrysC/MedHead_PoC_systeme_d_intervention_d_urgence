@@ -25,6 +25,7 @@ import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
 import MeadHead.Poc.repository.UniteSoinsRepository;
 import MeadHead.Poc.service.UniteSoinsService;
+import MeadHead.Poc.utils.Untested_dev_Generated;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -47,6 +48,7 @@ public class UniteSoinsControler {
     }
 
     @Profile("dev")
+    @Untested_dev_Generated
     @ResponseStatus(value = HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public void creer(@RequestBody @NonNull UniteSoins uniteSoins) {
@@ -58,6 +60,7 @@ public class UniteSoinsControler {
      * localhost:8080/api/unitesoins
      */
     @Profile("dev")
+    @Untested_dev_Generated
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UniteSoins> listerTous() {
         return this.uniteSoinsRepository.findAll();
@@ -68,6 +71,7 @@ public class UniteSoinsControler {
      * Exemple: GET localhost:8080/api/unitesoins/2
      */
     @Profile("dev")
+    @Untested_dev_Generated
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public UniteSoins trouverParId(@NonNull @PathVariable Long id) {
         return this.uniteSoinsRepository.findById(id).orElse(null);
@@ -79,6 +83,7 @@ public class UniteSoinsControler {
      * http://localhost:8080/api/unitesoins/recherche_lit_dispo?specialisation=Cardiologie%20Interventionnelle
      */
     @Profile("dev")
+    @Untested_dev_Generated
     @GetMapping(path = "/recherche_lit_dispo", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UniteSoins> rechercherLitDisponible(@RequestParam("specialisation") String nomSpecialisation) {
         return this.uniteSoinsRepository.findBySpecialisationNomAndLitsDisponiblesGreaterThan(
