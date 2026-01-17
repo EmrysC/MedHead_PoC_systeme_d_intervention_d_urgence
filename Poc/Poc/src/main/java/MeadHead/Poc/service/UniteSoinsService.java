@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import MeadHead.Poc.Gestion_position_trajet.GoogleMapsClient;
 import MeadHead.Poc.Gestion_position_trajet.UniteeSoinsTrajetDTO;
@@ -20,6 +21,7 @@ import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.exception.exeption_list.ExternalServiceFailureException;
 import MeadHead.Poc.exception.exeption_list.NoBedAvailableException;
 import MeadHead.Poc.repository.UniteSoinsRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,11 +36,11 @@ public class UniteSoinsService {
     private int limitDestinations;
 
     @Transactional
-    public void creer(UniteSoins uniteSoins) {
+    public void creer(@NonNull UniteSoins uniteSoins) {
         this.uniteSoinsRepository.save(uniteSoins);
     }
 
-    public UniteSoins trouverParId(Long id) {
+    public UniteSoins trouverParId(@NonNull Long id) {
         return this.uniteSoinsRepository.findById(id).orElse(null);
     }
 
@@ -121,9 +123,10 @@ public class UniteSoinsService {
     // Calcule les trajets et enrichit la réponse avec les détails du Groupe et de
     // la Spécialisation.
 
-    public TrajetReponseDTO calculerTrajetReponse(SpecialisationTrajetDTO specialisationTrajetDTO) {
+    public TrajetReponseDTO calculerTrajetReponse(@NonNull SpecialisationTrajetDTO specialisationTrajetDTO) {
 
         // Construite SpecialisationDetailDTO
+        Assert.notNull(specialisationTrajetDTO.getSpecialisationId(), "Le specialisationId est requis");
         SpecialisationDetailDTO details = specialisationService
                 .getSpecialisationDetailsDTO(specialisationTrajetDTO.getSpecialisationId());
 

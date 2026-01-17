@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
@@ -25,9 +26,9 @@ import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
 import MeadHead.Poc.repository.UniteSoinsRepository;
 import MeadHead.Poc.service.UniteSoinsService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
 @RequestMapping(path = "unitesoins")
@@ -48,7 +49,7 @@ public class UniteSoinsControler {
     @Profile("dev")
     @ResponseStatus(value = HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void creer(@RequestBody UniteSoins uniteSoins) {
+    public void creer(@RequestBody @NonNull UniteSoins uniteSoins) {
         uniteSoinsRepository.save(uniteSoins);
     }
 
@@ -68,7 +69,7 @@ public class UniteSoinsControler {
      */
     @Profile("dev")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public UniteSoins trouverParId(@PathVariable Long id) {
+    public UniteSoins trouverParId(@NonNull @PathVariable Long id) {
         return this.uniteSoinsRepository.findById(id).orElse(null);
     }
 
@@ -104,7 +105,14 @@ public class UniteSoinsControler {
             @RequestParam(required = false) String adresse) throws MethodArgumentNotValidException {
 
         // construit le DTO
-        SpecialisationTrajetDTO dto = new SpecialisationTrajetDTO(specialisationId, latitude, longitude, adresse);
+        SpecialisationTrajetDTO dto = SpecialisationTrajetDTO.builder()
+                .specialisationId(specialisationId)
+                .latitude(latitude)
+                .longitude(longitude)
+                .adresse(adresse)
+                .build();
+
+        java.util.Objects.requireNonNull(dto);
 
         // VALIDE MANUELLEMENT
         // crée un objet "BindingResult" pour stocker les erreurs

@@ -11,21 +11,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.Validator;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
 
 import MeadHead.Poc.controller.UniteSoinsControler;
 import MeadHead.Poc.dto.TrajetReponseDTO;
 import MeadHead.Poc.exception.GlobalExceptionHandler;
 import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
-import MeadHead.Poc.service.UniteSoinsService;
 import MeadHead.Poc.repository.UniteSoinsRepository;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import MeadHead.Poc.service.UniteSoinsService;
 
 @WebMvcTest(controllers = {UniteSoinsControler.class, GlobalExceptionHandler.class}, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ActiveProfiles("preprod")
@@ -82,6 +79,7 @@ class UniteSoinsControlerTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     @DisplayName("GET /trajets - 400 Erreur : Trop d'informations (Adresse + GPS)")
     void rechercherTrajet_Echec_TropInfos() throws Exception {
         doAnswer(invocation -> {
@@ -99,6 +97,7 @@ class UniteSoinsControlerTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     @DisplayName("GET /trajets - 400 Erreur : Données de localisation manquantes")
     void rechercherTrajet_Echec_Manquant() throws Exception {
         doAnswer(invocation -> {
@@ -113,6 +112,7 @@ class UniteSoinsControlerTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     @DisplayName("GET /trajets - 400 Erreur : Latitude hors bornes")
     void rechercherTrajet_Echec_LatitudeInvalide() throws Exception {
         doAnswer(invocation -> {
@@ -130,6 +130,7 @@ class UniteSoinsControlerTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     @DisplayName("GET /trajets - 400 Erreur : Adresse vide")
     void rechercherTrajet_Echec_AdresseVide() throws Exception {
         doAnswer(invocation -> {

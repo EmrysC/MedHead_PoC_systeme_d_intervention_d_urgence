@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import MeadHead.Poc.exception.ErrorDetails;
 import MeadHead.Poc.exception.exeption_list.EmailAlreadyExistsException;
 import MeadHead.Poc.exception.exeption_list.LitIndisponibleException;
 import MeadHead.Poc.exception.exeption_list.UniteSoinsNotFoundException;
@@ -23,9 +22,6 @@ import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
-    @org.springframework.beans.factory.annotation.Value("${spring.profiles.active:prod}")
-    private String activeProfile;
 
     // --- VALIDATION CLASSIQUE (@Valid) ---
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -37,17 +33,19 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
-        ex.getBindingResult().getGlobalErrors()
-                .forEach(error -> {
-                    String key = (error.getCodes() != null && error.getCodes().length > 0)
-                            ? error.getCodes()[0].substring(error.getCodes()[0].lastIndexOf('.') + 1)
-                            : "erreur_logique";
+        ex.getBindingResult().getGlobalErrors().forEach(error -> {
+            // On stocke le résultat dans une variable locale 'codes'
+            String[] codes = error.getCodes();
 
-                    if (key.contains("DTO")) {
-                        key = "choix_localisation";
-                    }
-                    errors.put(key, error.getDefaultMessage());
-                });
+            String key = (codes != null && codes.length > 0)
+                    ? codes[0].substring(codes[0].lastIndexOf('.') + 1)
+                    : "erreur_logique";
+
+            if (key.contains("DTO")) {
+                key = "choix_localisation";
+            }
+            errors.put(key, error.getDefaultMessage());
+        });
 
         ErrorDetails errorDetails = new ErrorDetails(
                 LocalDateTime.now(),
@@ -74,8 +72,10 @@ public class GlobalExceptionHandler {
 
             // Erreurs globales
             result.getGlobalErrors().forEach(error -> {
-                String key = (error.getCodes() != null && error.getCodes().length > 0)
-                        ? error.getCodes()[0].substring(error.getCodes()[0].lastIndexOf('.') + 1)
+                String[] codes = error.getCodes();
+
+                String key = (codes != null && codes.length > 0)
+                        ? codes[0].substring(codes[0].lastIndexOf('.') + 1)
                         : "choix_localisation";
 
                 if (key.contains("DTO")) {
@@ -106,9 +106,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorDetails> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
-        String errorKey = (ex.getCause() != null) ? ex.getCause().getClass().getSimpleName() : ex.getClass().getSimpleName();
+        // stocke la cause dans une variable locale 'cause'
+        Throwable cause = ex.getCause();
+
+        // utilise cette variable unique pour la vérification et l'extraction
+        String errorKey = (cause != null) ? cause.getClass().getSimpleName() : ex.getClass().getSimpleName();
+
         Map<String, String> errorsMap = Map.of(errorKey, ex.getLocalizedMessage());
-        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Échec d'authentification", errorsMap, request.getDescription(false)), HttpStatus.UNAUTHORIZED);
+
+        return new ResponseEntity<>(
+                new ErrorDetails(
+                        LocalDateTime.now(),
+                        "Échec d'authentification",
+                        errorsMap,
+                        request.getDescription(false)
+                ),
+                HttpStatus.UNAUTHORIZED
+        );
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -157,7 +171,4 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Erreur interne", Map.of("detail", "Erreur inconnue."), request.getDescription(false)), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private boolean isDev() {
-        return "dev".equals(activeProfile);
-    }
 }

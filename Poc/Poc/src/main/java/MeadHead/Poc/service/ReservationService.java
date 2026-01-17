@@ -1,5 +1,6 @@
 package MeadHead.Poc.service;
 
+import org.springframework.lang.NonNull;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.retry.annotation.Backoff;
@@ -29,7 +30,7 @@ public class ReservationService {
             maxAttempts = 3,
             backoff = @Backoff(delay = 100)
     )
-    public void reserverLit(Long uniteSoinsId, User user) {
+    public void reserverLit(@NonNull Long uniteSoinsId, @NonNull User user) {
 
 //  Chercher l'unité (on récupère l'objet complet)
         UniteSoins uniteSoins = uniteSoinsRepository.findById(uniteSoinsId)

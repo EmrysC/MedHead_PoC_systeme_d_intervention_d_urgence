@@ -42,9 +42,11 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Builder.Default
     @Column(name = "active", nullable = false)
     private boolean active = true; // Compte actif par défaut
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private TypeDeRole role = TypeDeRole.ROLE_USER;

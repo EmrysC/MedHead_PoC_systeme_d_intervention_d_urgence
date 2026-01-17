@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -48,8 +49,14 @@ public class GoogleMapsClient {
                 .map(u -> u.getLatitude() + "," + u.getLongitude())
                 .collect(Collectors.joining("|"));
 
+        String origins = positionDTO.getPositionValid();
+        if (origins == null) {
+            throw new GoogleMapsServiceFailureException(Map.of("origine", "Position d'origine invalide."));
+        }
+
         // Appel à l'API Google Maps
-        JsonNode response = appelerDistanceMatrix(positionDTO.getPositionValid(), destinations);
+        java.util.Objects.requireNonNull(destinations);
+        JsonNode response = appelerDistanceMatrix(origins, destinations);
 
         if (response == null || response.at("/status").asText().equals("ZERO_RESULTS")) {
             // Retourne un DTO vide en cas d'échec ou de résultats nuls
@@ -79,20 +86,25 @@ public class GoogleMapsClient {
      * Appelle l'API Geocoding pour transformer l'adresse en coordonnées GPS et
      * met à jour directement le PositionDTO fourni.
      */
-    public void setPositionWithAdresse(PositionDTO positionDTO) {
+    public void setPositionWithAdresse(@NonNull PositionDTO positionDTO) {
+
+        String address = positionDTO.getAddress();
+
         // Sécurité : on vérifie que l'adresse n'est pas vide
-        if (positionDTO.getAddress() == null || positionDTO.getAddress().trim().isEmpty()) {
+        if (address == null || address.trim().isEmpty()) {
             throw new GoogleMapsServiceFailureException(Map.of("adresse", "L'adresse fournie est vide."));
         }
 
         // Encodage de l'adresse pour l'URL
-        String encodedAddress = URLEncoder.encode(positionDTO.getAddress(), StandardCharsets.UTF_8);
+        String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
 
         // Construction de l'URL pour le service de Geocoding
         String url = String.format("%s?address=%s&key=%s",
                 googleApiUrlPositionGPS, encodedAddress, googleApiKey);
 
         try {
+            java.util.Objects.requireNonNull(url);
+            java.util.Objects.requireNonNull(HttpMethod.GET);
             ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -126,7 +138,7 @@ public class GoogleMapsClient {
         }
     }
 
-    private JsonNode appelerDistanceMatrix(String origins, String destinations) {
+    private JsonNode appelerDistanceMatrix(@NonNull String origins, @NonNull String destinations) {
 
         // Encodage
         String encodedOrigins = URLEncoder.encode(origins, StandardCharsets.UTF_8);
@@ -146,6 +158,7 @@ public class GoogleMapsClient {
                 + "&key=" + googleApiKey;
 
         try {
+            java.util.Objects.requireNonNull(HttpMethod.GET);
             ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
                     url,
                     HttpMethod.GET,

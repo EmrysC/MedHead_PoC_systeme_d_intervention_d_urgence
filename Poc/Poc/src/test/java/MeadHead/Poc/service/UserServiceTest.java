@@ -47,7 +47,7 @@ public class UserServiceTest {
     private UserCreationDTO userCreationDTO;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
 
         userCreationDTO = new UserCreationDTO("test@example.com", "password_test",
                 "Nom_test", "prenom_test");
@@ -59,6 +59,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void shouldCreateAnUserSuccessfully() {
 
         // Given : L'utilisateur n'existe pas en BDD
@@ -81,6 +82,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void shouldThrowEmailAlreadyExistsExceptionWhenEmailIsAlreadyUsed() {
 
         // Given : L'utilisateur existe déjà en BDD

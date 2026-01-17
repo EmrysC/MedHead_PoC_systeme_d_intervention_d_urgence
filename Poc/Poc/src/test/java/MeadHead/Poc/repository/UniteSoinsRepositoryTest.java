@@ -1,9 +1,9 @@
 package MeadHead.Poc.repository;
 
-import MeadHead.Poc.entites.UniteSoins;
-import MeadHead.Poc.entites.Specialisation;
-import MeadHead.Poc.entites.GroupeSpecialite;
-import MeadHead.Poc.entites.Hopital;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,10 +13,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import MeadHead.Poc.entites.GroupeSpecialite;
+import MeadHead.Poc.entites.Hopital;
+import MeadHead.Poc.entites.Specialisation;
+import MeadHead.Poc.entites.UniteSoins;
 
 @DataJpaTest
 @ActiveProfiles("preprod")

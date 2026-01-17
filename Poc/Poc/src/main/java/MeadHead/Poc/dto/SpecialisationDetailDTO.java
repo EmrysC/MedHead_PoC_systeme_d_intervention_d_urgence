@@ -1,13 +1,15 @@
 package MeadHead.Poc.dto;
 
 import MeadHead.Poc.entites.Specialisation;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 // DTO qui encapsule les informations essentielles de la Spécialisation et de son Groupe associé.
 //Utilisé pour enrichir les réponses API.
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SpecialisationDetailDTO {
 
     // Informations sur le Groupe de Spécialité
