@@ -3,6 +3,7 @@ package MeadHead.Poc.service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -92,10 +93,7 @@ public class UniteSoinsService {
             topNProches = uniteSoinsDisponibles;
         }
         // Calculer les trajets bruts
-        TrajetResultatDTO trajetResultatAPI = TrajetResultatDTO.builder().build();
-        trajetResultatAPI = googleMapsClient.calculeerTrajetsOptimises(
-                positionDTO,
-                topNProches);
+        TrajetResultatDTO trajetResultatAPI = googleMapsClient.calculeerTrajetsOptimises(positionDTO, topNProches);
 
         // Filtrer : Conserver uniquement les trajets qui sont valides
         List<UniteeSoinsTrajetDTO> uniteSoinsDisponiblesTrajetsValides = trajetResultatAPI.getUnitesSoinsTrajets()
@@ -128,7 +126,7 @@ public class UniteSoinsService {
         // Construite SpecialisationDetailDTO
         Assert.notNull(specialisationTrajetDTO.getSpecialisationId(), "Le specialisationId est requis");
         SpecialisationDetailDTO details = specialisationService
-                .getSpecialisationDetailsDTO(specialisationTrajetDTO.getSpecialisationId());
+                .getSpecialisationDetailsDTO(Objects.requireNonNull(specialisationTrajetDTO.getSpecialisationId()));
 
         // Calcul les trajets 
         TrajetResultatDTO trajetsCalcules = this.calculerTrajets(specialisationTrajetDTO);

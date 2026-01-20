@@ -64,9 +64,11 @@ class SpecialisationServiceTest {
         when(specialisationRepository.findById(id)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(SpecialisationNotFoundException.class, ()
+        SpecialisationNotFoundException exception = assertThrows(SpecialisationNotFoundException.class, ()
                 -> specialisationService.getSpecialisationDetailsDTO(id)
         );
+
+        assertThat(exception.getMessage()).isNotBlank();
     }
 
     @Test
@@ -80,8 +82,10 @@ class SpecialisationServiceTest {
         when(specialisationRepository.findById(id)).thenReturn(Optional.of(spec));
 
         // When & Then
-        assertThrows(GroupeSpecialiteMissingException.class, ()
+        GroupeSpecialiteMissingException exception = assertThrows(GroupeSpecialiteMissingException.class, ()
                 -> specialisationService.getSpecialisationDetailsDTO(id)
         );
+
+        assertThat(exception.getMessage()).isNotBlank();
     }
 }

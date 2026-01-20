@@ -42,6 +42,7 @@ import MeadHead.Poc.repository.UniteSoinsRepository;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@SuppressWarnings("null")
 class UniteSoinsServiceTest {
 
     @InjectMocks
@@ -61,7 +62,7 @@ class UniteSoinsServiceTest {
     private Hopital hopitalTest;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         // Injection de la valeur @Value
         ReflectionTestUtils.setField(uniteSoinsService, "limitDestinations", 5);
 

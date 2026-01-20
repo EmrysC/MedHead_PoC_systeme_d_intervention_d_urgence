@@ -36,7 +36,7 @@ class UniteSoinsRepositoryTest {
     private Specialisation cardio;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         // Création de l'Hôpital 
         Hopital hopital = Hopital.builder()
                 .nom("Hôpital Central")

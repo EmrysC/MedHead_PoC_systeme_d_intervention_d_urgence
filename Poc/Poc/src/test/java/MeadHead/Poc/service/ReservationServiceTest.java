@@ -28,6 +28,7 @@ import MeadHead.Poc.repository.UniteSoinsRepository;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("dev")
+@SuppressWarnings({"null"})
 class ReservationServiceTest {
 
     @Mock
@@ -80,10 +81,11 @@ class ReservationServiceTest {
         when(uniteSoinsRepository.findById(uniteId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(UniteSoinsNotFoundException.class, ()
+        UniteSoinsNotFoundException exception = assertThrows(UniteSoinsNotFoundException.class, ()
                 -> reservationService.reserverLit(uniteId, user)
         );
 
+        assertThat(exception.getMessage()).isNotBlank();
         verify(uniteSoinsRepository, never()).save(any());
         verify(reservationRepository, never()).save(any());
     }
@@ -100,10 +102,11 @@ class ReservationServiceTest {
         when(uniteSoinsRepository.findById(uniteId)).thenReturn(Optional.of(unite));
 
         // When & Then
-        assertThrows(LitIndisponibleException.class, ()
+        LitIndisponibleException exception = assertThrows(LitIndisponibleException.class, ()
                 -> reservationService.reserverLit(uniteId, user)
         );
 
+        assertThat(exception.getMessage()).isNotBlank();
         verify(uniteSoinsRepository, never()).save(any());
         verify(reservationRepository, never()).save(any());
     }

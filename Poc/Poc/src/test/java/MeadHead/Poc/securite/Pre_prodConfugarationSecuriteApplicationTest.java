@@ -1,45 +1,45 @@
 package MeadHead.Poc.securite;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-
 import MeadHead.Poc.config.PasswordConfig;
 import MeadHead.Poc.controller.UserControler;
-import MeadHead.Poc.service.UserService;
+import MeadHead.Poc.dto.UserCreationDTO;
 import MeadHead.Poc.entites.User;
 import MeadHead.Poc.enums.TypeDeRole;
-import MeadHead.Poc.dto.UserCreationDTO;
+import MeadHead.Poc.service.UserService;
 
 @WebMvcTest(UserControler.class)
 @Import({Pre_prodConfugarationSecuriteApplication.class, PasswordConfig.class})
 @ActiveProfiles("pre_prod")
+@SuppressWarnings({"null", "unused"})
 class Pre_prodConfugarationSecuriteApplicationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private UserService userService;
 
-    @MockBean
+    @MockitoBean
     private JwtService jwtService;
 
-    @MockBean
-    private AuthenticationManager authenticationManager;
+    @MockitoBean
+    private UserDetailsService userDetailsService;
 
     @Test
     @DisplayName("Règle permitAll() : Accès autorisé (Identique à l'exécution réelle)")

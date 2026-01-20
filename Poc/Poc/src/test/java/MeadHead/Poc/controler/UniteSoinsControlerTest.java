@@ -26,6 +26,7 @@ import MeadHead.Poc.service.UniteSoinsService;
 
 @WebMvcTest(controllers = {UniteSoinsControler.class, GlobalExceptionHandler.class}, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ActiveProfiles("pre_prod")
+@SuppressWarnings({"null", "unused"})
 class UniteSoinsControlerTest {
 
     @Autowired

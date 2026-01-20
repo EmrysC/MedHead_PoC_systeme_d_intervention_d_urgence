@@ -22,6 +22,7 @@ import io.jsonwebtoken.Claims;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("pre_prod")
+@SuppressWarnings("null")
 class JwtServiceTest {
 
     @Mock
@@ -36,7 +37,7 @@ class JwtServiceTest {
     private final long EXPIRATION = 3600000L; // 1 heure -> 3600000 ms
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         // Injection manuelle des @Value 
         ReflectionTestUtils.setField(jwtService, "JwtSecretKey", TEST_SECRET);
         ReflectionTestUtils.setField(jwtService, "expirationTime", EXPIRATION);

@@ -30,6 +30,7 @@ import MeadHead.Poc.exception.exeption_list.UniteSoinsNotFoundException;
 import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class GlobalExceptionHandlerTest {
 
     @InjectMocks
@@ -39,7 +40,7 @@ class GlobalExceptionHandlerTest {
     private WebRequest webRequest;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         // Mock de la description de la requête pour ErrorDetails
         when(webRequest.getDescription(false)).thenReturn("uri=/test");
     }

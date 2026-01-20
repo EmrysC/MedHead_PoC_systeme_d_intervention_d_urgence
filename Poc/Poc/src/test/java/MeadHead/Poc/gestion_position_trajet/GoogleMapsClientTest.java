@@ -31,6 +31,7 @@ import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.exception.exeption_list.GoogleMapsServiceFailureException;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class GoogleMapsClientTest {
 
     @Mock
@@ -43,7 +44,7 @@ class GoogleMapsClientTest {
     private Hopital hopitalTest;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         ReflectionTestUtils.setField(googleMapsClient, "googleApiKey", "test-api-key");
         ReflectionTestUtils.setField(googleMapsClient, "googleApiUrlTrajet", "http://maps.matrix");
         ReflectionTestUtils.setField(googleMapsClient, "googleApiUrlPositionGPS", "http://maps.geo");

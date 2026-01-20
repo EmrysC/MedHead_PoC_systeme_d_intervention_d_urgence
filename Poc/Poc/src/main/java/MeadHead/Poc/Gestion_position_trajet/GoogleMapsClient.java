@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +50,9 @@ public class GoogleMapsClient {
             throw new GoogleMapsServiceFailureException(Map.of("origine", "Position d'origine invalide."));
         }
 
-        JsonNode response = appelerDistanceMatrix(origins, destinations);
+        JsonNode response = appelerDistanceMatrix(
+                origins,
+                Objects.requireNonNull(destinations));
 
         if (response == null || response.path("status").asText().equals("ZERO_RESULTS")) {
             return TrajetResultatDTO.builder()
@@ -86,7 +89,13 @@ public class GoogleMapsClient {
         String url = String.format("%s?address=%s&key=%s", googleApiUrlPositionGPS, encodedAddress, googleApiKey);
 
         try {
-            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, JsonNode.class);
+            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
+                    Objects.requireNonNull(url),
+                    Objects.requireNonNull(HttpMethod.GET),
+                    null,
+                    JsonNode.class,
+                    new Object[0]);
+
             JsonNode body = responseEntity.getBody();
 
             if (body != null && body.path("status").asText().equals("OK")) {
@@ -119,7 +128,12 @@ public class GoogleMapsClient {
                 googleApiUrlTrajet, encodedOrigins, encodedDestinations, googleApiKey);
 
         try {
-            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, JsonNode.class);
+            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
+                    Objects.requireNonNull(url),
+                    Objects.requireNonNull(HttpMethod.GET),
+                    null,
+                    JsonNode.class,
+                    new Object[0]);
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 JsonNode body = responseEntity.getBody();

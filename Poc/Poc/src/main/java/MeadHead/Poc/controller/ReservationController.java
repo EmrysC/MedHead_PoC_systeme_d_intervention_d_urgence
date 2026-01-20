@@ -1,5 +1,6 @@
 package MeadHead.Poc.controller;
 
+import java.util.Objects;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,7 +43,9 @@ public class ReservationController {
             @Valid @RequestBody ReservationRequestDTO dto,
             @AuthenticationPrincipal User user) {
 
-        reservationService.reserverLit(dto.getUniteSoinsId(), user);
+        reservationService.reserverLit(
+                Objects.requireNonNull(dto.getUniteSoinsId()),
+                Objects.requireNonNull(user));
 
         return ResponseEntity.noContent().build();
     }

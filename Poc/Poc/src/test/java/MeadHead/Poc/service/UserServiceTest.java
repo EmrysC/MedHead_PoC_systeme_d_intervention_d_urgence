@@ -27,6 +27,7 @@ import MeadHead.Poc.exception.exeption_list.EmailNotFoundException;
 import MeadHead.Poc.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class UserServiceTest {
 
     @Mock
@@ -42,7 +43,7 @@ class UserServiceTest {
     private UserCreationDTO userCreationDTO;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         userCreationDTO = new UserCreationDTO(
                 "test@example.com",
                 "password_test",

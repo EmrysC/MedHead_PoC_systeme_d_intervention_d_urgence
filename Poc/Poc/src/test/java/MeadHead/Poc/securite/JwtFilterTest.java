@@ -30,6 +30,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class JwtFilterTest {
 
     @Mock
@@ -47,13 +48,13 @@ class JwtFilterTest {
     private JwtFilter jwtFilter;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         // Isoler chaque test
         SecurityContextHolder.clearContext();
     }
 
     @AfterEach
-    void tearDown() {
+    public void tearDown() {
         // Isoler chaque test (je l'ai aussi mis après car j'avais des problèmes avec certains tests)
         SecurityContextHolder.clearContext();
     }
