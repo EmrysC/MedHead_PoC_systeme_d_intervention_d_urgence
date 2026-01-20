@@ -12,65 +12,49 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import MeadHead.Poc.service.UserService;
-import lombok.RequiredArgsConstructor;
 
-/* https://youtu.be/awP1N0R9rx0?t=1911 */
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
-@Profile("pre_pod")
+@Profile("pre_prod")
 public class Pre_prodConfugarationSecuriteApplication {
 
-    private final JwtService jwtService;
-    private final UserService userService;
-
     @Bean
-    public JwtFilter jwtFilter() {
+    public JwtFilter jwtFilter(UserService userService, JwtService jwtService) {
         return new JwtFilter(userService, jwtService);
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity httpSecurity,
+            AuthenticationProvider authenticationProvider,
+            JwtFilter jwtFilter) throws Exception {
+
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((requests) -> requests
+                .authorizeHttpRequests(requests -> requests
                 .requestMatchers(HttpMethod.POST, "/user/creation", "/user/connection").permitAll()
                 .requestMatchers(HttpMethod.GET, "/specilites").authenticated()
                 .requestMatchers(HttpMethod.GET, "/unitesoins/trajets").authenticated()
                 .requestMatchers(HttpMethod.POST, "/reservation/lit").authenticated()
                 .anyRequest().denyAll())
-                .sessionManagement(
-                        httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
-                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider(
-                        httpSecurity.getSharedObject(UserDetailsService.class),
-                        bCryptPasswordEncoder()))
-                .addFilterBefore(
-                        jwtFilter(),
-                        UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder) {
+    public AuthenticationProvider authenticationProvider(UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
+        authProvider.setUserDetailsService(userService);
+        authProvider.setPasswordEncoder(bCryptPasswordEncoder);
         return authProvider;
     }
 
@@ -78,5 +62,4 @@ public class Pre_prodConfugarationSecuriteApplication {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
 }

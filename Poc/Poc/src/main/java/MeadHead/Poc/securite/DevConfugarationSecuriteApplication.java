@@ -13,16 +13,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import MeadHead.Poc.service.UserService;
+import MeadHead.Poc.utils.Untested_dev_Generated;
 
 @Configuration
 @EnableWebSecurity
 @Profile("dev")
+@Untested_dev_Generated
 public class DevConfugarationSecuriteApplication {
 
     private final JwtService jwtService;
@@ -78,11 +79,6 @@ public class DevConfugarationSecuriteApplication {
                         jwtFilter(),
                         UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

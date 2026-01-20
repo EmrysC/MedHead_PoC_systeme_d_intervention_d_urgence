@@ -2,7 +2,7 @@ package MeadHead.Poc.dto;
 
 import java.util.List;
 
-import MeadHead.Poc.Gestion_position_trajet.UniteeSoinsTrajetDTO;
+import MeadHead.Poc.gestion_position_trajet.UniteeSoinsTrajetDTO;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

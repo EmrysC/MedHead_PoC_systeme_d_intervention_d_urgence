@@ -2,6 +2,9 @@ package MeadHead.Poc.exception.exeption_list;
 
 import java.util.Map;
 
+import lombok.Getter;
+
+@Getter
 public class GoogleMapsServiceFailureException extends RuntimeException {
 
     private final Map<String, String> errors;
@@ -18,13 +21,4 @@ public class GoogleMapsServiceFailureException extends RuntimeException {
         this.errors = errors;
     }
 
-    // Constructeur message d'erreur 
-    public GoogleMapsServiceFailureException(String message) {
-        super("Échec de la communication avec le service Google Maps.");
-        this.errors = Map.of("detail", message);
-    }
-
-    public Map<String, String> getErrors() {
-        return errors;
-    }
 }

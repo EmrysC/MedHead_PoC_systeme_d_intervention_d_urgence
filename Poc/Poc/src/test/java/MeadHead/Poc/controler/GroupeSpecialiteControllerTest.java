@@ -22,7 +22,7 @@ import MeadHead.Poc.exception.GlobalExceptionHandler;
 import MeadHead.Poc.service.GroupeSpecialiteService;
 
 @WebMvcTest(controllers = {GroupeSpecialiteController.class, GlobalExceptionHandler.class}, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
-@ActiveProfiles("preprod")
+@ActiveProfiles("pre_prod")
 class GroupeSpecialiteControllerTest {
 
     @Autowired

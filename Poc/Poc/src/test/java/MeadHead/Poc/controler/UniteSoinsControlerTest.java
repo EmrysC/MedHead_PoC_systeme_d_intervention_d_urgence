@@ -25,7 +25,7 @@ import MeadHead.Poc.repository.UniteSoinsRepository;
 import MeadHead.Poc.service.UniteSoinsService;
 
 @WebMvcTest(controllers = {UniteSoinsControler.class, GlobalExceptionHandler.class}, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
-@ActiveProfiles("preprod")
+@ActiveProfiles("pre_prod")
 class UniteSoinsControlerTest {
 
     @Autowired
@@ -75,7 +75,7 @@ class UniteSoinsControlerTest {
                 .param("specialisationId", "1")
                 .param("adresse", "Paris"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Erreur de validation des arguments"));
+                .andExpect(jsonPath("$.message").value("Erreur de validation manuelle"));
     }
 
     @Test

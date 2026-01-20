@@ -1,6 +1,7 @@
-package MeadHead.Poc.Gestion_position_trajet;
+package MeadHead.Poc.gestion_position_trajet;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class DestinationCalculeeDTO {
 
     private PositionGPS destinationPosition;

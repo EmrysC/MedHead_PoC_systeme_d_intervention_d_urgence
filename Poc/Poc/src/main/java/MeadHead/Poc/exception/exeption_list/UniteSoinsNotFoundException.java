@@ -1,5 +1,8 @@
 package MeadHead.Poc.exception.exeption_list;
 
+import lombok.Getter;
+
+@Getter
 public class UniteSoinsNotFoundException extends RuntimeException {
 
     public UniteSoinsNotFoundException(Long uniteSoinsId) {

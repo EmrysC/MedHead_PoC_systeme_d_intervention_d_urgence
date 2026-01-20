@@ -8,11 +8,13 @@ import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.test.context.ActiveProfiles;
 
 import MeadHead.Poc.entites.GroupeSpecialite;
 import MeadHead.Poc.entites.Specialisation;
 
 @JsonTest
+@ActiveProfiles("dev")
 class SpecialisationDetailDTOTest {
 
     @Autowired
@@ -75,5 +77,17 @@ class SpecialisationDetailDTOTest {
         assertThat(json.write(dto)).hasJsonPathStringValue("@.specialisationNom", "Test Spé");
         assertThat(json.write(dto)).hasJsonPathNumberValue("@.groupeSpecialiteId", 100);
         assertThat(json.write(dto)).hasJsonPathStringValue("@.groupeSpecialiteNom", "Test Groupe");
+    }
+
+    @Test
+    @DisplayName("Constructeur : Mapping depuis l'entité")
+    void testMappingEntity() {
+        Specialisation spec = mock(Specialisation.class);
+        GroupeSpecialite groupe = mock(GroupeSpecialite.class);
+        when(spec.getGroupeSpecialite()).thenReturn(groupe);
+        when(groupe.getId()).thenReturn(1L);
+
+        SpecialisationDetailDTO dto = new SpecialisationDetailDTO(spec);
+        assertThat(dto.getGroupeSpecialiteId()).isEqualTo(1L);
     }
 }

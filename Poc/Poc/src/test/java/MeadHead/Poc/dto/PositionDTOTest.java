@@ -12,7 +12,7 @@ class PositionDTOTest {
     @DisplayName("getPositionValid : Doit retourner l'adresse en priorité")
     void getPositionValid_PrioriteAdresse() {
         PositionDTO pos = new PositionDTO("10 Rue de Paris", 48.85, 2.35);
-        // Même si le GPS est présent, l'adresse est retournée en premier selon ton code
+        // Même si le GPS est présent, l'adresse est retournée en premiere
         assertThat(pos.getPositionValid()).isEqualTo("10 Rue de Paris");
     }
 
@@ -81,5 +81,14 @@ class PositionDTOTest {
         assertThat(pos.getAddress()).isEqualTo("Lyon");
         assertThat(pos.getLatitude()).isEqualTo(45.75);
         assertThat(pos.getLongitude()).isEqualTo(4.85);
+    }
+
+    @Test
+    @DisplayName("positionIsValid : Branches de la ligne 46 (GPS incomplet)")
+    void testPositionIsValid_Branches() {
+        // Cas Latitude présente / Longitude nulle
+        assertThat(new PositionDTO(null, 45.0, null).getPositionValid()).isNull();
+        // Cas Latitude nulle / Longitude présente
+        assertThat(new PositionDTO(null, null, 5.0).getPositionValid()).isNull();
     }
 }

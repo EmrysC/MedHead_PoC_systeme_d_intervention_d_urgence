@@ -18,9 +18,13 @@ import MeadHead.Poc.entites.Hopital;
 import MeadHead.Poc.entites.Specialisation;
 import MeadHead.Poc.entites.UniteSoins;
 
+/**
+ * Test du repository UniteSoins utilisant la base de données MariaDB (Profil
+ * dev).
+ */
 @DataJpaTest
-@ActiveProfiles("preprod")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles("dev") // Charge la config MariaDB depuis application.yml
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // Empêche l'utilisation de H2
 class UniteSoinsRepositoryTest {
 
     @Autowired
@@ -73,6 +77,7 @@ class UniteSoinsRepositoryTest {
                 .build();
         entityManager.persist(u2);
 
+        // Synchronise l'état de l'EntityManager avec MariaDB
         entityManager.flush();
     }
 

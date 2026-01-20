@@ -22,7 +22,7 @@ import lombok.AllArgsConstructor;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Transactional
     public User createUser(UserCreationDTO userDto) {

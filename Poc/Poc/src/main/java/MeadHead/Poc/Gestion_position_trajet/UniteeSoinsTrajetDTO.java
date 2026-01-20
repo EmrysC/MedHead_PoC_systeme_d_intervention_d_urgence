@@ -1,4 +1,4 @@
-package MeadHead.Poc.Gestion_position_trajet;
+package MeadHead.Poc.gestion_position_trajet;
 
 import MeadHead.Poc.entites.UniteSoins;
 import lombok.AllArgsConstructor;

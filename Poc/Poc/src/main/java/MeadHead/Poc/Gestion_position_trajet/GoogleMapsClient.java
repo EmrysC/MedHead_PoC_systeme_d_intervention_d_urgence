@@ -1,4 +1,4 @@
-package MeadHead.Poc.Gestion_position_trajet;
+package MeadHead.Poc.gestion_position_trajet;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,8 +21,6 @@ import MeadHead.Poc.dto.TrajetResultatDTO;
 import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.exception.exeption_list.GoogleMapsServiceFailureException;
 
-//https://developers.google.com/maps/documentation/distance-matrix/overview?hl=fr
-//https://developers.google.com/maps/documentation/distance-matrix/distance-matrix?hl=fr#maps_http_distancematrix_latlng-sh
 @Component
 public class GoogleMapsClient {
 
@@ -41,10 +39,7 @@ public class GoogleMapsClient {
         this.restTemplate = restTemplate;
     }
 
-    public TrajetResultatDTO calculeerTrajetsOptimises(PositionDTO positionDTO,
-            List<UniteSoins> unitesDisponibles) {
-
-        // concaténation des destinations
+    public TrajetResultatDTO calculeerTrajetsOptimises(PositionDTO positionDTO, List<UniteSoins> unitesDisponibles) {
         String destinations = unitesDisponibles.stream()
                 .map(u -> u.getLatitude() + "," + u.getLongitude())
                 .collect(Collectors.joining("|"));
@@ -54,202 +49,124 @@ public class GoogleMapsClient {
             throw new GoogleMapsServiceFailureException(Map.of("origine", "Position d'origine invalide."));
         }
 
-        // Appel à l'API Google Maps
-        java.util.Objects.requireNonNull(destinations);
         JsonNode response = appelerDistanceMatrix(origins, destinations);
 
-        if (response == null || response.at("/status").asText().equals("ZERO_RESULTS")) {
-            // Retourne un DTO vide en cas d'échec ou de résultats nuls
+        if (response == null || response.path("status").asText().equals("ZERO_RESULTS")) {
             return TrajetResultatDTO.builder()
                     .unitesSoinsTrajets(List.of())
-                    .originePosition(positionDTO) // Retourne au moins la position d'origine fournie
+                    .originePosition(positionDTO)
                     .build();
         }
 
-        // Extraction de l'adresse normalisée de Google
-        String adresseNormalisee = response.get("origin_addresses").get(0).asText();
-        if (adresseNormalisee != null && !adresseNormalisee.trim().isEmpty()) {
-            positionDTO.setAddress(adresseNormalisee);
+        // Extraction de l'adresse normalisée
+        JsonNode originAddresses = response.get("origin_addresses");
+        if (originAddresses != null && originAddresses.has(0)) {
+            String adresseNormalisee = originAddresses.get(0).asText();
+            if (adresseNormalisee != null && !adresseNormalisee.trim().isEmpty()) {
+                positionDTO.setAddress(adresseNormalisee);
+            }
         }
 
-        // Traitement des résultats de trajet pour les destinations
         List<UniteeSoinsTrajetDTO> resultatsTrajet = traiterReponseGoogle(unitesDisponibles, response);
 
-        // Construction et retour du TrajetResultatDTO
         return TrajetResultatDTO.builder()
                 .unitesSoinsTrajets(resultatsTrajet)
-                .originePosition(positionDTO) // Utilise l'objet positionDTO mis à jour
+                .originePosition(positionDTO)
                 .build();
     }
 
-    /**
-     * Appelle l'API Geocoding pour transformer l'adresse en coordonnées GPS et
-     * met à jour directement le PositionDTO fourni.
-     */
     public void setPositionWithAdresse(@NonNull PositionDTO positionDTO) {
-
         String address = positionDTO.getAddress();
 
-        // Sécurité : on vérifie que l'adresse n'est pas vide
         if (address == null || address.trim().isEmpty()) {
             throw new GoogleMapsServiceFailureException(Map.of("adresse", "L'adresse fournie est vide."));
         }
 
-        // Encodage de l'adresse pour l'URL
         String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
-
-        // Construction de l'URL pour le service de Geocoding
-        String url = String.format("%s?address=%s&key=%s",
-                googleApiUrlPositionGPS, encodedAddress, googleApiKey);
+        String url = String.format("%s?address=%s&key=%s", googleApiUrlPositionGPS, encodedAddress, googleApiKey);
 
         try {
-            java.util.Objects.requireNonNull(url);
-            java.util.Objects.requireNonNull(HttpMethod.GET);
-            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    null,
-                    JsonNode.class);
-
+            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, JsonNode.class);
             JsonNode body = responseEntity.getBody();
 
             if (body != null && body.path("status").asText().equals("OK")) {
-                // Extraction du premier résultat (le plus pertinent)
-                JsonNode location = body.path("results").get(0).path("geometry").path("location");
-
-                double lat = location.path("lat").asDouble();
-                double lng = location.path("lng").asDouble();
-
-                // Mise à jour du DTO par référence
-                positionDTO.setLatitude(lat);
-                positionDTO.setLongitude(lng);
-
+                JsonNode results = body.path("results");
+                if (results.has(0)) {
+                    JsonNode location = results.get(0).path("geometry").path("location");
+                    positionDTO.setLatitude(location.path("lat").asDouble());
+                    positionDTO.setLongitude(location.path("lng").asDouble());
+                }
             } else {
                 String status = (body != null) ? body.path("status").asText() : "PAS_DE_REPONSE";
                 throw new GoogleMapsServiceFailureException(
-                        Map.of("geocoding_status", "Erreur Google Geocoding: " + status)
-                );
+                        Map.of("geocoding_status", "Erreur Google Geocoding: " + status));
             }
-
+        } catch (GoogleMapsServiceFailureException e) {
+            throw e;
         } catch (Exception e) {
             throw new GoogleMapsServiceFailureException(
-                    Map.of("communication_geocoding", "Erreur lors de la récupération des coordonnées GPS"), e
-            );
+                    Map.of("communication_geocoding", "Échec de la communication avec le service Google Maps."), e);
         }
     }
 
     private JsonNode appelerDistanceMatrix(@NonNull String origins, @NonNull String destinations) {
 
-        // Encodage
-        String encodedOrigins = URLEncoder.encode(origins, StandardCharsets.UTF_8);
-        String encodedDestinations = URLEncoder.encode(destinations, StandardCharsets.UTF_8);
-        encodedOrigins = encodedOrigins.replace("%2C", ",");
-        encodedDestinations = encodedDestinations.replace("%2C", ",");
-        encodedOrigins = encodedOrigins.replace("%7C", "|");
-        encodedDestinations = encodedDestinations.replace("%7C", "|");
+        // Encodage des paramètres pour l'URL HTTP, on remplace 
+        String encodedOrigins = URLEncoder.encode(origins, StandardCharsets.UTF_8).replace("%2C", ",").replace("%7C", "|");
+        String encodedDestinations = URLEncoder.encode(destinations, StandardCharsets.UTF_8).replace("%2C", ",").replace("%7C", "|");
 
-// Construction url
-        String url = googleApiUrlTrajet
-                + "?origins=" + encodedOrigins
-                + "&destinations=" + encodedDestinations
-                + "&units=metric"
-                + "&departure_time=now"
-                + "&traffic_model=optimistic"
-                + "&key=" + googleApiKey;
+        String url = String.format("%s?origins=%s&destinations=%s&units=metric&departure_time=now&traffic_model=optimistic&key=%s",
+                googleApiUrlTrajet, encodedOrigins, encodedDestinations, googleApiKey);
 
         try {
-            java.util.Objects.requireNonNull(HttpMethod.GET);
-            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    null,
-                    JsonNode.class);
+            ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, JsonNode.class);
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
-
                 JsonNode body = responseEntity.getBody();
-
                 if (body != null) {
                     String rootStatus = body.path("status").asText();
-
-                    // Si le statut n'est pas OK ou ZERO_RESULTS
                     if (!rootStatus.equals("OK") && !rootStatus.equals("ZERO_RESULTS")) {
                         String errorMsg = body.path("error_message").asText("Pas de message détaillé");
                         throw new GoogleMapsServiceFailureException(
-                                Map.of("google_api_status", "Erreur Google: " + rootStatus + " - " + errorMsg)
-                        );
+                                Map.of("google_api_status", "Erreur Google: " + rootStatus + " - " + errorMsg));
                     }
                 }
-
                 return body;
             } else {
-
-                String errorMessage = String.format("Erreur HTTP reçue de Google Maps: %s. URL: %s",
-                        responseEntity.getStatusCode(), url);
-
-                // Lever l'exception spécifique pour les erreurs de statut HTTP (non 2xx)
-                // Le Map.of est correct pour passer les détails de l'erreur.
                 throw new GoogleMapsServiceFailureException(
-                        Map.of("googleApi", errorMessage));
+                        Map.of("googleApi", "Erreur HTTP reçue de Google Maps: " + responseEntity.getStatusCode()));
             }
-
+        } catch (GoogleMapsServiceFailureException e) {
+            throw e; // FIX
         } catch (Exception e) {
-            // Échec de la communication (connexion, timeout, JSON invalide, etc.)
-            String errorMessage = String.format("Erreur lors de l'appel à l'API Google Maps: %s. Message: %s. URL: %s",
-                    e.getClass().getName(), e.getMessage(), url);
-
-            // Lever l'exception spécifique en encapsulant la cause
             throw new GoogleMapsServiceFailureException(
-                    Map.of("communication", errorMessage), e);
+                    Map.of("communication", "Échec de la communication avec le service Google Maps."), e);
         }
     }
 
     private List<UniteeSoinsTrajetDTO> traiterReponseGoogle(List<UniteSoins> unites, JsonNode response) {
-
         List<UniteeSoinsTrajetDTO> resultats = new ArrayList<>();
+        JsonNode rows = response.path("rows");
+        if (!rows.has(0)) {
+            return resultats;
+        }
 
-        JsonNode elementsRow = response.get("rows").get(0);
-        JsonNode elements = elementsRow.get("elements");
+        JsonNode elements = rows.get(0).path("elements");
 
         for (int i = 0; i < unites.size() && i < elements.size(); i++) {
             JsonNode element = elements.get(i);
             UniteSoins unitee = unites.get(i);
 
-            // Déterminer si l'élément contient des données valides
-            JsonNode statusNode = element.get("status");
-            boolean valide = statusNode != null && statusNode.asText().equals("OK");
+            boolean valide = element.path("status").asText().equals("OK");
+            long distanceMetres = valide ? element.path("distance").path("value").asLong(-1) : -1;
+            long dureeSecondes = valide ? element.path("duration_in_traffic").path("value").asLong(-1) : -1;
 
-            // Tenter de récupérer les objets principaux (Distance et Durée)
-            JsonNode distanceObject = element.get("distance");
-            JsonNode durationObject = element.get("duration_in_traffic");
-
-            // Extraction sécurisée de la distance
-            long distanceMetres = -1;
-            // La vérification .has("value") est essentielle pour ne pas planter sur un
-            // MissingNode
-            if (valide && distanceObject != null && distanceObject.has("value")) {
-                distanceMetres = distanceObject.get("value").asLong();
-            }
-
-            // Extraction sécurisée de la durée
-            long dureeSecondes = -1;
-            if (valide && durationObject != null && durationObject.has("value")) {
-                dureeSecondes = durationObject.get("value").asLong();
-            }
-
-            // Création de la Destination Calculee
             DestinationCalculeeDTO dc = new DestinationCalculeeDTO(
                     new PositionGPS(unitee.getLatitude().doubleValue(), unitee.getLongitude().doubleValue()),
-                    unitee.getAdresse(),
-                    distanceMetres,
-                    dureeSecondes,
-                    valide);
+                    unitee.getAdresse(), distanceMetres, dureeSecondes, valide);
 
-            // Création du DTO final
             resultats.add(new UniteeSoinsTrajetDTO(unitee, dc));
         }
-
         return resultats;
     }
-
 }

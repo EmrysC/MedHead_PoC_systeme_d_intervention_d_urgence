@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import MeadHead.Poc.Gestion_position_trajet.GoogleMapsClient;
-import MeadHead.Poc.Gestion_position_trajet.UniteeSoinsTrajetDTO;
 import MeadHead.Poc.dto.PositionDTO;
 import MeadHead.Poc.dto.SpecialisationDetailDTO;
 import MeadHead.Poc.dto.SpecialisationTrajetDTO;
@@ -20,6 +18,8 @@ import MeadHead.Poc.dto.TrajetResultatDTO;
 import MeadHead.Poc.entites.UniteSoins;
 import MeadHead.Poc.exception.exeption_list.ExternalServiceFailureException;
 import MeadHead.Poc.exception.exeption_list.NoBedAvailableException;
+import MeadHead.Poc.gestion_position_trajet.GoogleMapsClient;
+import MeadHead.Poc.gestion_position_trajet.UniteeSoinsTrajetDTO;
 import MeadHead.Poc.repository.UniteSoinsRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

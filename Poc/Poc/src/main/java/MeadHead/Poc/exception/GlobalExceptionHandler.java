@@ -9,11 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import MeadHead.Poc.exception.exeption_list.EmailAlreadyExistsException;
 import MeadHead.Poc.exception.exeption_list.LitIndisponibleException;
@@ -23,114 +23,66 @@ import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // --- VALIDATION CLASSIQUE (@Valid) ---
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(
-            MethodArgumentNotValidException ex, WebRequest request) {
-
+    // LOGIQUE COMMUNE D'EXTRACTION 
+    private Map<String, String> extractBindingErrors(BindingResult result) {
         Map<String, String> errors = new HashMap<>();
+        if (result == null) {
+            return errors;
+        }
 
-        ex.getBindingResult().getFieldErrors()
-                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+        result.getFieldErrors().forEach(error
+                -> errors.put(error.getField(), error.getDefaultMessage()));
 
-        ex.getBindingResult().getGlobalErrors().forEach(error -> {
-            // On stocke le résultat dans une variable locale 'codes'
+        result.getGlobalErrors().forEach(error -> {
             String[] codes = error.getCodes();
-
             String key = (codes != null && codes.length > 0)
                     ? codes[0].substring(codes[0].lastIndexOf('.') + 1)
-                    : "erreur_logique";
+                    : "choix_localisation";
 
-            if (key.contains("DTO")) {
+            if (key.toLowerCase().contains("dto")) {
                 key = "choix_localisation";
             }
             errors.put(key, error.getDefaultMessage());
         });
-
-        ErrorDetails errorDetails = new ErrorDetails(
-                LocalDateTime.now(),
-                "Erreur de validation des arguments",
-                errors,
-                request.getDescription(false));
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return errors;
     }
 
-    // --- VALIDATION MANUELLE (Celle qui posait problème) ---
+    // --- VALIDATION CLASSIQUE (@Valid) ---
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex, WebRequest request) {
+        return buildBadRequestResponse("Erreur de validation des arguments", extractBindingErrors(ex.getBindingResult()), request);
+    }
+
+    // --- VALIDATION MANUELLE ---
     @ExceptionHandler(ValidationManuelleException.class)
-    public ResponseEntity<Object> handleValidationManuelleException(
-            ValidationManuelleException ex, WebRequest request) {
-
-        Map<String, String> errors = new HashMap<>();
-        // On récupère le result d'abord
-        org.springframework.validation.BindingResult result = ex.getBindingResult();
-
-        if (result != null) {
-            // Erreurs sur les champs
-            result.getFieldErrors().forEach(error
-                    -> errors.put(error.getField(), error.getDefaultMessage()));
-
-            // Erreurs globales
-            result.getGlobalErrors().forEach(error -> {
-                String[] codes = error.getCodes();
-
-                String key = (codes != null && codes.length > 0)
-                        ? codes[0].substring(codes[0].lastIndexOf('.') + 1)
-                        : "choix_localisation";
-
-                if (key.contains("DTO")) {
-                    key = "choix_localisation";
-                }
-                errors.put(key, error.getDefaultMessage());
-            });
-        } else {
-            // Si pas de BindingResult (cas de ton test), on utilise le message simple
-            errors.put("detail", ex.getMessage());
+    public ResponseEntity<Object> handleValidationManuelleException(ValidationManuelleException ex, WebRequest request) {
+        Map<String, String> errors = extractBindingErrors(ex.getBindingResult());
+        if (errors.isEmpty()) {
+            errors.put("detail", ex.getMessage() != null ? ex.getMessage() : "Erreur de validation");
         }
-
-        ErrorDetails errorDetails = new ErrorDetails(
-                LocalDateTime.now(),
-                "Erreur de validation des arguments",
-                errors,
-                request.getDescription(false));
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return buildBadRequestResponse("Erreur de validation manuelle", errors, request);
     }
 
-    // --- GESTION DES RESSOURCES ET ACCÈS ---
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorDetails> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
-        Map<String, String> singleErrorMap = Map.of("detail", "L'endpoint demandé n'existe pas.");
-        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Ressource non trouvée", singleErrorMap, request.getDescription(false)), HttpStatus.NOT_FOUND);
-    }
-
+    // --- GESTION DES ACCÈS (Sécurisé contre les valeurs nulles) ---
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorDetails> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
-        // stocke la cause dans une variable locale 'cause'
         Throwable cause = ex.getCause();
-
-        // utilise cette variable unique pour la vérification et l'extraction
         String errorKey = (cause != null) ? cause.getClass().getSimpleName() : ex.getClass().getSimpleName();
 
-        Map<String, String> errorsMap = Map.of(errorKey, ex.getLocalizedMessage());
+        Map<String, String> errorsMap = new HashMap<>();
+        errorsMap.put(errorKey, ex.getLocalizedMessage() != null ? ex.getLocalizedMessage() : "Échec d'authentification");
 
-        return new ResponseEntity<>(
-                new ErrorDetails(
-                        LocalDateTime.now(),
-                        "Échec d'authentification",
-                        errorsMap,
-                        request.getDescription(false)
-                ),
-                HttpStatus.UNAUTHORIZED
-        );
+        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Authentification requise", errorsMap, request.getDescription(false)), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorDetails> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
-        Map<String, String> singleErrorMap = Map.of("detail", ex.getMessage() != null ? ex.getMessage() : "Accès refusé.");
-        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Accès Refusé", singleErrorMap, request.getDescription(false)), HttpStatus.FORBIDDEN);
+        Map<String, String> errors = new HashMap<>();
+        errors.put("detail", ex.getMessage() != null ? ex.getMessage() : "Accès refusé.");
+        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Accès Refusé", errors, request.getDescription(false)), HttpStatus.FORBIDDEN);
     }
 
+    // --- EXCEPTIONS MÉTIER ---
     @ExceptionHandler(UniteSoinsNotFoundException.class)
     public ResponseEntity<ErrorDetails> handleUniteSoinsNotFoundException(UniteSoinsNotFoundException ex, WebRequest request) {
         return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Ressource Introuvable", Map.of("id_unite_soins", ex.getMessage()), request.getDescription(false)), HttpStatus.NOT_FOUND);
@@ -146,29 +98,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Conflit de données", ex.getErrors(), request.getDescription(false)), HttpStatus.CONFLICT);
     }
 
-    // --- ERREURS DE FORMAT ET PARAMÈTRES ---
-    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorDetails> handleTypeMismatch(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex, WebRequest request) {
-        String typeAttendu = (ex.getRequiredType() != null) ? ex.getRequiredType().getSimpleName() : "nombre";
-        Map<String, String> errors = Map.of(ex.getName(), String.format("Le champ '%s' doit être un %s.", ex.getName(), typeAttendu));
-        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Erreur de format de paramètre", errors, request.getDescription(false)), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorDetails> handleMissingParams(org.springframework.web.bind.MissingServletRequestParameterException ex, WebRequest request) {
-        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Paramètre manquant", Map.of(ex.getParameterName(), "Obligatoire"), request.getDescription(false)), HttpStatus.BAD_REQUEST);
-    }
-
+    // --- ERREURS TECHNIQUES ---
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorDetails> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, WebRequest request) {
-        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Format JSON invalide", Map.of("format", "Donnée invalide."), request.getDescription(false)), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Format JSON invalide", Map.of("format", "Donnée JSON malformée ou type incorrect."), request.getDescription(false)), HttpStatus.BAD_REQUEST);
     }
 
-    // --- EXCEPTIONS GÉNÉRIQUES ET TECHNIQUES ---
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDetails> handleGlobalException(Exception ex, WebRequest request) {
-        ex.printStackTrace();
-        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Erreur interne", Map.of("detail", "Erreur inconnue."), request.getDescription(false)), HttpStatus.INTERNAL_SERVER_ERROR);
+        Map<String, String> errors = new HashMap<>();
+        errors.put("detail", "Une erreur interne est survenue.");
+        return new ResponseEntity<>(new ErrorDetails(LocalDateTime.now(), "Erreur système", errors, request.getDescription(false)), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // --- MÉTHODE UTILITAIRE POUR ÉVITER LA RÉPÉTITION ---
+    private ResponseEntity<Object> buildBadRequestResponse(String message, Map<String, String> errors, WebRequest request) {
+        ErrorDetails details = new ErrorDetails(LocalDateTime.now(), message, errors, request.getDescription(false));
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
+    }
 }
