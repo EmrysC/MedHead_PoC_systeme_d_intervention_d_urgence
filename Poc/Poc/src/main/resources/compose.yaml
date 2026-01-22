@@ -24,8 +24,20 @@
 # docker-compose up --build e2e-reservation
 # docker-compose up --build e2e-autre-test
 
-version: '3.8'
 services:
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins_poc
+    user: root # Nécessaire pour accéder au socket Docker sans erreur de permission
+    ports:
+      - 8082:8080 # Interface Web de Jenkins
+      - 50000:50000 # Communication avec les agents 
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Permet à Jenkins de piloter Docker
+    restart: always
+
   db:
     image: mariadb:12.1
     restart: always
@@ -41,7 +53,7 @@ services:
     ports:
       - 8081:8080
 
-  # test E2E : Scenario de reservation complet (ex: connexion + clic specialite + selection + saisie adresse + reservation)
+  # test E2E : Scenario de reservation complet ( connexion + clic specialite + selection + saisie adresse + reservation)
   e2e-reservation:
     build:
       context: ../../../e2e_tests
@@ -52,7 +64,7 @@ services:
     depends_on:
       - db
 
-  # Deuxieme test E2E : Autre scenario (ex: Recherche specialite + clic specialite + selection + clic GPS + reservation)
+  # Deuxieme test E2E : Autre scenario ( Recherche specialite + clic specialite + selection + clic GPS + reservation)
   e2e-autre-test:
     build:
       context: ../../../e2e_tests
@@ -62,3 +74,6 @@ services:
     command: [ "node", "E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js" ]
     depends_on:
       - db
+
+volumes:
+  jenkins_home:
