@@ -31,6 +31,26 @@
 #mdp : 46681356dfef482194016d6007cfa6f4
 
 services:
+  # --- BASE DE DONNÉES ---
+  db:
+    image: mariadb:12.1
+    container_name: resources-db-1
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: example
+      MARIADB_DATABASE: poc_db
+    ports:
+      - 3307:3306
+    volumes:
+      - ./sql-init:/docker-entrypoint-initdb.d
+    # IMPORTANT : On vérifie que MariaDB est prête à accepter des connexions
+    healthcheck:
+      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-pexample" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- APPLICATION BACKEND ---
   app:
     build:
       context: ../../../
@@ -42,15 +62,25 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/poc_db
       - SPRING_PROFILES_ACTIVE=dev
+    # L'application attend maintenant que la DB soit "healthy" (en bonne santé)
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/login" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
-    depends_on:
-      - db
 
+  # --- INTERFACE DE GESTION DB ---
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+
+  # --- SERVEUR JENKINS ---
   jenkins:
     build:
       context: .
@@ -65,24 +95,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
 
-  db:
-    image: mariadb:12.1
-    container_name: resources-db-1
-    restart: always
-    environment:
-      MARIADB_ROOT_PASSWORD: example
-      MARIADB_DATABASE: poc_db
-    ports:
-      - 3307:3306
-    volumes:
-      - ./sql-init:/docker-entrypoint-initdb.d
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8081:8080
-
+  # --- TEST E2E SCÉNARIO 1 ---
   e2e-reservation:
     build:
       context: ../../../e2e_tests
@@ -90,8 +103,9 @@ services:
     command: [ "node", "E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js" ]
     depends_on:
       app:
-        condition: service_healthy # Attend que le healthcheck de 'app' soit OK
+        condition: service_healthy
 
+  # --- TEST E2E SCÉNARIO 2 ---
   e2e-autre-test:
     build:
       context: ../../../e2e_tests
