@@ -26,7 +26,7 @@ server:
     expiration: 1800000  # 30 minutes (30 * 60 * 1000)
 google:
   api:
-    key: ${google.api.key}
+    key: ${GOOGLE_MAPS_API_KEY}
     limit-destinations: 25
     url:
       trajet: https://maps.googleapis.com/maps/api/distancematrix/json
