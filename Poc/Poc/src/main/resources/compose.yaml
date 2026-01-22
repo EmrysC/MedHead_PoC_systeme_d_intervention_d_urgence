@@ -31,16 +31,24 @@
 #mdp : 46681356dfef482194016d6007cfa6f4
 
 services:
-
   app:
     build:
-      context: ../../../ # remonte pour atteindre le Dockerfile de l'app
+      context: ../../../
     container_name: medhead_backend
     ports:
       - "8080:8080"
     environment:
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
+      - DB_HOST=db
+      - DB_PORT=3306
+    healthcheck:
+      # vérifie que l'API répond sur la page de login
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/login" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     depends_on:
       - db
 
@@ -49,17 +57,18 @@ services:
       context: .
       dockerfile: jenkins_poc.dockerfile
     container_name: jenkins_poc
-    user: root # Nécessaire pour accéder au socket Docker sans erreur de permission
+    user: root
     ports:
-      - 8082:8080 # Interface Web de Jenkins
-      - 50000:50000 # Communication avec les agents 
+      - 8082:8080
+      - 50000:50000
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock # Permet à Jenkins de piloter Docker
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: always
 
   db:
     image: mariadb:12.1
+    container_name: resources-db-1
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: example
@@ -75,27 +84,23 @@ services:
     ports:
       - 8081:8080
 
-  # test E2E : Scenario de reservation complet ( connexion + clic specialite + selection + saisie adresse + reservation)
   e2e-reservation:
     build:
       context: ../../../e2e_tests
     container_name: e2e-tests-reservation1
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     command: [ "node", "E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js" ]
     depends_on:
-      - db
+      app:
+        condition: service_healthy # Attend que le Java soit prêt
 
-  # Deuxieme test E2E : Autre scenario ( Recherche specialite + clic specialite + selection + clic GPS + reservation)
   e2e-autre-test:
     build:
       context: ../../../e2e_tests
     container_name: e2e-tests-reservation2
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     command: [ "node", "E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js" ]
     depends_on:
-      - db
+      app:
+        condition: service_healthy # Attend que le Java soit prêt
 
 volumes:
   jenkins_home:

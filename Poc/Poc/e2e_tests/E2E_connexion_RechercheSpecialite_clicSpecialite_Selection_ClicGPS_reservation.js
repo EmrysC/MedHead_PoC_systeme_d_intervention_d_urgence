@@ -8,7 +8,7 @@ const puppeteer = require('puppeteer');
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
-      '--unsafely-treat-insecure-origin-as-secure=http://host.docker.internal:8080'
+      '--unsafely-treat-insecure-origin-as-secure=http://app:8080'
     ],
     headless: "new"
   });
@@ -17,7 +17,7 @@ const puppeteer = require('puppeteer');
 
   // Configuration de la geolocalisation
   const context = browser.defaultBrowserContext();
-  await context.overridePermissions('http://host.docker.internal:8080', ['geolocation']);
+  await context.overridePermissions('http://app:8080', ['geolocation']);
   await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
 
   let confirmationMessage = "";
@@ -32,7 +32,7 @@ const puppeteer = require('puppeteer');
 
   try {
     // --- ETAPE 1 : CONNEXION ---
-    await page.goto('http://host.docker.internal:8080/api/login', { waitUntil: 'networkidle2' });
+    await page.goto('http://app:8080/api/login', { waitUntil: 'networkidle2' });
     await page.waitForSelector('input[type="email"]');
     await page.type('input[type="email"]', 'utilisateur1@compte.com');
     await page.type('input[type="password"]', 'MotDePasseSecret&1');
