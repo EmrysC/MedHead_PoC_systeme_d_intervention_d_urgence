@@ -40,11 +40,10 @@ services:
     environment:
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
-      - DB_HOST=db
-      - DB_PORT=3306
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/poc_db
+      - SPRING_PROFILES_ACTIVE=dev
     healthcheck:
-      # vérifie que l'API répond sur la page de login
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/login" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/login" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -91,7 +90,7 @@ services:
     command: [ "node", "E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js" ]
     depends_on:
       app:
-        condition: service_healthy # Attend que le Java soit prêt
+        condition: service_healthy # Attend que le healthcheck de 'app' soit OK
 
   e2e-autre-test:
     build:
@@ -100,7 +99,7 @@ services:
     command: [ "node", "E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js" ]
     depends_on:
       app:
-        condition: service_healthy # Attend que le Java soit prêt
+        condition: service_healthy
 
 volumes:
   jenkins_home:
