@@ -33,7 +33,9 @@
 services:
 
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: .
+      dockerfile: jenkins_poc.dockerfile
     container_name: jenkins_poc
     user: root # Nécessaire pour accéder au socket Docker sans erreur de permission
     ports:
