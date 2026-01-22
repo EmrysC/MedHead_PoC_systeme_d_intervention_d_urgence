@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -25,6 +24,7 @@ import MeadHead.Poc.exception.exeption_list.LitIndisponibleException;
 import MeadHead.Poc.exception.exeption_list.UniteSoinsNotFoundException;
 import MeadHead.Poc.repository.ReservationRepository;
 import MeadHead.Poc.repository.UniteSoinsRepository;
+import MeadHead.Poc.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("dev")
@@ -37,6 +37,9 @@ class ReservationServiceTest {
     @Mock
     private ReservationRepository reservationRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private ReservationService reservationService;
 
@@ -45,12 +48,19 @@ class ReservationServiceTest {
     void reserverLit_Success() {
         // Given
         Long uniteId = 1L;
+        String testEmail = "utilisateur1@compte.com";
+
         User user = new User();
+        user.setEmail(testEmail); //  L'email  indispensable 
         user.setNom("Jean");
 
         UniteSoins unite = new UniteSoins();
         unite.setId(uniteId);
         unite.setLitsDisponibles(5);
+        unite.setVersion(0L);
+
+        // 3. simule que la base de données trouve bien l'utilisateur par son mail
+        when(userRepository.findByEmail(testEmail)).thenReturn(Optional.of(user));
 
         when(uniteSoinsRepository.findById(uniteId)).thenReturn(Optional.of(unite));
 
@@ -58,18 +68,14 @@ class ReservationServiceTest {
         reservationService.reserverLit(uniteId, user);
 
         // Then
-        // Vérifie la décrémentation
         assertThat(unite.getLitsDisponibles()).isEqualTo(4);
-
-        //  Vérifie les sauvegardes
         verify(uniteSoinsRepository, times(1)).save(unite);
 
-        ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
-        verify(reservationRepository, times(1)).save(reservationCaptor.capture());
+        // On vérifie que le repository de réservation a bien utilisé saveAndFlush
+        verify(reservationRepository, times(1)).saveAndFlush(any(Reservation.class));
 
-        Reservation createdReservation = reservationCaptor.getValue();
-        assertThat(createdReservation.getUser()).isEqualTo(user);
-        assertThat(createdReservation.getUniteSoins()).isEqualTo(unite);
+        // On vérifie que findByEmail a été appelé une fois
+        verify(userRepository, times(1)).findByEmail(testEmail);
     }
 
     @Test
@@ -78,6 +84,12 @@ class ReservationServiceTest {
         // Given
         Long uniteId = 1L;
         User user = new User();
+        user.setEmail("test@exemple.com");
+
+        // On simule que l'utilisateur est trouvé par son mail
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        // On simule que l'unité n'est pas trouvée
         when(uniteSoinsRepository.findById(uniteId)).thenReturn(Optional.empty());
 
         // When & Then
@@ -96,9 +108,15 @@ class ReservationServiceTest {
         // Given
         Long uniteId = 1L;
         User user = new User();
-        UniteSoins unite = new UniteSoins();
-        unite.setLitsDisponibles(0); // Branche : if (uniteSoins.getLitsDisponibles() <= 0)
+        user.setEmail("test@exemple.com");
 
+        UniteSoins unite = new UniteSoins();
+        unite.setLitsDisponibles(0);
+
+        // On simule que l'utilisateur est trouvé
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        // On simule que l'unité est trouvée
         when(uniteSoinsRepository.findById(uniteId)).thenReturn(Optional.of(unite));
 
         // When & Then

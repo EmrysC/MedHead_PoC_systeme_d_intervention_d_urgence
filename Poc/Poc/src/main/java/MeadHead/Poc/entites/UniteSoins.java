@@ -60,6 +60,8 @@ public class UniteSoins {
     private BigDecimal longitude;
 
     @Version
-    private Long version;
+    @Builder.Default
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
 
 }

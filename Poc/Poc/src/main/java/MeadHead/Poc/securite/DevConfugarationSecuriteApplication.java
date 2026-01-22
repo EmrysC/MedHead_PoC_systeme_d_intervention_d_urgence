@@ -49,19 +49,19 @@ public class DevConfugarationSecuriteApplication {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
                 .requestMatchers(HttpMethod.POST,
-                        "/user/connection",
-                        "/user/creation")
+                        "/api/user/connection",
+                        "/api/user/creation")
                 .permitAll()
                 .requestMatchers(HttpMethod.GET,
-                        "/unitesoins",
-                        "/unitesoins/{id}",
-                        "/unitesoins/recherche_lit_dispo",
-                        "/unitesoins/trajets_optimises",
-                        "/unitesoins/trajets")
+                        "/api/unitesoins",
+                        "/api/unitesoins/{id}",
+                        "/api/unitesoins/recherche_lit_dispo",
+                        "/api/unitesoins/trajets_optimises",
+                        "/api/unitesoins/trajets")
                 .authenticated()
-                .requestMatchers(HttpMethod.POST, "/reservation/lit").authenticated()
-                .requestMatchers(HttpMethod.GET, "/specilites").authenticated()
-                .requestMatchers(HttpMethod.GET, "/actuator").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/reservation/lit").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/specilites").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/actuator").authenticated()
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/v2/api-docs/**",
@@ -76,7 +76,7 @@ public class DevConfugarationSecuriteApplication {
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(
-                        jwtFilter(),
+                        jwtFilter,
                         UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

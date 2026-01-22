@@ -1,0 +1,3 @@
+# TODO  test d'échec de connexion 
+# TODO test "Aucun résultat" : Si je cherche une spécialité qui n'existe pas ou une adresse au milieu de l'océan, ou aucun lit dispo pour une spécialité
+# TODO test de Responsivité : vérifier que l'interface s'adapte bien à différentes tailles d'écran (mobile, tablette, desktop)

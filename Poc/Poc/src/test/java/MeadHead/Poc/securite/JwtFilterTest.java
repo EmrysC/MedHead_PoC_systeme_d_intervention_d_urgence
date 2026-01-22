@@ -158,7 +158,7 @@ class JwtFilterTest {
     }
 
     @Test
-    @DisplayName("Utilisateur trouvé mais SANS autorités : l'authentification doit rester nulle (Couverture ligne 66)")
+    @DisplayName("Utilisateur trouvé mais SANS autorités : l'authentification doit rester nulle")
     void doFilterInternal_NoAuthorities() throws ServletException, IOException {
         String token = "validToken";
         String email = "test@example.com";

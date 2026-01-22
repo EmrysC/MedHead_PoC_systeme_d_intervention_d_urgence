@@ -5,6 +5,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import MeadHead.Poc.exception.exeption_list.LitIndisponibleException;
 import MeadHead.Poc.exception.exeption_list.UniteSoinsNotFoundException;
 import MeadHead.Poc.repository.ReservationRepository;
 import MeadHead.Poc.repository.UniteSoinsRepository;
+import MeadHead.Poc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,6 +25,8 @@ public class ReservationService {
 
     private final UniteSoinsRepository uniteSoinsRepository;
     private final ReservationRepository reservationRepository;
+    // 1. Ajoutez le repository des utilisateurs
+    private final UserRepository userRepository;
 
     @Transactional
     @Retryable(
@@ -32,26 +36,29 @@ public class ReservationService {
     )
     public void reserverLit(@NonNull Long uniteSoinsId, @NonNull User user) {
 
-//  Chercher l'unité (on récupère l'objet complet)
+        // 2. Rechargez l'utilisateur depuis la base pour avoir un objet "géré" (managed) complet
+        // Cela évite les erreurs de contraintes NULL sur le Nom/Prénom
+        User managedUser = userRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé : " + user.getEmail()));
+
+        // Chercher l'unité
         UniteSoins uniteSoins = uniteSoinsRepository.findById(uniteSoinsId)
                 .orElseThrow(() -> new UniteSoinsNotFoundException(uniteSoinsId));
 
-        // Vérifier la disponibilité
-        if (uniteSoins.getLitsDisponibles() <= 0) {
+        // Vérifier la disponibilité (protection contre les valeurs NULL en base)
+        Integer currentLits = uniteSoins.getLitsDisponibles();
+        if (currentLits == null || currentLits <= 0) {
             throw new LitIndisponibleException(uniteSoinsId);
         }
 
-        // Modifier la valeur (Décrémentation)
-        uniteSoins.setLitsDisponibles(uniteSoins.getLitsDisponibles() - 1);
-
-        // Enregistrer les modifications de l'unité
+        // Décrémentation
+        uniteSoins.setLitsDisponibles(currentLits - 1);
         uniteSoinsRepository.save(uniteSoins);
 
-        //  Créer la réservation 
-        Reservation nouvelleReservation = new Reservation(uniteSoins, user);
+        // 3. Utilisez 'managedUser' (l'objet complet) pour la réservation
+        Reservation nouvelleReservation = new Reservation(uniteSoins, managedUser);
 
-        // Enregistrer la réservation
-        reservationRepository.save(nouvelleReservation);
-
+        // 4. Utilisez saveAndFlush pour forcer la validation MariaDB immédiatement
+        reservationRepository.saveAndFlush(nouvelleReservation);
     }
 }

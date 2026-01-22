@@ -1635,3 +1635,12 @@ INSERT INTO unite_soins (id, adresse, latitude, longitude, lits_disponibles, hop
 (998,	CONVERT(b'1', UNSIGNED),	'utilisateur998@compte.com',	'paul',	'$2a$10$0n/BDeunkmieWy0AIDTikOTULVbZ4EhCtK78vLi6sBE4lNwHP.0jC',	'martin',	'ROLE_USER'),
 (999,	CONVERT(b'1', UNSIGNED),	'utilisateur999@compte.com',	'paul',	'$2a$10$./2KOOKiffGUj1v1rJHq/etw8nAj0FpNsmmBgRLcCVtzEMRX6HeXu',	'martin',	'ROLE_USER'),
 (1000,	CONVERT(b'1', UNSIGNED),	'utilisateur1000@compte.com',	'paul',	'$2a$10$cfYBLmpErUo4/GtsL4oRXurhtEKxHFfpN/vMnx2HtjiVOeFeh.ZVa',	'martin',	'ROLE_USER');
+
+
+-- Remplace tous les lits NULL par 0 pour éviter le crash
+UPDATE unite_soins SET lits_disponibles = 0 WHERE lits_disponibles IS NULL;
+UPDATE unite_soins SET version = 0 WHERE version IS NULL;
+
+-- Et assure-toi que la colonne n'autorise plus le NULL à l'avenir
+ALTER TABLE unite_soins MODIFY lits_disponibles INT NOT NULL DEFAULT 0;
+ALTER TABLE unite_soins MODIFY version BIGINT NOT NULL DEFAULT 0;

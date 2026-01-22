@@ -52,7 +52,7 @@ public class UniteSoinsControler {
     @ResponseStatus(value = HttpStatus.CREATED)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public void creer(@RequestBody @NonNull UniteSoins uniteSoins) {
-        uniteSoinsRepository.save(uniteSoins);
+        uniteSoinsRepository.save(java.util.Objects.requireNonNull(uniteSoins));
     }
 
     /**
@@ -108,6 +108,14 @@ public class UniteSoinsControler {
             @RequestParam(required = false) Double latitude,
             @RequestParam(required = false) Double longitude,
             @RequestParam(required = false) String adresse) throws MethodArgumentNotValidException {
+
+        // Arrondi des coordonnées GPS à 7 décimales
+        if (latitude != null) {
+            latitude = Math.round(latitude * 1e7) / 1e7;
+        }
+        if (longitude != null) {
+            longitude = Math.round(longitude * 1e7) / 1e7;
+        }
 
         // construit le DTO
         SpecialisationTrajetDTO dto = SpecialisationTrajetDTO.builder()

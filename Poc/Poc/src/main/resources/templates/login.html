@@ -61,7 +61,7 @@
                             <div v-if="message" class="alert alert-danger mt-4" role="alert">
                                 {{ message }}
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -89,7 +89,7 @@
 
                     try {
                         // Call endpoint
-                        const response = await fetch('http://localhost:8080/api/user/connection', {
+                        const response = await fetch('/api/user/connection', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -105,7 +105,7 @@
                             // On stocke le token 
                             localStorage.setItem('token', data.Bearer);
                             // On redirige car on est connectés
-                            window.location.href = "http://localhost:8080/api/dashboard";
+                            window.location.href = "/api/dashboard";
 
                         } else {
                             message.value = data.message || "Erreur : Identifiants invalides.";

@@ -12,10 +12,19 @@ import MeadHead.Poc.enums.TypeDeRole;
 class UserTest {
 
     @Test
-    @DisplayName("UserDetails : getUsername doit concaténer Nom et Prénom")
-    void getUsername_ShouldReturnFullName() {
-        User user = User.builder().nom("Mead").prenom("Head").build();
-        assertThat(user.getUsername()).isEqualTo("Mead Head");
+    @DisplayName("UserDetails : getUsername doit retourner l'email de l'utilisateur")
+    void getUsername_ShouldReturnEmail() {
+        // Given
+        String email = "utilisateur1@compte.com";
+        User user = User.builder()
+                .email(email)
+                .nom("Mead")
+                .prenom("Head")
+                .build();
+
+        // When & Then
+        // On vérifie que getUsername() retourne bien l'email et non plus "Mead Head"
+        assertThat(user.getUsername()).isEqualTo(email);
     }
 
     @Test

@@ -1,10 +1,9 @@
 package MeadHead.Poc.securite;
 
-import java.util.Collection;
+import java.io.IOException;
 
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,6 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import MeadHead.Poc.service.UserService;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain)
-            throws java.io.IOException, jakarta.servlet.ServletException {
+            throws IOException, ServletException {
 
         String token = null;
         String email = null;
@@ -36,8 +36,12 @@ public class JwtFilter extends OncePerRequestFilter {
         final String authorization = request.getHeader("Authorization");
         if (authorization != null && authorization.startsWith("Bearer ")) {
             token = authorization.substring(7);
-            isTokenExpired = jwtService.isTokenExpired(token);
-            email = jwtService.extractedEmail(token);
+            try {
+                isTokenExpired = jwtService.isTokenExpired(token);
+                email = jwtService.extractedEmail(token);
+            } catch (Exception e) {
+                System.out.println("JwtFilter: Erreur lors de l'extraction du token: " + e.getMessage());
+            }
         }
 
         UserDetails userDetails = null;
@@ -48,33 +52,30 @@ public class JwtFilter extends OncePerRequestFilter {
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             try {
-                // Chargement des détails de l'utilisateur
                 userDetails = this.userService.loadUserByUsername(email);
             } catch (UsernameNotFoundException e) {
-                // L'utilisateur n'existe pas ou l'e-mail était incorrect, le filtre continue
-                // sans authentification, menant au 403 final par Spring Security.
-                System.out.println("JwtFilter: ERREUR: Utilisateur non trouvé pour l'email: " + email);
+                System.out.println("JwtFilter: Utilisateur non trouvé : " + email);
             }
         }
 
         if (userDetails != null) {
+            var authorities = userDetails.getAuthorities();
 
-            // Vérification de robustesse des autorités (déjà présente dans votre code)
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-
-            // S'assurer que les autorités ne sont pas nulles/vides pour l'état authentifié
+            // Sécurité renforcée : on n'authentifie que si l'utilisateur a des rôles
             if (authorities != null && !authorities.isEmpty()) {
-
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
-                        authorities);
+                        authorities
+                );
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                System.out.println("JwtFilter: Authentification réussie pour : " + email);
+            } else {
+                System.out.println("JwtFilter: ÉCHEC: Aucune autorité (rôle) pour : " + email);
             }
         }
 
         filterChain.doFilter(request, response);
-
     }
 }
