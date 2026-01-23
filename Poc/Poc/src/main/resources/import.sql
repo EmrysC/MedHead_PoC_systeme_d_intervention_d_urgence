@@ -1725,6 +1725,6 @@ INSERT INTO unite_soins (id, adresse, latitude, longitude, lits_disponibles, hop
 UPDATE unite_soins SET lits_disponibles = 0 WHERE lits_disponibles IS NULL;
 UPDATE unite_soins SET version = 0 WHERE version IS NULL;
 
--- Et assure-toi que la colonne n'autorise plus le NULL à l'avenir
+-- assure que la colonne n'autorise plus le NULL à l'avenir
 ALTER TABLE unite_soins MODIFY lits_disponibles INT NOT NULL DEFAULT 0;
 ALTER TABLE unite_soins MODIFY version BIGINT NOT NULL DEFAULT 0;

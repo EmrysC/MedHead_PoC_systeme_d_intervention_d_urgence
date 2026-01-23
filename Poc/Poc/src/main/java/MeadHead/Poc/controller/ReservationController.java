@@ -1,8 +1,10 @@
 package MeadHead.Poc.controller;
 
 import java.util.Objects;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,9 +45,13 @@ public class ReservationController {
             @Valid @RequestBody ReservationRequestDTO dto,
             @AuthenticationPrincipal User user) {
 
+        if (user == null) {
+            throw new AccessDeniedException("Accès refusé : utilisateur non authentifié.");
+        }
+
         reservationService.reserverLit(
                 Objects.requireNonNull(dto.getUniteSoinsId()),
-                Objects.requireNonNull(user));
+                user);
 
         return ResponseEntity.noContent().build();
     }

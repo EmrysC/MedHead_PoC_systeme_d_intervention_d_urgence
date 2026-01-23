@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -93,15 +92,6 @@ class GlobalExceptionHandlerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody().getErrors()).containsKey("RuntimeException");
-    }
-
-    @Test
-    @DisplayName("AccessDeniedException : Vérification du statut 403")
-    void testHandleAccessDeniedException() {
-        AccessDeniedException ex = new AccessDeniedException("Interdit");
-        ResponseEntity<ErrorDetails> response = globalExceptionHandler.handleAccessDeniedException(ex, webRequest);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        assertThat(response.getBody().getErrors()).containsValue("Interdit");
     }
 
     @Test

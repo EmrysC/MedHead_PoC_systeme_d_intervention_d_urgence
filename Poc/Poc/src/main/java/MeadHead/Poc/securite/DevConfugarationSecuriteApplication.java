@@ -48,36 +48,33 @@ public class DevConfugarationSecuriteApplication {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                .requestMatchers(HttpMethod.POST,
-                        "/api/user/connection",
-                        "/api/user/creation")
-                .permitAll()
-                .requestMatchers(HttpMethod.GET,
-                        "/api/unitesoins",
-                        "/api/unitesoins/{id}",
-                        "/api/unitesoins/recherche_lit_dispo",
-                        "/api/unitesoins/trajets_optimises",
-                        "/api/unitesoins/trajets")
-                .authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/reservation/lit").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/specilites").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/actuator").authenticated()
+                // Pages accessibles sans authentification
+                .requestMatchers("/login").permitAll()
+                // --- ROUTES PUBLIQUES ---
+                .requestMatchers(HttpMethod.POST, "/user/connection",
+                        "/user/creation").permitAll()
+                // --- SWAGGER & DOCS ---
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/v2/api-docs/**",
                         "/swagger-ui.html",
                         "/swagger-ui/**",
                         "/swagger-resources/**",
-                        "/webjars/**")
-                .permitAll()
-                .anyRequest().permitAll())
-                .sessionManagement(
-                        httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
-                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        "/webjars/**").permitAll()
+                // pages protégées
+                .requestMatchers("/dashboard",
+                        "search-hospital").permitAll()
+                // --- ROUTES PROTÉGÉES ---
+                .requestMatchers(HttpMethod.GET,
+                        "/unitesoins/**",
+                        "/specilites",
+                        "/actuator/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/reservation/lit").authenticated()
+                // --- VERROUILLAGE FINAL ---
+                .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(
-                        jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

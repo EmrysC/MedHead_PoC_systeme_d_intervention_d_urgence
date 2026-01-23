@@ -137,6 +137,9 @@ public class GoogleMapsClient {
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 JsonNode body = responseEntity.getBody();
+
+                System.out.println("DEBUG GOOGLE : " + body.toPrettyString());
+
                 if (body != null) {
                     String rootStatus = body.path("status").asText();
                     if (!rootStatus.equals("OK") && !rootStatus.equals("ZERO_RESULTS")) {
