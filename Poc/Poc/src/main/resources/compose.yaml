@@ -10,28 +10,31 @@
 # 4 Lancer la commande "docker-compose up -d" pour lancer les contenes en arrière plan
 # 5 Pour vérifier que les conteneurs sont bien lancés : "docker ps"
 
-# Se connecter à la base de donnée avec adminer :
-# Ouvrir un navigateur web et aller à l'adresse "http://localhost:8081
-# Saisir les informations de connexion :
-#   Serveur def : resources-db-1 (meme nom que dans "docker ps")
-#   Utilisateur def : root
-#   Mot de passe : example
-#   Base de donnée : laisser vide pour afficher toutes les bases de données 
-# Lancer PocApplication.java pour que la base de donnée se crée automatiquement
-# http://localhost:8081/?server=resources-db-1&username=root
+# utiles :
+# Etteindre les conteneurs : docker-compose down
+# Afficher les logs en cas d'erreur au démarage : docker logs resources-newman-db-cleaner-1
+# Forcer la reconstruction : docker-compose up --force-recreate newman
 
-# Lancer les tests E2E :
-# docker-compose up --build e2e-reservation
-# docker-compose up --build e2e-autre-test
-
-# Pour accéder à Jenkins :
-# Ouvrir un navigateur web et aller à l'adresse "http://localhost:8082
-# docker logs jenkins_poc   va afficher le mdp admin initial
-# user : admin
-#mdp : 46681356dfef482194016d6007cfa6f4
+# Accéder à l'application backend :
+# Poc meadHead :      http://localhost:8080
+# Swagger UI :        http://localhost:8080/swagger-ui/index.html
+# BDD MariaDB :       http://localhost:8081/?server=resources-db-1&username=root
+# Jenkins :           http://localhost:8082
+# Newman Dashboard :  http://localhost:8083
+# SonarQube :         http://localhost:8084
 
 services:
+
   # --- BASE DE DONNÉES ---
+  # http://localhost:8081/?server=resources-db-1&username=root
+  # Se connecter à la base de donnée avec adminer :
+  # Ouvrir un navigateur web et aller à l'adresse "http://localhost:8081
+  # Saisir les informations de connexion :
+  # Serveur def : resources-db-1 (meme nom que dans "docker ps")
+  #   Utilisateur def : root
+  #   Mot de passe : example
+  #   Base de donnée : laisser vide pour afficher toutes les bases de données
+  #   Les données initiales sont dans inport.sql et seront automatiquement importées au démarrage
   db:
     image: mariadb:12.1
     container_name: resources-db-1
@@ -62,7 +65,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/poc_db
       - SPRING_PROFILES_ACTIVE=dev
-    # L'application attend maintenant que la DB soit "healthy" (en bonne santé)
+    # L'application attend maintenant que la DB soit "healthy" 
     depends_on:
       db:
         condition: service_healthy
@@ -81,6 +84,12 @@ services:
       - 8081:8080
 
   # --- SERVEUR JENKINS ---
+  # Pour accéder à Jenkins :
+  # Ouvrir un navigateur web et aller à l'adresse "http://localhost:8082
+  # docker logs jenkins_poc   va afficher le mdp admin initial
+  # user : admin
+  # mdp : 0cadc6ab92ab4d87b3b738c3ab010145
+  # recup mdp : docker exec jenkins_poc cat /var/jenkins_home/secrets/initialAdminPassword
   jenkins:
     build:
       context: .
@@ -96,6 +105,8 @@ services:
     restart: always
 
   # --- TEST E2E SCÉNARIO 1 ---
+  # Lancer les tests E2E :
+  # docker-compose up --build e2e-tests-reservation1
   e2e-reservation:
     build:
       context: ../../../e2e_tests
@@ -106,6 +117,8 @@ services:
         condition: service_healthy
 
   # --- TEST E2E SCÉNARIO 2 ---
+  # Lancer les tests E2E :
+  # docker-compose up --build e2e-tests-reservation2
   e2e-autre-test:
     build:
       context: ../../../e2e_tests
@@ -114,6 +127,43 @@ services:
     depends_on:
       app:
         condition: service_healthy
+
+  newman-db-cleaner:
+    image: mariadb:12.1
+    volumes:
+      - ../../../newman_tests:/scripts
+    # On attente 2s que la BDD soit dispo puis on lance le script de nettoyage
+    command: >
+      sh -c "until mariadb-admin ping -h db -u root -pexample --silent; do 
+              sleep 2; 
+            done; 
+            mariadb -h db -u root -pexample poc_db < /scripts/clean_db.sql" 
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # --- TESTS API NEWMAN ---
+  newman:
+    # On utilise l'image htmlextra qui possède déjà le plugin de rapport
+    image: dannydainton/htmlextra
+    container_name: newman-api-tests
+    volumes:
+      - ../../../newman_tests:/etc/newman
+    depends_on:
+      newman-db-cleaner:
+        condition: service_completed_successfully
+      app:
+        condition: service_healthy
+    entrypoint: [ "newman", "run", "Poc_tests_api.postman_collection", "-e", "env.json", "--env-var", "base_url=http://app:8080/api", "--reporters", "cli,htmlextra", "--reporter-htmlextra-export", "/etc/newman/index.html", "--reporter-htmlextra-showMarkdownLinks", "--reporter-htmlextra-showEnvironmentVars", "--reporter-htmlextra-logging" ]
+  # --- SERVEUR DE RAPPORTS NEWMAN ---
+  newman-dashboard:
+    image: nginx:alpine
+    container_name: newman-dashboard
+    ports:
+      - "8083:80"
+    volumes:
+      - ../../../newman_tests:/usr/share/nginx/html:ro
+    restart: always
 
 volumes:
   jenkins_home:

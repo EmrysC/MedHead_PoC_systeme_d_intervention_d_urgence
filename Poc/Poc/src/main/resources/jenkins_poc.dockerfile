@@ -10,8 +10,13 @@ RUN echo "deb [arch=$(dpkg --print-architecture) \
 RUN apt-get update && apt-get install -y docker-ce-cli docker-compose-plugin
 
 
-# Installation automatique des plugins (Blue Ocean et ses dépendances)
-# On utilise l'outil officiel jenkins-plugin-cli
-RUN jenkins-plugin-cli --plugins blueocean docker-workflow
+# Installation automatique des plugins
+# blueocean : l'interface "jolie"
+# sonar : le plugin SonarQube Scanner
+# docker-workflow : pour utiliser Docker dans tes pipelines
+RUN jenkins-plugin-cli --plugins \
+  blueocean \
+  sonar \
+  docker-workflow
 
 USER jenkins
