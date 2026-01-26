@@ -15,14 +15,14 @@ RUN apt-get update && apt-get install -y \
     maven \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Installation de Docker CLI et du plugin Compose
+# 2. Installation de Docker CLI
 RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-24.0.7.tgz | tar zxvf - --strip-components=1 -C /usr/local/bin docker/docker
 
-# 3 : Téléchargement du binaire Docker Compose autonome pour éviter l'erreur 'unknown command'
+# 3. Installation de Docker Compose 
 RUN curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
-# 4. Installation de Node.js & Newman (Tests E2E et API)
+# 4. Installation de Node.js & Newman
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g newman newman-reporter-htmlextra
@@ -34,8 +34,8 @@ RUN curl -o /tmp/sonar-scanner.zip -L https://binaries.sonarsource.com/Distribut
     ln -s /opt/sonar-scanner-${SONAR_SCANNER_VERSION}-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner && \
     rm /tmp/sonar-scanner.zip
 
-# 6. Installation des plugins Jenkins (Inclut Blue Ocean pour l'interface visuelle)
-RUN jenkins-plugin-cli --plugins "blueocean workflow-aggregator docker-workflow git sonar"
+# 6. Installation des plugins Jenkins (SANS Blue Ocean)
+RUN jenkins-plugin-cli --plugins "workflow-aggregator docker-workflow git sonar"
 
 # 7. Retour à l'utilisateur Jenkins
 USER jenkins

@@ -6,47 +6,41 @@ pipeline {
     }
 
     environment {
-        // Chemin vers le dossier contenant le docker-compose.yml
+        // On définit le dossier où se trouvent compose.yaml et .env
         COMPOSE_DIR = "Poc/Poc/src/main/resources"
     }
 
     stages {
         stage('Nettoyage & Préparation') {
             steps {
-                echo 'Démarrage des services de base...'
-                // On utilise -f pour pointer vers le fichier compose au bon endroit
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml down --remove-orphans"
+                echo 'Démarrage des services avec injection automatique du fichier .env...'
+                // Docker Compose charge  le .env 
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db sonarqube"
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f app db sonarqube"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db app sonarqube"
             }
         }
 
         stage('Analyse SonarQube') {
             steps {
-                echo 'Lancement du scan SonarQube...'
-                // Note: SonarQube prend du temps à démarrer, un petit temps d'attente est souvent nécessaire
-                sleep 30
+                echo 'Attente du démarrage de SonarQube...'
+                sleep 40
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm sonar-scanner"
             }
         }
 
         stage('Tests API (Newman)') {
             steps {
-                echo 'Nettoyage DB et lancement des tests Newman...'
+                echo 'Lancement des tests Newman...'
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm newman-db-cleaner"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm newman"
             }
         }
 
-        stage('Tests E2E - Scénario 1') {
+        stage('Tests E2E') {
             steps {
-                echo 'Lancement du Scénario 1 : Réservation classique...'
+                echo 'Lancement des scénarios Selenium...'
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-tests-reservation1"
-            }
-        }
-
-        stage('Tests E2E - Scénario 2') {
-            steps {
-                echo 'Lancement du Scénario 2 : Recherche par spécialité...'
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-tests-reservation2"
             }
         }
@@ -56,12 +50,6 @@ pipeline {
         always {
             echo 'Nettoyage final...'
             sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db"
-        }
-        success {
-            echo 'Félicitations : Tous les tests ont réussi !'
-        }
-        failure {
-            echo 'Échec des tests. Consultez les logs ci-dessus ou Blue Ocean.'
         }
     }
 }

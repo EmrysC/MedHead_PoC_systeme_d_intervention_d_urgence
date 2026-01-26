@@ -105,7 +105,7 @@ services:
       - 8082:8080
       - 50000:50000
     environment:
-      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Xmx2048m -Xms512m
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
