@@ -1,7 +1,7 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job">
     <actions/>
-    <description>Job automatique pour MedHead PoC</description>
+    <description>Job automatique pour MedHead PoC avec interface Blue Ocean</description>
     <keepDependencies>false</keepDependencies>
     <properties>
         <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
@@ -30,7 +30,7 @@
             <submoduleCfg class="empty-list"/>
             <extensions/>
         </scm>
-        <scriptPath>Poc/Poc/src/main/resources/Jenkinsfile</scriptPath>
+        <scriptPath>Poc/Poc/src/main/resources/jenkins/Jenkinsfile</scriptPath>
         <lightweight>true</lightweight>
     </definition>
     <triggers/>
