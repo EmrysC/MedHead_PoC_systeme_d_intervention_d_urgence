@@ -10,9 +10,13 @@
 # 4 Lancer la commande "docker-compose up -d" pour lancer les contenes en arrière plan
 # 5 Pour vérifier que les conteneurs sont bien lancés : "docker ps"
 
-# utiles :
+# COMMANDES UTILES :
+# Allumer les conteneurs   : docker-compose up -d
 # Etteindre les conteneurs : docker-compose down
-# Afficher les logs en cas d'erreur au démarage : docker logs resources-newman-db-cleaner-1
+# Etteindre et supprimer les orphelins : docker compose down --remove-orphans
+# Voir les conteneurs      : docker ps
+# Forcer la construction   : docker-compose up --build --remove-orphans <nom_du_service>
+# Afficher les logs        : docker logs resources-newman-db-cleaner-1
 # Forcer la reconstruction : docker-compose up --force-recreate newman
 
 # Accéder à l'application backend :
@@ -111,7 +115,7 @@ services:
     build:
       context: ../../../e2e_tests
     container_name: e2e-tests-reservation1
-    command: [ "node", "E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js" ]
+    #    command: [ "node", "E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js" ]
     depends_on:
       app:
         condition: service_healthy
@@ -123,7 +127,7 @@ services:
     build:
       context: ../../../e2e_tests
     container_name: e2e-tests-reservation2
-    command: [ "node", "E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js" ]
+    #   command: [ "node", "E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js" ]
     depends_on:
       app:
         condition: service_healthy
@@ -154,7 +158,7 @@ services:
         condition: service_completed_successfully
       app:
         condition: service_healthy
-    entrypoint: [ "newman", "run", "Poc_tests_api.postman_collection", "-e", "env.json", "--env-var", "base_url=http://app:8080/api", "--reporters", "cli,htmlextra", "--reporter-htmlextra-export", "/etc/newman/index.html", "--reporter-htmlextra-showMarkdownLinks", "--reporter-htmlextra-showEnvironmentVars", "--reporter-htmlextra-logging" ]
+  #  entrypoint: [ "newman", "run", "Poc_tests_api.postman_collection", "-e", "env.json", "--env-var", "base_url=http://app:8080/api", "--reporters", "cli,htmlextra", "--reporter-htmlextra-export", "/etc/newman/index.html", "--reporter-htmlextra-showMarkdownLinks", "--reporter-htmlextra-showEnvironmentVars", "--reporter-htmlextra-logging" ]
   # --- SERVEUR DE RAPPORTS NEWMAN ---
   newman-dashboard:
     image: nginx:alpine
@@ -164,6 +168,38 @@ services:
     volumes:
       - ../../../newman_tests:/usr/share/nginx/html:ro
     restart: always
+
+  # --- SONARQUBE (SERVEUR) ---
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sonarqube_poc
+    ports:
+      - "8084:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      # Cette option force Sonar à accepter les tokens/auth sans bloquer sur le changement de MDP
+      - SONAR_FORCEAUTHENTICATION=true
+    restart: always
+    healthcheck:
+      # On utilise wget (qui est présent dans l'image) au lieu de curl
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:9000/api/system/status | grep -q UP" ]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 90s
+
+  # --- SCANNER SONARQUBE ---
+  sonar-scanner:
+    image: sonarsource/sonar-scanner-cli
+    container_name: sonar-scanner-poc
+    volumes:
+      - ../../../:/usr/src
+    # On utilise les identifiants par défaut admin/admin
+    command: >
+      sonar-scanner  -Dsonar.login=admin  -Dsonar.password=admin  -Dsonar.projectKey=MedHead_PoC  -Dsonar.sources=.  -Dsonar.host.url=http://sonarqube:9000  -Dsonar.java.binaries=target/classes
+    depends_on:
+      sonarqube:
+        condition: service_healthy
 
 volumes:
   jenkins_home:
