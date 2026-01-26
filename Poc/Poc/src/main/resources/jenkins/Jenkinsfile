@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+    
+    // Mémoire Git : Jenkins vérifie s'il y a un nouveau commit toutes les 5 min
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
+    stages {
+        stage('Nettoyage & Préparation') {
+            steps {
+                echo 'Démarrage des services de base...'
+                // On s'assure que tout est propre et on lance les serveurs
+                sh 'docker compose down --remove-orphans'
+                sh 'docker compose up -d db app sonarqube'
+            }
+        }
+
+        stage('Analyse SonarQube') {
+            steps {
+                echo 'Lancement du scan SonarQube...'
+                // Utilise la configuration que nous avons mise dans le compose 
+                sh 'docker compose run --rm sonar-scanner sonar-scanner -Dsonar.login=admin -Dsonar.password=admin -Dsonar.projectKey=MedHead_PoC -Dsonar.sources=. -Dsonar.host.url=http://sonarqube:9000 -Dsonar.java.binaries=target/classes'
+            }
+        }
+
+        stage('Tests API (Newman)') {
+            steps {
+                echo 'Nettoyage DB et lancement des tests Newman...'
+                sh 'docker compose run --rm newman-db-cleaner'
+                sh 'docker compose run --rm newman newman run Poc_tests_api.postman_collection -e env.json --reporters cli,htmlextra'
+            }
+        }
+
+        stage('Tests E2E - Scénario 1') {
+            steps {
+                echo 'Lancement du Scénario 1 : Réservation classique...'
+                // On lance le premier fichier de test
+                sh 'docker compose run --rm e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js'
+            }
+        }
+
+        stage('Tests E2E - Scénario 2') {
+            steps {
+                echo 'Lancement du Scénario 2 : Recherche par spécialité...'
+                // On lance le deuxième fichier de test
+                sh 'docker compose run --rm e2e-autre-test node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Tous les tests ont réussi !'
+        }
+        failure {
+            echo 'Échec des tests. Vérifiez les logs des conteneurs.'
+        }
+        always {
+            // On éteint l'app et la db pour libérer la RAM, mais on laisse SonarQube si tu veux voir le rapport
+            sh 'docker compose stop app db'
+            // Optionnel : décommente la ligne suivante pour tout éteindre
+            // sh 'docker compose down'
+        }
+    }
+}

@@ -92,20 +92,24 @@ services:
   # Ouvrir un navigateur web et aller à l'adresse "http://localhost:8082
   # docker logs jenkins_poc   va afficher le mdp admin initial
   # user : admin
-  # mdp : 0cadc6ab92ab4d87b3b738c3ab010145
-  # recup mdp : docker exec jenkins_poc cat /var/jenkins_home/secrets/initialAdminPassword
+  #recup mdp : docker exec jenkins_poc cat /var/jenkins_home/secrets/initialAdminPassword
+
+
   jenkins:
     build:
-      context: .
+      context: ./jenkins
       dockerfile: jenkins_poc.dockerfile
     container_name: jenkins_poc
     user: root
     ports:
       - 8082:8080
       - 50000:50000
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins/init.groovy.d:/var/jenkins_home/init.groovy.d
     restart: always
 
   # --- TEST E2E SCÉNARIO 1 ---
@@ -195,8 +199,8 @@ services:
     volumes:
       - ../../../:/usr/src
     # On utilise les identifiants par défaut admin/admin
-    command: >
-      sonar-scanner  -Dsonar.login=admin  -Dsonar.password=admin  -Dsonar.projectKey=MedHead_PoC  -Dsonar.sources=.  -Dsonar.host.url=http://sonarqube:9000  -Dsonar.java.binaries=target/classes
+    #command: >
+    #  sonar-scanner  -Dsonar.login=admin  -Dsonar.password=admin  -Dsonar.projectKey=MedHead_PoC  -Dsonar.sources=.  -Dsonar.host.url=http://sonarqube:9000  -Dsonar.java.binaries=target/classes
     depends_on:
       sonarqube:
         condition: service_healthy
