@@ -30,7 +30,7 @@ pipeline {
         stage('Analyse SonarQube') {
             steps {
                 echo 'Lancement du scan SonarQube avec paramètres forcés...'
-                sleep 40
+                sleep 90
                 // On force les paramètres pour corriger l'erreur 'Unknown'
                 sh """
                 docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm sonar-scanner \
