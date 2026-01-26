@@ -6,15 +6,21 @@ pipeline {
     }
 
     environment {
-        // On définit le dossier où se trouvent compose.yaml et .env
         COMPOSE_DIR = "Poc/Poc/src/main/resources"
     }
 
     stages {
+        stage('Initialisation Workspace') {
+            steps {
+                echo 'Injection des secrets locaux...'
+                // On s'assure que le .env est copié pour l'application
+                sh "cp /tmp/.env ${COMPOSE_DIR}/.env"
+            }
+        }
+
         stage('Nettoyage & Préparation') {
             steps {
-                echo 'Démarrage des services avec injection automatique du fichier .env...'
-                // Docker Compose charge  le .env 
+                echo 'Redémarrage des services...'
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db sonarqube"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f app db sonarqube"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db app sonarqube"
@@ -23,15 +29,26 @@ pipeline {
 
         stage('Analyse SonarQube') {
             steps {
-                echo 'Attente du démarrage de SonarQube...'
+                echo 'Lancement du scan SonarQube avec paramètres forcés...'
                 sleep 40
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm sonar-scanner"
+                // On force les paramètres pour corriger l'erreur 'Unknown'
+                sh """
+                docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm sonar-scanner \
+                  -Dsonar.projectKey=MedHead_PoC \
+                  -Dsonar.projectName=MedHead_PoC_System \
+                  -Dsonar.host.url=http://sonarqube_poc:9000 \
+                  -Dsonar.login=admin \
+                  -Dsonar.password=admin \
+                  -Dsonar.sources=Poc/Poc/src/main/java \
+                  -Dsonar.java.binaries=Poc/Poc/target/classes \
+                  -Dsonar.exclusions=**/*.env
+                """
             }
         }
 
         stage('Tests API (Newman)') {
             steps {
-                echo 'Lancement des tests Newman...'
+                echo 'Nettoyage DB et lancement Newman...'
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm newman-db-cleaner"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm newman"
             }
@@ -49,6 +66,7 @@ pipeline {
     post {
         always {
             echo 'Nettoyage final...'
+            sh "rm -f ${COMPOSE_DIR}/.env"
             sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db"
         }
     }
