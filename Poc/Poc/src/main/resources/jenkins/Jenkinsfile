@@ -42,8 +42,15 @@ pipeline {
 
         stage('Lancement Application') {
             steps {
-                echo 'Démarrage de l application en arrière-plan pour les tests...'
+                echo 'Démarrage et injection forcée du .env...'
+                // 1. On lance le conteneur 
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d app"
+                
+                // 2. On injecte le fichier .env directement dans le conteneur
+                sh "docker cp ${COMPOSE_DIR}/.env medhead_backend:/app/.env"
+                
+                // 3. On redémarre le service pour qu'il l'utilise
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml restart app"
             }
         }
 
