@@ -32,7 +32,7 @@ pipeline {
             steps {
                 echo 'Attente de stabilisation de SonarQube (30s)...'
                 sleep 30
-                echo 'Lancement du scan SonarQube (Version 5 + Compatibilité)...'
+                echo 'Lancement du scan SonarQube (Auth admin/admin)...'
                 sh """
                 docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
                   -e SONAR_SCANNER_OPTS="-Dsonar.scanner.skipJreProvisioning=true" \
@@ -40,7 +40,8 @@ pipeline {
                   -Dsonar.projectKey=MedHead_PoC \
                   -Dsonar.projectName=MedHead_PoC_System \
                   -Dsonar.host.url=http://sonarqube-poc:9000 \
-                  -Dsonar.token=sqa_8019e09d17208d245451f28e2025700839e9a3b9 \
+                  -Dsonar.login=admin \
+                  -Dsonar.password=admin \
                   -Dsonar.sources=Poc/Poc/src/main/java \
                   -Dsonar.java.binaries=Poc/Poc/target/classes \
                   -Dsonar.scanner.force-deprecated-api-usage=true \
