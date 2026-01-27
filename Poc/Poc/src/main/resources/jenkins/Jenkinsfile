@@ -45,7 +45,10 @@ pipeline {
                 echo 'Démarrage avec injection directe des secrets...'
                 dir("${COMPOSE_DIR}") {
                     sh """
+                        # On charge les variables du fichier .env dans l'environnement du shell
                         export \$(grep -v '^#' .env | xargs)
+                        
+                        # On lance l'application en arrière-plan
                         docker-compose up -d app
                     """
                 }
