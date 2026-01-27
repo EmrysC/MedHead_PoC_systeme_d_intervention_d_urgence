@@ -27,6 +27,14 @@
 # Newman Dashboard :  http://localhost:8083
 # SonarQube :         http://localhost:8084
 
+# Si pas assez de mémoire pour Jenkins et SonarQube, aller dans les paramètres de Docker Desktop et augmenter la mémoire allouée (ex : 4Go)
+# Window + R
+# UserProfile%
+# Ouvirir le fichier .wslconfig
+#  [wsl2]
+#  memory=6GB
+#  swap=8GB
+
 services:
 
   # --- BASE DE DONNÉES ---
@@ -182,16 +190,14 @@ services:
       - "8084:9000"
     environment:
       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
-      # Cette option force Sonar à accepter les tokens/auth sans bloquer sur le changement de MDP
       - SONAR_FORCEAUTHENTICATION=true
     restart: always
     healthcheck:
-      # On utilise wget (qui est présent dans l'image) au lieu de curl
       test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:9000/api/system/status | grep -q UP" ]
-      interval: 15s
-      timeout: 10s
+      interval: 10s # Vérifie toutes les 10s
+      timeout: 5s
       retries: 30
-      start_period: 90s
+      start_period: 20s
 
   # --- SCANNER SONARQUBE ---
   sonar-scanner:

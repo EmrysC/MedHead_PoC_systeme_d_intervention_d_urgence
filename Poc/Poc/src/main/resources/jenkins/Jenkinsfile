@@ -13,35 +13,34 @@ pipeline {
         stage('Initialisation Workspace') {
             steps {
                 echo 'Injection des secrets locaux...'
-                // On s'assure que le .env est copié pour l'application
                 sh "cp /tmp/.env ${COMPOSE_DIR}/.env"
             }
         }
 
         stage('Nettoyage & Préparation') {
             steps {
-                echo 'Redémarrage des services...'
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db sonarqube"
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f app db sonarqube"
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db app sonarqube"
+                echo 'Redémarrage des services applicatifs...'
+                // On ne stoppe que l'app et la db pour garder SonarQube "chaud" (plus rapide)
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db"
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f app db"
+                // up -d s'assure que tout tourne sans réinitialiser Sonar s'il est déjà là
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d"
             }
         }
 
         stage('Analyse SonarQube') {
             steps {
-                echo 'Lancement du scan SonarQube avec paramètres forcés...'
-                sleep 90
-                // On force les paramètres pour corriger l'erreur 'Unknown'
+                echo 'Lancement du scan SonarQube...'
                 sh """
-                docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm sonar-scanner \
-                  -Dsonar.projectKey=MedHead_PoC \
-                  -Dsonar.projectName=MedHead_PoC_System \
-                  -Dsonar.host.url=http://sonarqube_poc:9000 \
-                  -Dsonar.login=admin \
-                  -Dsonar.password=admin \
-                  -Dsonar.sources=Poc/Poc/src/main/java \
-                  -Dsonar.java.binaries=Poc/Poc/target/classes \
-                  -Dsonar.exclusions=**/*.env
+                docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
+                sonar-scanner \
+                -Dsonar.projectKey=MedHead_PoC \
+                -Dsonar.projectName=MedHead_PoC_System \
+                -Dsonar.host.url=http://sonarqube:9000 \
+                -Dsonar.token=sqa_8019e09d17208d245451f28e2025700839e9a3b9 \
+                -Dsonar.sources=Poc/Poc/src/main/java \
+                -Dsonar.java.binaries=Poc/Poc/target/classes \
+                -Dsonar.exclusions=**/*.env
                 """
             }
         }
@@ -57,8 +56,8 @@ pipeline {
         stage('Tests E2E') {
             steps {
                 echo 'Lancement des scénarios Selenium...'
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-tests-reservation1"
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-tests-reservation2"
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-reservation"
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-autre-test"
             }
         }
     }
@@ -66,8 +65,10 @@ pipeline {
     post {
         always {
             echo 'Nettoyage final...'
-            sh "rm -f ${COMPOSE_DIR}/.env"
+            // 1. On stoppe d'abord (Docker a besoin du .env pour identifier les services)
             sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db"
+            // 2. On supprime le secret ensuite
+            sh "rm -f ${COMPOSE_DIR}/.env"
         }
     }
 }
