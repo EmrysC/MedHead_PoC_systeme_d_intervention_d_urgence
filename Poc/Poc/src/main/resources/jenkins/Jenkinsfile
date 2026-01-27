@@ -28,24 +28,30 @@ pipeline {
             }
         }
 
+        stage('Compilation') {
+        steps {
+            echo 'Compilation du projet avec Maven...'
+            // On utilise le conteneur 'app' qui a déjà l'environnement Java/Maven
+            sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm app mvn clean compile"
+        }
+        }
+
         stage('Analyse SonarQube') {
             steps {
                 echo 'Attente de stabilisation de SonarQube (30s)...'
                 sleep 30
                 echo 'Lancement du scan SonarQube (Auth admin/admin)...'
                 sh """
-                docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
-                  -e SONAR_SCANNER_OPTS="-Dsonar.scanner.skipJreProvisioning=true" \
-                  sonar-scanner \
-                  -Dsonar.projectKey=MedHead_PoC \
-                  -Dsonar.projectName=MedHead_PoC_System \
-                  -Dsonar.host.url=http://sonarqube-poc:9000 \
-                  -Dsonar.login=admin \
-                  -Dsonar.password=admin \
-                  -Dsonar.sources=Poc/Poc/src/main/java \
-                  -Dsonar.java.binaries=Poc/Poc/target/classes \
-                  -Dsonar.scanner.force-deprecated-api-usage=true \
-                  -Dsonar.exclusions=**/*.env
+                    docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
+                    sonar-scanner \
+                    -Dsonar.projectKey=MedHead_PoC \
+                    -Dsonar.projectName=MedHead_PoC_System \
+                    -Dsonar.host.url=http://sonarqube-poc:9000 \
+                    -Dsonar.login=admin \
+                    -Dsonar.password=admin \
+                    -Dsonar.sources=Poc/Poc/src/main/java \
+                    -Dsonar.java.binaries=Poc/Poc/target/classes \
+                    -Dsonar.exclusions=**/*.env
                 """
             }
         }
