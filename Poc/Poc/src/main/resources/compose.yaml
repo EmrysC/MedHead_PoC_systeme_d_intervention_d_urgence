@@ -150,9 +150,8 @@ services:
     container_name: newman-db-cleaner
     volumes:
       - ./api_tests_newman:/scripts
-    # On attente 2s que la BDD soit dispo puis on lance le script de nettoyage
     command: >
-      tail -f /dev/null
+      sh -c "mariadb -h db -u root -pexample poc_db < /scripts/clean_db.sql"
     depends_on:
       db:
         condition: service_healthy

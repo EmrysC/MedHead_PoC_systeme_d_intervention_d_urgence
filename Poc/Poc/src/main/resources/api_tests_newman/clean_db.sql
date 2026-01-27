@@ -23,3 +23,5 @@ DELETE FROM reservation
 WHERE user_id = (SELECT id FROM users WHERE email = 'postmanTestUtilisateur.non@existant.com');
 DELETE FROM users 
 WHERE email = 'postmanTestUtilisateur.non@existant.com';
+
+COMMIT;
