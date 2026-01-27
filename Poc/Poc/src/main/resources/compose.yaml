@@ -118,7 +118,7 @@ services:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - ./jenkins/init.groovy.d:/var/jenkins_home/init.groovy.d
-      - ./.env:/var/jenkins_home/.env
+      - ./.env:/tmp/.env
     restart: always
 
   # --- TEST E2E SCÉNARIO 1 ---
@@ -148,7 +148,7 @@ services:
   newman-db-cleaner:
     image: mariadb:12.1
     volumes:
-      - ../../../newman_tests:/scripts
+      - ./api_tests_newman:/scripts
     # On attente 2s que la BDD soit dispo puis on lance le script de nettoyage
     command: >
       sh -c "until mariadb-admin ping -h db -u root -pexample --silent; do 
@@ -165,7 +165,7 @@ services:
     image: dannydainton/htmlextra
     container_name: newman-api-tests
     volumes:
-      - ../../../newman_tests:/etc/newman
+      - ./api_tests_newman:/etc/newman
     depends_on:
       newman-db-cleaner:
         condition: service_completed_successfully
@@ -179,7 +179,7 @@ services:
     ports:
       - "8083:80"
     volumes:
-      - ../../../newman_tests:/usr/share/nginx/html:ro
+      - ./api_tests_newman:/usr/share/nginx/html:ro
     restart: always
 
   # --- SONARQUBE (SERVEUR) ---
