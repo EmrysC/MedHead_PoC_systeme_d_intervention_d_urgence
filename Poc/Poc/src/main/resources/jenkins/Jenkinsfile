@@ -13,10 +13,13 @@ pipeline {
 
         stage('Initialisation Workspace') {
             steps {
-                echo 'Vérification des secrets (.env) dans le répertoire de ressources...'
+                echo 'Récupération du secret et vérification...'
+                // 1. On COPIE le fichier depuis le stockage interne de Jenkins 
+                sh "cp /var/jenkins_home/.env ${COMPOSE_DIR}/.env"
+                
+                // 2. On VÉRIFIE que le fichier est bien arrivé au bon endroit
                 dir("${COMPOSE_DIR}") {
-                    // Cette commande vérifie si le fichier existe. Si non, le build s'arrête proprement.
-                    sh "test -f .env && echo 'Fichier .env détecté.' || (echo 'ERREUR : .env absent dans ${COMPOSE_DIR}' && exit 1)"
+                    sh "test -f .env && echo 'Succès : .env injecté.' || (echo 'ERREUR : .env toujours absent' && exit 1)"
                 }
             }
         }
