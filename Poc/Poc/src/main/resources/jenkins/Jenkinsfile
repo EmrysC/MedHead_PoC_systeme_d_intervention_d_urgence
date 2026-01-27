@@ -49,9 +49,9 @@ pipeline {
 
         stage('Analyse SonarQube') {
             steps {
-                echo 'Attente de stabilisation de SonarQube (30s)...'
+                echo 'Attente de stabilisation (30s)...'
                 sleep 30
-                echo 'Lancement du scan SonarQube...'
+                echo 'Lancement du scan...'
                 sh """
                     docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
                     sonar-scanner \
@@ -60,9 +60,9 @@ pipeline {
                     -Dsonar.host.url=http://sonarqube-poc:9000 \
                     -Dsonar.login=admin \
                     -Dsonar.password=admin \
-                    -Dsonar.sources=Poc/Poc/src/main/java \
-                    -Dsonar.java.binaries=Poc/Poc/target/classes \
-                    -Dsonar.exclusions=**/*.env
+                    -Dsonar.sources=. \
+                    -Dsonar.java.binaries=. \
+                    -Dsonar.exclusions=**/target/**,**/*.env
                 """
             }
         }
