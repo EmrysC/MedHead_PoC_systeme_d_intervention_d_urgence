@@ -60,8 +60,8 @@ pipeline {
                     -Dsonar.host.url=http://sonarqube-poc:9000 \
                     -Dsonar.login=admin \
                     -Dsonar.password=admin \
-                    -Dsonar.sources=src/main/java \
-                    -Dsonar.java.binaries=target/classes \
+                    -Dsonar.sources=Poc/Poc/src/main/java \
+                    -Dsonar.java.binaries=Poc/Poc/target/classes \
                     -Dsonar.exclusions=**/*.env
                 """
             }
