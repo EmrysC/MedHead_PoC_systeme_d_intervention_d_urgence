@@ -33,7 +33,7 @@ pipeline {
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f app db"
                 // up -d s'assure que tout tourne sans réinitialiser Sonar s'il est déjà là
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db app sonarqube"
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db app sonarqube newman-db-cleaner"
             }
         }
 
@@ -133,7 +133,7 @@ pipeline {
         always {
             echo 'Nettoyage final...'
             // 1. On stoppe d'abord (Docker a besoin du .env pour identifier les services)
-            sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db"
+            sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db newman-db-cleaner"
             // 2. On supprime le secret ensuite
             sh "rm -f ${COMPOSE_DIR}/.env"
         }
