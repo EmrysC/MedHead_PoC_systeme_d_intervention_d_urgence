@@ -42,15 +42,9 @@ pipeline {
 
         stage('Lancement Application') {
             steps {
-                echo 'Démarrage avec injection directe des secrets...'
+                echo 'Démarrage avec lecture directe du fichier .env par Docker...'
                 dir("${COMPOSE_DIR}") {
-                    sh """
-                        # On charge les variables du fichier .env dans l'environnement du shell
-                        export \$(grep -v '^#' .env | xargs)
-                        
-                        # On lance l'application en arrière-plan
-                        docker-compose up -d app
-                    """
+                    sh "docker-compose --env-file .env up -d app"
                 }
             }
         }
