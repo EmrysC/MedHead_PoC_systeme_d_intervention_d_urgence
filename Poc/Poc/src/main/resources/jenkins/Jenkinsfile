@@ -78,13 +78,13 @@ pipeline {
 
                     // 1. INJECTION DE IMPORT.SQL (Pour remplir la base vide)
                     echo 'Importation des données initiales (import.sql)...'
-                    sh "docker cp sql-init/import.sql newman-db-cleaner:/scripts/import.sql"
-                    sh "docker exec newman-db-cleaner sh -c 'mariadb -h db -u root -pexample poc_db < /scripts/import.sql'"
+                    sh "docker cp sql-init/import.sql newman-db-cleaner:/tmp/import.sql"
+                    sh "docker exec newman-db-cleaner sh -c 'mariadb -h db -u root -pexample poc_db < /tmp/import.sql'"
 
                     // 2. INJECTION DE CLEAN_DB.SQL (Pour préparer les cas d'erreur Newman)
                     echo 'Préparation des scénarios de tests (clean_db.sql)...'
-                    sh "docker cp api_tests_newman/clean_db.sql newman-db-cleaner:/scripts/clean_db.sql"
-                    sh "docker exec newman-db-cleaner sh -c 'mariadb -h db -u root -pexample poc_db < /scripts/clean_db.sql'"
+                    sh "docker cp api_tests_newman/clean_db.sql newman-db-cleaner:/tmp/clean_db.sql"
+                    sh "docker exec newman-db-cleaner sh -c 'mariadb -h db -u root -pexample poc_db < /tmp/clean_db.sql'"
                     
                     sleep 10 // Petit délai pour s'assurer que le cleaner a fini
 
