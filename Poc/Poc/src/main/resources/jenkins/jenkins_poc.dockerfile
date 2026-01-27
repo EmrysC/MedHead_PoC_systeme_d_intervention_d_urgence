@@ -34,8 +34,9 @@ RUN curl -o /tmp/sonar-scanner.zip -L https://binaries.sonarsource.com/Distribut
     ln -s /opt/sonar-scanner-${SONAR_SCANNER_VERSION}-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner && \
     rm /tmp/sonar-scanner.zip
 
-# 6. Installation des plugins Jenkins (SANS Blue Ocean)
-RUN jenkins-plugin-cli --plugins "workflow-aggregator docker-workflow git sonar"
+# 6. Installation des plugins Jenkins 
+# Correction étape 6 et 7 : Une seule commande propre
+RUN jenkins-plugin-cli --plugins "workflow-aggregator docker-workflow git sonar blueocean blueocean-pipeline-editor"
 
 # 7. Retour à l'utilisateur Jenkins
 USER jenkins

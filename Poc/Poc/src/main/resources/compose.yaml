@@ -201,10 +201,11 @@ services:
 
   # --- SCANNER SONARQUBE ---
   sonar-scanner:
-    image: sonarsource/sonar-scanner-cli
+    image: sonarsource/sonar-scanner-cli:5
     container_name: sonar-scanner-poc
     volumes:
       - ../../../:/usr/src
+    working_dir: /usr/src
     # On utilise les identifiants par défaut admin/admin
     #command: >
     #  sonar-scanner  -Dsonar.login=admin  -Dsonar.password=admin  -Dsonar.projectKey=MedHead_PoC  -Dsonar.sources=.  -Dsonar.host.url=http://sonarqube:9000  -Dsonar.java.binaries=target/classes

@@ -30,9 +30,10 @@ pipeline {
 
         stage('Analyse SonarQube') {
             steps {
-                echo 'Lancement du scan SonarQube...'
+                echo 'Lancement du scan SonarQube (Version 5 + Compatibilité)...'
                 sh """
                 docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
+                  -e SONAR_SCANNER_OPTS="-Dsonar.scanner.skipJreProvisioning=true" \
                   sonar-scanner \
                   -Dsonar.projectKey=MedHead_PoC \
                   -Dsonar.projectName=MedHead_PoC_System \
@@ -40,8 +41,8 @@ pipeline {
                   -Dsonar.token=sqa_8019e09d17208d245451f28e2025700839e9a3b9 \
                   -Dsonar.sources=Poc/Poc/src/main/java \
                   -Dsonar.java.binaries=Poc/Poc/target/classes \
-                  -Dsonar.exclusions=**/*.env \
-                  -Dsonar.scanner.force-deprecated-api-usage=true
+                  -Dsonar.scanner.force-deprecated-api-usage=true \
+                  -Dsonar.exclusions=**/*.env
                 """
             }
         }
