@@ -13,10 +13,10 @@ pipeline {
 
         stage('Initialisation Workspace') {
             steps {
-                echo 'Récupération sécurisée du fichier .env via les identifiants Jenkins...'
-                // Jenkins va chercher le fichier secret et créer un chemin temporaire ($ENV_FILE)
+                echo 'Récupération sécurisée du fichier .env depuis Jenkins...'
+                // Jenkins extrait le fichier secret et crée un chemin temporaire ($ENV_FILE)
                 withCredentials([file(credentialsId: 'medhead-env-file', variable: 'ENV_FILE')]) {
-                    // On copie ce fichier secret vers ton dossier de ressources de projet
+                    // On copie ce fichier secret vers le dossier de ressources
                     sh "cp \$ENV_FILE ${COMPOSE_DIR}/.env"
                 }
                 
