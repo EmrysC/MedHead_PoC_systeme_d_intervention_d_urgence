@@ -70,15 +70,10 @@ pipeline {
         stage('Tests API (Newman)') {
             steps {
                 echo 'Nettoyage DB et lancement Newman...'
-                // On récupère le chemin absolu du dossier de tests
-                script {
-                    def newman_abs_path = sh(script: "pwd", returnStdout: true).trim() + "/${COMPOSE_DIR}/api_tests_newman"
-                    
-                    // On lance le cleaner en forçant le montage du volume (-v) avec le chemin absolu
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v ${newman_abs_path}:/scripts newman-db-cleaner"
-                    
-                    // On lance Newman de la même manière
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v ${newman_abs_path}:/etc/newman newman"
+                dir("${COMPOSE_DIR}") {
+                    // On lance les commandes sans forcer le -v, 
+                    sh "docker-compose run --rm newman-db-cleaner"
+                    sh "docker-compose run --rm newman"
                 }
             }
         }

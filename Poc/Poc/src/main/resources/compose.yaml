@@ -171,8 +171,7 @@ services:
         condition: service_completed_successfully
       app:
         condition: service_healthy
-    entrypoint: [ "newman", "run", "collection.json", "-e", "env.json", "--env-var", "base_url=http://app:8080/api", "--reporters", "cli,htmlextra", "--reporter-htmlextra-export", "/etc/newman/index.html" ]
-  # --- SERVEUR DE RAPPORTS NEWMAN ---
+    entrypoint: [ "newman", "run", "collection.json", "-e", "env.json", "--reporters", "cli,htmlextra", "--reporter-htmlextra-export", "/etc/newman/index.html" ] # --- SERVEUR DE RAPPORTS NEWMAN ---
   newman-dashboard:
     image: nginx:alpine
     container_name: newman-dashboard
