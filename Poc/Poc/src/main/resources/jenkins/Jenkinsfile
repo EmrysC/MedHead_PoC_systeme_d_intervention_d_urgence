@@ -30,6 +30,8 @@ pipeline {
 
         stage('Analyse SonarQube') {
             steps {
+                echo 'Attente de stabilisation de SonarQube (30s)...'
+                sleep 30
                 echo 'Lancement du scan SonarQube (Version 5 + Compatibilité)...'
                 sh """
                 docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
