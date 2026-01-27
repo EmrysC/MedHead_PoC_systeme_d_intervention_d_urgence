@@ -32,9 +32,11 @@ pipeline {
 
         stage('Compilation') {
             steps {
-                echo 'Compilation du projet (Génération des .class)...'
-                // On force l'entrypoint vide pour exécuter UNIQUEMENT la compilation et s'arrêter
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm --entrypoint '' app mvn clean compile"
+                echo 'Compilation du projet avec le Maven de Jenkins...'
+                // On se déplace dans le dossier contenant le fichier pom.xml (Poc/Poc)
+                dir("Poc/Poc") {
+                    sh "mvn clean compile"
+                }
             }
         }
 
