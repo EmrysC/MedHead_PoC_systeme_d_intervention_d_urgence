@@ -89,7 +89,7 @@ pipeline {
                     
                     // 3. Exécution de Newman
                     // -a permet d'afficher la sortie dans la console Jenkins
-                    sh "docker-compose start -a newman"
+                    sh "docker start -a newman-api-tests"
                 }
             }
         }
