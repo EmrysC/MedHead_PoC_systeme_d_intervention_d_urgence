@@ -150,26 +150,25 @@ services:
     container_name: newman-db-cleaner
     volumes:
       - ./api_tests_newman:/scripts
-    command: >
-      sh -c "mariadb -h db -u root -pexample poc_db < /scripts/clean_db.sql"
+    # On le laisse allumé pour pouvoir faire le "docker cp"
+    command: tail -f /dev/null
     depends_on:
       db:
         condition: service_healthy
 
   # --- TESTS API NEWMAN ---
   newman:
-    # On utilise l'image htmlextra qui possède déjà le plugin de rapport
     image: dannydainton/htmlextra
     container_name: newman-api-tests
     volumes:
       - ./api_tests_newman:/etc/newman
     working_dir: /etc/newman
+    # On enlève la dépendance "service_completed_successfully" qui bloquait tout
     depends_on:
-      newman-db-cleaner:
-        condition: service_completed_successfully
       app:
         condition: service_healthy
-    entrypoint: [ "newman", "run", "collection.json", "-e", "env.json", "--reporters", "cli,htmlextra", "--reporter-htmlextra-export", "/etc/newman/index.html" ] # --- SERVEUR DE RAPPORTS NEWMAN ---
+    entrypoint: [ "newman", "run", "collection.json", "-e", "env.json", "--reporters", "cli,htmlextra", "--reporter-htmlextra-export", "index.html" ]
+
   newman-dashboard:
     image: nginx:alpine
     container_name: newman-dashboard
