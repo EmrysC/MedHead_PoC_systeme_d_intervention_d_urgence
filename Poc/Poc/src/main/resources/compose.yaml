@@ -163,6 +163,7 @@ services:
     container_name: newman-api-tests
     volumes:
       - ./api_tests_newman:/etc/newman
+    working_dir: /etc/newman
     depends_on:
       newman-db-cleaner:
         condition: service_completed_successfully
