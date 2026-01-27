@@ -10,10 +10,12 @@ pipeline {
     }
 
     stages {
+
         stage('Initialisation Workspace') {
             steps {
-                echo 'Injection des secrets locaux...'
-                sh "cp /tmp/.env ${COMPOSE_DIR}/.env"
+                echo 'Vérification du fichier .env...'
+                // On vérifie juste si le fichier est bien présent dans le dossier ressources
+                sh "ls -la ${COMPOSE_DIR}/.env"
             }
         }
 
@@ -29,11 +31,18 @@ pipeline {
         }
 
         stage('Compilation') {
-        steps {
-            echo 'Compilation du projet avec Maven...'
-            // On utilise le conteneur 'app' qui a déjà l'environnement Java/Maven
-            sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm app mvn clean compile"
+            steps {
+                echo 'Compilation du projet (Génération des .class)...'
+                // On force l'entrypoint vide pour exécuter UNIQUEMENT la compilation et s'arrêter
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm --entrypoint '' app mvn clean compile"
+            }
         }
+
+        stage('Lancement Application') {
+            steps {
+                echo 'Démarrage de l application en arrière-plan pour les tests...'
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d app"
+            }
         }
 
         stage('Analyse SonarQube') {
