@@ -151,11 +151,7 @@ services:
       - ./api_tests_newman:/scripts
     # On attente 2s que la BDD soit dispo puis on lance le script de nettoyage
     command: >
-      sh -c "ls -la /scripts && 
-             until mariadb-admin ping -h db -u root -pexample --silent; do 
-               sleep 2; 
-             done; 
-             mariadb -h db -u root -pexample poc_db < /scripts/clean_db.sql"
+      tail -f /dev/null
     depends_on:
       db:
         condition: service_healthy

@@ -67,6 +67,27 @@ pipeline {
             }
         }
 
+
+        stage('Tests API (Newman)') {
+            steps {
+                echo 'Préparation des scripts et lancement Newman...'
+                dir("${COMPOSE_DIR}") {
+                    // 1. On lance le conteneur en pause pour pouvoir lui envoyer le fichier
+                    sh "docker-compose up -d newman-db-cleaner"
+                    
+                    // 2. On copie manuellement le fichier SQL depuis le workspace Jenkins vers le conteneur
+                    sh "docker cp api_tests_newman/clean_db.sql newman-db-cleaner:/scripts/clean_db.sql"
+                    
+                    // 3. On exécute le script de nettoyage à l'intérieur du conteneur
+                    sh "docker exec newman-db-cleaner sh -c 'mariadb -h db -u root -pexample poc_db < /scripts/clean_db.sql'"
+                    
+                    // 4. On lance Newman
+                    sh "docker-compose run --rm newman"
+                }
+            }
+        }
+
+/*
         stage('Tests API (Newman)') {
             steps {
                 echo 'Nettoyage DB et lancement Newman...'
@@ -77,7 +98,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage('Tests E2E') {
             steps {
                 echo 'Lancement des scénarios Selenium...'
