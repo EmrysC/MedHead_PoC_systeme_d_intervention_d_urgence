@@ -149,7 +149,7 @@ services:
   newman-db-cleaner:
     image: mariadb:12.1
     container_name: newman-db-cleaner
-    command: tail -f /dev/null
+    command: tail -f /dev/null # Garde le conteneur actif pour le pipeline
     depends_on:
       db:
         condition: service_healthy
@@ -159,7 +159,7 @@ services:
     image: dannydainton/htmlextra
     container_name: newman-api-tests
     volumes:
-      - newman_reports:/etc/newman # Utilisation du volume NOMMÉ
+      - newman_reports:/etc/newman # Utilise le volume NOMMÉ pour Jenkins
     working_dir: /etc/newman
     depends_on:
       app:
@@ -170,10 +170,11 @@ services:
   newman-dashboard:
     image: nginx:alpine
     container_name: newman-dashboard
+    restart: always # Ajout pour maintenir le dashboard en vie
     ports:
       - "8083:80"
     volumes:
-      - newman_reports:/usr/share/nginx/html:ro # Partage le volume 
+      - newman_reports:/usr/share/nginx/html:ro # Lit le volume partagé
 
   # --- SONARQUBE (SERVEUR) ---
   sonarqube:
