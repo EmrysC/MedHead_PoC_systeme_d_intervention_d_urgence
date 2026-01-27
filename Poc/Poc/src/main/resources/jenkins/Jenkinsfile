@@ -13,13 +13,15 @@ pipeline {
 
         stage('Initialisation Workspace') {
             steps {
-                echo 'Récupération du secret et vérification...'
-                // 1. On COPIE le fichier depuis le stockage interne de Jenkins 
-                sh "cp /var/jenkins_home/.env ${COMPOSE_DIR}/.env"
+                echo 'Récupération sécurisée du fichier .env...'
+                // Jenkins va chercher le fichier .env
+                withCredentials([file(credentialsId: 'medhead-env-file', variable: 'ENV_FILE')]) {
+                    // On copie ce fichier secret vers ton dossier de ressources
+                    sh "cp \$ENV_FILE ${COMPOSE_DIR}/.env"
+                }
                 
-                // 2. On VÉRIFIE que le fichier est bien arrivé au bon endroit
                 dir("${COMPOSE_DIR}") {
-                    sh "test -f .env && echo 'Succès : .env injecté.' || (echo 'ERREUR : .env toujours absent' && exit 1)"
+                    sh "test -f .env && echo 'Succès : Fichier .env injecté via Credentials Jenkins.'"
                 }
             }
         }
