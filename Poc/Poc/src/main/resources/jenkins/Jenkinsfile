@@ -39,7 +39,7 @@ pipeline {
                   sonar-scanner \
                   -Dsonar.projectKey=MedHead_PoC \
                   -Dsonar.projectName=MedHead_PoC_System \
-                  -Dsonar.host.url=http://sonarqube_poc:9000 \
+                  -Dsonar.host.url=http://sonarqube-poc:9000 \
                   -Dsonar.token=sqa_8019e09d17208d245451f28e2025700839e9a3b9 \
                   -Dsonar.sources=Poc/Poc/src/main/java \
                   -Dsonar.java.binaries=Poc/Poc/target/classes \

@@ -185,7 +185,7 @@ services:
   # --- SONARQUBE (SERVEUR) ---
   sonarqube:
     image: sonarqube:lts-community
-    container_name: sonarqube_poc
+    container_name: sonarqube-poc
     ports:
       - "8084:9000"
     environment:
