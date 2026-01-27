@@ -70,8 +70,10 @@ pipeline {
         stage('Tests API (Newman)') {
             steps {
                 echo 'Nettoyage DB et lancement Newman...'
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm newman-db-cleaner"
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm newman"
+                dir("${COMPOSE_DIR}") {
+                    sh "docker-compose run --rm newman-db-cleaner"
+                    sh "docker-compose run --rm newman"
+                }
             }
         }
 
