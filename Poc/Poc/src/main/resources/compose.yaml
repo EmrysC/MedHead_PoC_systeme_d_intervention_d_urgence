@@ -151,10 +151,11 @@ services:
       - ./api_tests_newman:/scripts
     # On attente 2s que la BDD soit dispo puis on lance le script de nettoyage
     command: >
-      sh -c "until mariadb-admin ping -h db -u root -pexample --silent; do 
-              sleep 2; 
-            done; 
-            mariadb -h db -u root -pexample poc_db < /scripts/clean_db.sql" 
+      sh -c "ls -la /scripts && 
+             until mariadb-admin ping -h db -u root -pexample --silent; do 
+               sleep 2; 
+             done; 
+             mariadb -h db -u root -pexample poc_db < /scripts/clean_db.sql"
     depends_on:
       db:
         condition: service_healthy
@@ -212,5 +213,8 @@ services:
       sonarqube:
         condition: service_healthy
 
+environment:
+  - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+  - JWT_SECRET=${JWT_SECRET}
 volumes:
   jenkins_home:
