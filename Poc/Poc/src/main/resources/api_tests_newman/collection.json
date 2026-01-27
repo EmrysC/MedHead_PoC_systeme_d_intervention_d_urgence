@@ -989,7 +989,7 @@
                           "    pm.expect(tokenValue.length).to.be.above(10);\r",
                           "    \r",
                           "    // SAUVEGARDE : Utilise le nom de la variable définie au-dessus\r",
-                          "    pm.collectionVariables.set(\"token_jwt\", tokenValue);\r",
+                          "    pm.environment.set(\"token_jwt\", tokenValue);\r",
                           "    \r",
                           "    console.log(\"Token JWT sauvegardé avec succès !\");\r",
                           "});\r",
