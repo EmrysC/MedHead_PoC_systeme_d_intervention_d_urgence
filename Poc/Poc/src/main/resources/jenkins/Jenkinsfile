@@ -24,7 +24,7 @@ pipeline {
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f app db"
                 // up -d s'assure que tout tourne sans réinitialiser Sonar s'il est déjà là
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d"
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db app sonarqube"
             }
         }
 
@@ -33,14 +33,15 @@ pipeline {
                 echo 'Lancement du scan SonarQube...'
                 sh """
                 docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
-                sonar-scanner \
-                -Dsonar.projectKey=MedHead_PoC \
-                -Dsonar.projectName=MedHead_PoC_System \
-                -Dsonar.host.url=http://sonarqube:9000 \
-                -Dsonar.token=sqa_8019e09d17208d245451f28e2025700839e9a3b9 \
-                -Dsonar.sources=Poc/Poc/src/main/java \
-                -Dsonar.java.binaries=Poc/Poc/target/classes \
-                -Dsonar.exclusions=**/*.env
+                  sonar-scanner \
+                  -Dsonar.projectKey=MedHead_PoC \
+                  -Dsonar.projectName=MedHead_PoC_System \
+                  -Dsonar.host.url=http://sonarqube_poc:9000 \
+                  -Dsonar.token=sqa_8019e09d17208d245451f28e2025700839e9a3b9 \
+                  -Dsonar.sources=Poc/Poc/src/main/java \
+                  -Dsonar.java.binaries=Poc/Poc/target/classes \
+                  -Dsonar.exclusions=**/*.env \
+                  -Dsonar.scanner.force-deprecated-api-usage=true
                 """
             }
         }
