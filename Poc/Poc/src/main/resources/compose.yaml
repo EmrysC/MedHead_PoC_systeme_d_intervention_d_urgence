@@ -72,9 +72,9 @@ services:
     container_name: medhead_backend
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
-      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
       - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/poc_db
       - SPRING_PROFILES_ACTIVE=dev
     # L'application attend maintenant que la DB soit "healthy" 
