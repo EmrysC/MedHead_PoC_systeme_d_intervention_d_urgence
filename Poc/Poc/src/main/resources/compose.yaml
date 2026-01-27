@@ -145,12 +145,10 @@ services:
       app:
         condition: service_healthy
 
+  # --- NETTOYEUR / IMPORTATEUR DB ---
   newman-db-cleaner:
     image: mariadb:12.1
     container_name: newman-db-cleaner
-    volumes:
-      - ./api_tests_newman:/scripts
-    # On le laisse allumé pour pouvoir faire le "docker cp"
     command: tail -f /dev/null
     depends_on:
       db:
@@ -161,22 +159,21 @@ services:
     image: dannydainton/htmlextra
     container_name: newman-api-tests
     volumes:
-      - ./api_tests_newman:/etc/newman
+      - newman_reports:/etc/newman # Utilisation du volume NOMMÉ
     working_dir: /etc/newman
-    # On enlève la dépendance "service_completed_successfully" qui bloquait tout
     depends_on:
       app:
         condition: service_healthy
     entrypoint: [ "newman", "run", "collection.json", "-e", "env.json", "--reporters", "cli,htmlextra", "--reporter-htmlextra-export", "index.html" ]
 
+  # --- SERVEUR DE RAPPORTS NEWMAN ---
   newman-dashboard:
     image: nginx:alpine
     container_name: newman-dashboard
     ports:
       - "8083:80"
     volumes:
-      - ./api_tests_newman:/usr/share/nginx/html:ro
-    restart: always
+      - newman_reports:/usr/share/nginx/html:ro # Partage le volume 
 
   # --- SONARQUBE (SERVEUR) ---
   sonarqube:
@@ -211,3 +208,4 @@ services:
 
 volumes:
   jenkins_home:
+  newman_reports:
