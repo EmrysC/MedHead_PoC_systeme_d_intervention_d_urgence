@@ -38,18 +38,18 @@
 services:
 
   # --- BASE DE DONNÉES ---
-  # http://localhost:8081/?server=resources-db-1&username=root
+  # http://localhost:8081/?server=resources-db&username=root
   # Se connecter à la base de donnée avec adminer :
   # Ouvrir un navigateur web et aller à l'adresse "http://localhost:8081
   # Saisir les informations de connexion :
-  # Serveur def : resources-db-1 (meme nom que dans "docker ps")
+  # Serveur def : resources-db (meme nom que dans "docker ps")
   #   Utilisateur def : root
   #   Mot de passe : example
   #   Base de donnée : laisser vide pour afficher toutes les bases de données
   #   Les données initiales sont dans inport.sql et seront automatiquement importées au démarrage
   db:
     image: mariadb:12.1
-    container_name: resources-db-1
+    container_name: resources-db
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: example
@@ -147,6 +147,7 @@ services:
 
   newman-db-cleaner:
     image: mariadb:12.1
+    container_name: newman-db-cleaner
     volumes:
       - ./api_tests_newman:/scripts
     # On attente 2s que la BDD soit dispo puis on lance le script de nettoyage
