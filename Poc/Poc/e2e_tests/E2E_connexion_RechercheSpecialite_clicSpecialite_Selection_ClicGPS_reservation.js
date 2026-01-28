@@ -41,6 +41,9 @@ const puppeteer = require('puppeteer');
     // On attend que la page soit chargée pour éviter le "Protocol Error"
     await page.waitForSelector('input[type="email"]');
 
+    //  Petite pause pour laisser le contexte de sécurité se stabiliser
+    await new Promise(r => setTimeout(r, 1000));
+
     // On donne la permission, avant de se connecter.
     // Comme ça, dès qu'on arrive sur le dashboard, le GPS est déjà autorisé.
     const context = browser.defaultBrowserContext();

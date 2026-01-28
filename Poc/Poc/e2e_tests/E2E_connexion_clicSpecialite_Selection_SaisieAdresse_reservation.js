@@ -35,7 +35,6 @@ const puppeteer = require('puppeteer');
 
   try {
     // --- ÉTAPE 1 : CONNEXION ---
-    // CORRECTION CRITIQUE ICI : On retire "/api" pour taper sur la page HTML
     console.log(`Navigation vers ${BASE_URL}/api/login ...`);
     await page.goto(`${BASE_URL}/api/login`, { waitUntil: 'networkidle2', timeout: 30000 });
 
