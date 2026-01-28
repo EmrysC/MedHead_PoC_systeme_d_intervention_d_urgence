@@ -125,14 +125,12 @@ pipeline {
 
                 echo 'Lancement des scénarios Selenium...'
 
-                echo 'Exécution du test : Saisie Adresse'
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/app e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
                 }
 
-                echo 'Exécution du test : Clic GPS'
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/app e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
                 }
             }
         }
@@ -148,7 +146,7 @@ pipeline {
             sleep 10 // Petit délai pour s'assurer que tout est bien fini avant le stop
 
             sleep 120 // a enlver pour debug
-            
+
             sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db newman-db-cleaner"
             // 3. On supprime le secret ensuite
             sh "rm -f ${COMPOSE_DIR}/.env"
