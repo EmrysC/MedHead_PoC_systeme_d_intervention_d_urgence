@@ -35,8 +35,8 @@ const puppeteer = require('puppeteer');
     // --- ÉTAPE 0 : NAVIGATION & PERMISSIONS (CORRIGÉ) ---
 
     // 1. On navigue d'abord vers la bonne page (HTML et non API)
-    console.log(`Navigation vers ${BASE_URL}/login ...`);
-    await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle2', timeout: 30000 });
+    console.log(`Navigation vers ${BASE_URL}/api/login ...`);
+    await page.goto(`${BASE_URL}/api/login`, { waitUntil: 'networkidle2', timeout: 30000 });
 
     // 2. On applique les permissions APRES la navigation (sinon crash ProtocolError)
     const context = browser.defaultBrowserContext();
