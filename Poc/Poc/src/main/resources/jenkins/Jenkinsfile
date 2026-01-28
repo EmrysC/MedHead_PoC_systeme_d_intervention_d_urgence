@@ -12,6 +12,16 @@ pipeline {
     stages {
 
 
+        stage('Initialisation Workspace') {
+            steps {
+                echo 'Récupération du fichier .env depuis les secrets Jenkins...'
+                withCredentials([file(credentialsId: 'medhead-env-file', variable: 'ENV_FILE')]) {
+                    // On crée le fichier avant que docker-compose ne soit appelé
+                    sh "cp \$ENV_FILE ${COMPOSE_DIR}/.env"
+                }
+            }
+        }
+
         // COMPILER 
         stage('Compilation') {
             steps {
@@ -25,7 +35,7 @@ pipeline {
         stage('Nettoyage & Préparation') {
             steps {
                 echo 'Nettoyage et lancement des services de base...'
-                // On ne lance QUE la db et sonarqube ici, pas encore l'app
+                // On ne lance que la db et sonarqube ici, pas encore l'app
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml down -v --remove-orphans"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db sonarqube newman-db-cleaner"
             }
