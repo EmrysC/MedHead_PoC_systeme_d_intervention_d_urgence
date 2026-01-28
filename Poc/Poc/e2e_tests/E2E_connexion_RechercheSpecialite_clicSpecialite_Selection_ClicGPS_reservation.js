@@ -17,9 +17,11 @@ const puppeteer = require('puppeteer');
 
   const page = await browser.newPage();
 
+  const BASE_URL = 'http://app:8080';
+
   // Configuration de la geolocalisation
   const context = browser.defaultBrowserContext();
-  await context.overridePermissions('http://medhead_backend:8080', ['geolocation']);
+  await context.overridePermissions(BASE_URL, ['geolocation']);
   await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
 
   let confirmationMessage = "";
@@ -34,7 +36,7 @@ const puppeteer = require('puppeteer');
 
   try {
     // --- ETAPE 1 : CONNEXION ---
-    await page.goto('http://app:8080/api/login', { waitUntil: 'networkidle2' });
+    await page.goto('${BASE_URL}/api/login', { waitUntil: 'networkidle2' });
     await page.waitForSelector('input[type="email"]');
     await page.type('input[type="email"]', 'utilisateur1@compte.com');
     await page.type('input[type="password"]', 'MotDePasseSecret&1');
@@ -98,9 +100,19 @@ const puppeteer = require('puppeteer');
 
   } catch (error) {
     console.error("ECHEC DU TEST :", error.message);
-    await page.screenshot({ path: 'erreur_test_me.png' });
+
+    // On vérifie que la page est encore active avant de prendre le screenshot
+    if (page && !page.isClosed()) {
+      try {
+        // Utilise un nom différent par fichier pour ne pas les écraser
+        await page.screenshot({ path: 'erreur_debug_e2e.png' });
+        console.log("Screenshot sauvegardé.");
+      } catch (e) {
+        console.error("Impossible de capturer l'écran (session fermée)");
+      }
+    }
   } finally {
-    await browser.close();
-    console.log("Test termine, navigateur ferme.");
+    if (browser) await browser.close();
+    console.log("Navigateur fermé.");
   }
 })();
