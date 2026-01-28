@@ -126,11 +126,11 @@ pipeline {
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     // Montage sur /tmp/output pour ne PAS toucher au dossier /app du code
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm --build -v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm --build-v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
                 }
             }
         }
