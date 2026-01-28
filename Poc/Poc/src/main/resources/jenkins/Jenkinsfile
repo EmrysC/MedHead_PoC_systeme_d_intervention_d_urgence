@@ -61,24 +61,34 @@ pipeline {
 
         stage('Analyse (SonarQube)') {
             steps {
-                echo 'Lancement du scan...'
-                sh """
-                    docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
-                    sonar-scanner \
-                    -Dsonar.projectKey=MedHead_PoC \
-                    -Dsonar.projectName=MedHead_PoC_System \
-                    -Dsonar.host.url=http://sonarqube-poc:9000 \
-                    -Dsonar.login=admin \
-                    -Dsonar.password=admin \
-                    -Dsonar.sources=. \
-                    -Dsonar.java.binaries=. \
-                    -Dsonar.exclusions=**/target/**,**/*.env
-                """
+                echo 'Lancement du scan et attente du verdict...'
+                
+                // 1. On "enveloppe" la commande pour que Jenkins sache qu'un scan est en cours
+                withSonarQubeEnv('sonarqube-poc') { 
+                    sh """
+                        docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
+                        sonar-scanner \
+                        -Dsonar.projectKey=MedHead_PoC \
+                        -Dsonar.projectName=MedHead_PoC_System \
+                        -Dsonar.host.url=http://sonarqube-poc:9000 \
+                        -Dsonar.login=admin \
+                        -Dsonar.password=admin \
+                        -Dsonar.sources=. \
+                        -Dsonar.java.binaries=. \
+                        -Dsonar.exclusions=**/target/**,**/*.env
+                    """
+                }
+
+                // 2. On met le pipeline en PAUSE tant que SonarQube n'a pas validé la sécurité
+                // Si le "Quality Gate" est rouge (fail), le pipeline s'arrête ici.
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
 
-        stage('Data pour tests') {
+        stage('Set jeu de données pour tests') {
             steps {
                 echo 'Injection manuelle des fichiers et lancement des tests...'
                 dir("${COMPOSE_DIR}") {
@@ -119,7 +129,7 @@ pipeline {
         }
         */
 
-
+        /*/ E2E Selenium fonctionne correctement commenter pour l'instant pour se concentrer sur sonarcube
         stage('Tests E2E (Selenium)') {
             steps {
                 echo 'Mise à jour et lancement des tests...'
@@ -137,6 +147,8 @@ pipeline {
                 }
             }
         }
+        */
+        
     }
     post {
         always {
@@ -144,9 +156,8 @@ pipeline {
             // 1 Récupère toutes les captures d'écran (.png) générées pendant les tests
             archiveArtifacts artifacts: '*.png', allowEmptyArchive: true
             // 2. On stoppe d'abord (Docker a besoin du .env pour identifier les services)
-            sleep 10 // Petit délai pour s'assurer que tout est bien fini avant le stop
 
-            sleep 120 // a enlver pour debug
+            sleep 10 // Petit délai pour s'assurer que tout est bien fini avant le stop
 
             sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db newman-db-cleaner"
             // 3. On supprime le secret ensuite
