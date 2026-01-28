@@ -3,14 +3,79 @@ import hudson.model.*
 import java.io.File
 import java.io.ByteArrayInputStream
 import javax.xml.transform.stream.StreamSource
+// --- NOUVEAUX IMPORTS POUR SONARQUBE ---
+import hudson.plugins.sonar.*
+import hudson.plugins.sonar.model.*
+import com.cloudbees.plugins.credentials.*
+import com.cloudbees.plugins.credentials.domains.*
+import org.jenkinsci.plugins.plaincredentials.impl.*
+import hudson.util.Secret
 
 Thread.start {
-    // Augmenté à 30s pour laisser le temps aux plugins Docker/Git de charger
+    // Augmenté à 30s pour laisser le temps aux plugins Docker/Git/Sonar de charger
     println "--- [INIT] Attente de 30s pour stabilisation Jenkins ---"
     sleep(30000) 
-    
-    def jobName = "MedHead_Pipeline"
+
     def instance = Jenkins.getInstance()
+    
+    // ========================================================================
+    // PARTIE 1 : CONFIGURATION SONARQUBE 
+    // ========================================================================
+    try {
+        println "--- [INIT] Début configuration SonarQube ---"
+        
+        // Configuration
+        def sonarServerName = "sonarqube-poc"  // Le nom utilisé dans le Pipeline
+        def sonarServerUrl = "http://sonarqube-poc:9000"
+        def sonarTokenId = "sonar-token-id"
+        def sonarAuthToken = System.getenv("SONAR_AUTH_TOKEN") // Variable d'env Docker
+
+        if (sonarAuthToken) {
+            // A. Création du Credential (Token)
+            def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
+            def domain = Domain.global()
+            def secretBytes = Secret.fromString(sonarAuthToken)
+            def sonarCredential = new StringCredentialsImpl(
+                CredentialsScope.GLOBAL,
+                sonarTokenId,
+                "Token Admin SonarQube (Auto)",
+                secretBytes
+            )
+
+            // On met à jour ou on crée
+            def existingCreds = credentialsStore.getCredentials(domain).find { it.id == sonarTokenId }
+            if (existingCreds) {
+                credentialsStore.updateCredentials(domain, existingCreds, sonarCredential)
+            } else {
+                credentialsStore.addCredentials(domain, sonarCredential)
+            }
+            println "--- [INIT] Credentials SonarQube configurés ---"
+
+            // B. Configuration du Serveur dans Jenkins
+            def sonarGlobalConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
+            def sonarInst = new SonarInstallation(
+                sonarServerName,
+                sonarServerUrl,
+                sonarTokenId,
+                null, null, null, null, null
+            )
+            sonarGlobalConfig.setInstallations(sonarInst)
+            sonarGlobalConfig.save()
+            println "--- [INIT] Serveur SonarQube '${sonarServerName}' activé ---"
+            
+        } else {
+            println "--- [WARN] Pas de SONAR_AUTH_TOKEN trouvé. Configuration Sonar ignorée. ---"
+        }
+
+    } catch (Exception e) {
+        println "--- [ERREUR] Problème config SonarQube : ${e.message} ---"
+        e.printStackTrace()
+    }
+
+    // ========================================================================
+    // PARTIE 2 : CONFIGURATION DU JOB 
+    // ========================================================================
+    def jobName = "MedHead_Pipeline"
     def xmlPath = "/var/jenkins_home/init.groovy.d/job_config.xml"
     def xmlFile = new File(xmlPath)
 
@@ -31,25 +96,23 @@ Thread.start {
                 instance.createProjectFromXML(jobName, xmlStream)
             }
 
-            // Forcer Jenkins à sauvegarder l'état global
+            // Sauvegarde finale et Reload
             instance.save()
-            // Recharger la configuration pour être sûr que le XML est bien pris en compte
             instance.reload() 
             
-            sleep(5000) // Petit délai après reload
+            sleep(5000) 
             
             def job = instance.getItem(jobName)
             if (job != null) {
-                // On vérifie si un build n'est pas déjà en cours avant d'en lancer un
                 if (!job.isBuilding() && !job.isInQueue()) {
                     job.scheduleBuild2(0)
                     println "--- [SUCCES] Job ${jobName} configuré et build lancé ---"
                 } else {
-                    println "--- [INFO] Job déjà en cours d'exécution, pas de nouveau build lancé ---"
+                    println "--- [INFO] Job déjà en cours d'exécution ---"
                 }
             }
         } else {
-            println "--- [ERREUR] Fichier ${xmlPath} introuvable ---"
+            println "--- [ERREUR] Fichier XML ${xmlPath} introuvable ---"
         }
     } catch (Exception e) {
         println "--- [ERREUR] Échec de l'init du job : ${e.message} ---"
