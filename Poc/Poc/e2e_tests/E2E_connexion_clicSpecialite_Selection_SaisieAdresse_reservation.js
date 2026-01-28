@@ -4,7 +4,12 @@ const puppeteer = require('puppeteer');
   console.log("Demarrage du scenario de reservation complet");
 
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--unsafely-treat-insecure-origin-as-secure=http://app:8080'
+    ],
     headless: "new"
   });
 
