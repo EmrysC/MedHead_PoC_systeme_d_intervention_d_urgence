@@ -99,7 +99,7 @@ pipeline {
             }
         }
 
-/*/ Newman fonctionne correctement commenter pour l'instant pour se concentrer sur les E2E
+        /*/ Newman fonctionne correctement commenter pour l'instant pour se concentrer sur les E2E
         stage('Tests API (Newman)') {
             steps {
                 echo 'Injection manuelle des fichiers et lancement des tests...'
@@ -117,7 +117,7 @@ pipeline {
                 }
             }
         }
-*/
+        */
 
 
     stage('Tests E2E (Selenium)') {
@@ -136,6 +136,7 @@ pipeline {
                 }
             }
         }
+    }
 
 
     post {
