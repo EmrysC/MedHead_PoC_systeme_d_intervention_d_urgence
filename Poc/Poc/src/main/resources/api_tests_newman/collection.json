@@ -4294,15 +4294,15 @@
       ]
     },
     {
-      "name": "403 end point pas trouvé",
+      "name": "404 end point pas trouvé",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "// 1. Vérifier que le code de statut est bien 403\r",
-              "pm.test(\"Statut attendu : 403 Not Found\", function () {\r",
-              "    pm.response.to.have.status(403);\r",
+              "// 1. Vérifier que le code de statut est bien 404\r",
+              "pm.test(\"Statut attendu : 404 Not Found\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
               "});\r",
               ""
             ],
@@ -4339,15 +4339,15 @@
       "response": []
     },
     {
-      "name": "403 end point pas trouvé",
+      "name": "404 end point pas trouvé",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
               "// 1. Vérification du code de statut HTTP\r",
-              "pm.test(\"Statut attendu : 403 Forbidden\", function () {\r",
-              "    pm.response.to.have.status(403);\r",
+              "pm.test(\"Statut attendu : 404 Not Found\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
               "});\r",
               ""
             ],
