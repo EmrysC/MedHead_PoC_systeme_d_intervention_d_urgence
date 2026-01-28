@@ -134,7 +134,7 @@ pipeline {
                 }
             }
         }
-
+    }
     post {
         always {
             echo 'Archivage des rapports et nettoyage...'
