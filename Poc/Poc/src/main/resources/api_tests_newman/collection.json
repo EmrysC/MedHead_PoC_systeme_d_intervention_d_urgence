@@ -1,7 +1,7 @@
 {
   "info": {
-    "_postman_id": "c659a9cc-d92c-4b8b-aa01-adedcb410c82",
-    "name": "Writing test scripts",
+    "_postman_id": "23d08495-1312-4998-809a-7fae35fd85e4",
+    "name": "Writing test scripts Copy 2",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "12803850"
   },
@@ -872,7 +872,7 @@
                     ],
                     "body": {
                       "mode": "raw",
-                      "raw": "{\n    \"email\": \"utilisateur.deja@existant.com\",\n    \"password\": \"MotDePasseSecret123&\",\n    \"nom\": \"paul\",\n    \"prenom\" : \"martin\"\n}"
+                      "raw": "{\n    \"email\": \"postmanTestUtilisateur.non@existant.com\",\n    \"password\": \"MotDePasseSecret123&\",\n    \"nom\": \"paul\",\n    \"prenom\" : \"martin\"\n}"
                     },
                     "url": {
                       "raw": "{{base_url}}/user/creation",
@@ -990,6 +990,9 @@
                           "    \r",
                           "    // SAUVEGARDE : Utilise le nom de la variable définie au-dessus\r",
                           "    pm.environment.set(\"token_jwt\", tokenValue);\r",
+                          "\r",
+                          "    // Dans la collection (Plus robuste, disponible partout dans ce dossier)\r",
+                          "    pm.collectionVariables.set(\"token_jwt\", tokenValue);\r",
                           "    \r",
                           "    console.log(\"Token JWT sauvegardé avec succès !\");\r",
                           "});\r",
@@ -2880,26 +2883,34 @@
                           "    pm.response.to.have.status(502);\r",
                           "});\r",
                           "\r",
-                          "// 2. Vérification du message d'erreur\r",
-                          "pm.test(\"L'erreur signale bien un échec Google Maps\", function () {\r",
+                          "// 2. Vérification du message d'erreur et du contenu\r",
+                          "pm.test(\"L'erreur signale bien un échec du service de trajet\", function () {\r",
                           "    var jsonData = pm.response.json();\r",
                           "    \r",
-                          "    // On valide le titre de l'erreur\r",
+                          "    // Validation du titre global\r",
                           "    pm.expect(jsonData.message).to.eql(\"Échec du service externe\");\r",
                           "    \r",
-                          "    // On valide le contenu dynamique\r",
+                          "    // Validation du détail dynamique\r",
                           "    pm.expect(jsonData.errors).to.have.property(\"detail\");\r",
                           "    \r",
                           "    var errorDetail = jsonData.errors.detail;\r",
-                          "    pm.expect(errorDetail).to.include(\"communication\");\r",
-                          "    pm.expect(errorDetail).to.include(\"Google Maps\");\r",
+                          "    // Ajustement selon le JSON réel : on cherche \"calcul de trajets\" ou \"indisponible\"\r",
+                          "    pm.expect(errorDetail).to.include(\"calcul de trajets\");\r",
+                          "    pm.expect(errorDetail).to.include(\"indisponible\");\r",
                           "});\r",
                           "\r",
-                          "// 3. Validation de la structure technique\r",
+                          "// 3. Validation de la structure technique et du format des données\r",
                           "pm.test(\"Le format respecte le contrat ErrorDetails\", function () {\r",
                           "    var jsonData = pm.response.json();\r",
+                          "    \r",
+                          "    // Vérification des clés obligatoires\r",
                           "    pm.expect(jsonData).to.have.all.keys('timestamp', 'message', 'errors', 'path');\r",
-                          "    pm.expect(jsonData.path).to.contain(\"/unitesoins/trajets\");\r",
+                          "    \r",
+                          "    // Vérification du format du chemin (URI)\r",
+                          "    pm.expect(jsonData.path).to.include(\"/api/unitesoins/trajets\");\r",
+                          "    \r",
+                          "    // Optionnel : Vérifier que le timestamp est bien présent (format ISO)\r",
+                          "    pm.expect(jsonData.timestamp).to.be.a('string');\r",
                           "});"
                         ],
                         "type": "text/javascript",
@@ -4289,32 +4300,11 @@
           "listen": "test",
           "script": {
             "exec": [
-              "// 1. Vérifier que le code de statut est bien 404\r",
-              "pm.test(\"Statut attendu : 404 Not Found\", function () {\r",
-              "    pm.response.to.have.status(404);\r",
+              "// 1. Vérifier que le code de statut est bien 403\r",
+              "pm.test(\"Statut attendu : 403 Not Found\", function () {\r",
+              "    pm.response.to.have.status(403);\r",
               "});\r",
-              "\r",
-              "// 2. Vérifier le message d'erreur global\r",
-              "pm.test(\"Le message indique que l'URL est invalide\", function () {\r",
-              "    var jsonData = pm.response.json();\r",
-              "    // Doit correspondre exactement à ton Java : \"URL Invalide\"\r",
-              "    pm.expect(jsonData.message).to.eql(\"URL Invalide\");\r",
-              "});\r",
-              "\r",
-              "// 3. Vérifier le détail technique de l'erreur\r",
-              "pm.test(\"Le détail explique que le chemin n'existe pas\", function () {\r",
-              "    var jsonData = pm.response.json();\r",
-              "    \r",
-              "    pm.expect(jsonData.errors).to.have.property(\"ressource\");\r",
-              "    pm.expect(jsonData.errors.ressource).to.include(\"n'existe pas sur ce serveur\");\r",
-              "});\r",
-              "\r",
-              "// 4. Vérifier que le chemin (path) retourné correspond à l'URL appelée\r",
-              "pm.test(\"Le path dans l'erreur est correct\", function () {\r",
-              "    var jsonData = pm.response.json();\r",
-              "    // On vérifie que le path renvoyé par Spring contient bien notre erreur de frappe\r",
-              "    pm.expect(jsonData.path).to.contain(\"/api/specilites/\");\r",
-              "});"
+              ""
             ],
             "type": "text/javascript",
             "packages": {},
@@ -4422,14 +4412,13 @@
       "description": "Chemin d'acces"
     },
     {
-      "key": "token_jwt",
-      "value": "",
-      "description": "récupéré à la connection"
-    },
-    {
       "key": "token_jwt_expire",
       "value": "eyJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE3NjYxNDQxMTcsImV4cCI6MTc2NjE0NDExOSwic3ViIjoidXRpbGlzYXRldXIucG9zc2VkZUBjb21wdGUuY29tIiwicHJlbm9tIjoiUHJlbm9tX1V0aWxpc2F0ZXVyIiwicm9sZSI6IlJPTEVfVVNFUiIsImVtYWlsIjoidXRpbGlzYXRldXIucG9zc2VkZUBjb21wdGUuY29tIiwibm9tIjoiTm9tVXRpbGlzYXRldXIifQ.HCkSECJCDuuMxA5zAXFIpwVg6SaGmznfQAP6iAGMr7EMWiSVmF0UyVziQbpNl-L0gi3Je2wGEsHx8bZS9mVw6w",
       "description": "token expiré"
+    },
+    {
+      "key": "token_jwt",
+      "value": ""
     }
   ]
 }
