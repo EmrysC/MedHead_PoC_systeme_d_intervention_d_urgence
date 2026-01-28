@@ -141,10 +141,16 @@ pipeline {
 
     post {
         always {
-            echo 'Nettoyage final...'
-            // 1. On stoppe d'abord (Docker a besoin du .env pour identifier les services)
+            echo 'Archivage des rapports et nettoyage...'
+            // 1 Récupère toutes les captures d'écran (.png) générées pendant les tests
+            archiveArtifacts artifacts: '*.png', allowEmptyArchive: true
+            // 2. On stoppe d'abord (Docker a besoin du .env pour identifier les services)
+            sleep 10 // Petit délai pour s'assurer que tout est bien fini avant le stop
+
+            sleep 120 // a enlver pour debug
+            
             sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db newman-db-cleaner"
-            // 2. On supprime le secret ensuite
+            // 3. On supprime le secret ensuite
             sh "rm -f ${COMPOSE_DIR}/.env"
         }
     }
