@@ -19,7 +19,7 @@ const puppeteer = require('puppeteer');
 
   // Configuration de la geolocalisation
   const context = browser.defaultBrowserContext();
-  await context.overridePermissions('http://app:8080', ['geolocation']);
+  await context.overridePermissions('http://medhead_backend:8080', ['geolocation']);
   await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
 
   let confirmationMessage = "";

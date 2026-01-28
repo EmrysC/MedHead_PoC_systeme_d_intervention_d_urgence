@@ -29,7 +29,7 @@ const puppeteer = require('puppeteer');
 
   try {
     // --- ETAPE 1 : CONNEXION ---
-    await page.goto('http://app:8080/api/login', { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto('http://medhead_backend:8080/api/login', { waitUntil: 'networkidle2', timeout: 30000 });
     await page.waitForSelector('input[type="email"]');
     await page.type('input[type="email"]', 'utilisateur1@compte.com');
     await page.type('input[type="password"]', 'MotDePasseSecret&1');
