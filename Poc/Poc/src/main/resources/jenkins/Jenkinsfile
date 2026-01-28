@@ -120,22 +120,20 @@ pipeline {
         */
 
 
-    stage('Tests E2E (Selenium)') {
+        stage('Tests E2E (Selenium)') {
             steps {
-
-                echo 'Lancement des scénarios Selenium...'
+                echo 'Lancement des scénarios...'
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/app e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
+                    // Montage sur /tmp/output pour ne PAS toucher au dossier /app du code
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/app e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
                 }
             }
         }
-    }
-
 
     post {
         always {

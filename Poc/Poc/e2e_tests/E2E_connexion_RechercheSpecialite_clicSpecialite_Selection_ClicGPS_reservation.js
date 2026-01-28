@@ -95,7 +95,7 @@ const puppeteer = require('puppeteer');
 
     if (confirmationMessage.toLowerCase().includes("succès")) {
       console.log("SUCCÈS FINAL : Réservation terminée avec succès.");
-      await page.screenshot({ path: '/app/output/test_me_gps_reussi.png' }); // Sauvegarde à la racine pour Jenkins
+      await page.screenshot({ path: '/tmp/output/test_me_gps_reussi.png' }); // Sauvegarde à la racine pour Jenkins
     } else {
       console.log("AVERTISSEMENT : La confirmation n'a pas été détectée.");
     }
@@ -107,7 +107,7 @@ const puppeteer = require('puppeteer');
     if (page && !page.isClosed()) {
       try {
         // Sauvegarde à la racine pour être récupéré par archiveArtifacts
-        await page.screenshot({ path: '/app/output/erreur_debug_saisie_gps.png' });
+        await page.screenshot({ path: '/tmp/output/erreur_debug_saisie_gps.png' });
         console.log("Screenshot d'erreur sauvegardé.");
       } catch (e) {
         console.error("Impossible de capturer l'écran (page fermée)");
