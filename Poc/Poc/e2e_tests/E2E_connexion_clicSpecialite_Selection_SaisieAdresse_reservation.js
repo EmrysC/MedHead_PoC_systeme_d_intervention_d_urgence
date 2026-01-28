@@ -79,10 +79,10 @@ const puppeteer = require('puppeteer');
 
     if (confirmationMessage.toLowerCase().includes("succès")) {
       console.log(`SUCCÈS FINAL : Réservation effectuée chez ${hospitalName}`);
-      await page.screenshot({ path: 'reservation_reussie.png' }); // Sauvegarde à la racine pour Jenkins
+      await page.screenshot({ path: '/app/output/reservation_reussie.png' }); // Sauvegarde à la racine pour Jenkins
     } else {
       console.log("AVERTISSEMENT : Message de confirmation non détecté");
-      await page.screenshot({ path: 'alerte_inattendue.png' });
+      await page.screenshot({ path: '/app/output/alerte_inattendue.png' });
     }
 
   } catch (error) {
@@ -92,7 +92,7 @@ const puppeteer = require('puppeteer');
     if (page && !page.isClosed()) {
       try {
         // Sauvegarde directe à la racine du conteneur (/app) pour extraction Jenkins
-        await page.screenshot({ path: 'erreur_debug_saisie_adresse.png' });
+        await page.screenshot({ path: '/app/output/erreur_debug_saisie_adresse.png' });
         console.log("Screenshot d'erreur sauvegardé.");
       } catch (e) {
         console.error("Impossible de capturer l'écran (page fermée)");
