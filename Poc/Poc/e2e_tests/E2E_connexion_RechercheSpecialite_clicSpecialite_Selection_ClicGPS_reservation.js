@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
 (async () => {
-  console.log("Démarrage du scénario : Recherche 'me' + Adult Mental Illness + GPS");
+  console.log("Démarrage du scénario : Recherche 'me' + Adult Mental Illness + GPS (Mode Mocking)");
 
   const browser = await puppeteer.launch({
     args: [
@@ -26,11 +26,11 @@ const puppeteer = require('puppeteer');
   });
 
   page.on('console', msg => console.log('LOG NAVIGATEUR:', msg.text()));
-  // On ignore les erreurs 404 connues
+  // On ignore les erreurs techniques de la page (404, etc.)
   page.on('pageerror', err => { });
 
   try {
-    // --- ÉTAPE 0 : NAVIGATION (Statut 404 attendu mais affichage OK) ---
+    // --- ÉTAPE 0 : NAVIGATION ---
     console.log(`Navigation vers ${BASE_URL}/api/login ...`);
     await page.goto(`${BASE_URL}/api/login`, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
@@ -44,21 +44,14 @@ const puppeteer = require('puppeteer');
       page.waitForNavigation({ waitUntil: 'networkidle2' }),
       page.click('button[type="submit"]')
     ]);
-    console.log("Connexion effectuée, redirection en cours...");
+    console.log("Redirection vers le Dashboard détectée.");
 
-    // --- CORRECTION CRITIQUE : STABILISATION ---
-    // On attend explicitement que la barre de recherche du Dashboard soit là.
-    // Cela confirme que nous sommes sur la page d'accueil (HTTP 200) et plus sur le Login (404).
+    // --- STABILISATION ---
     await page.waitForSelector('.search-input');
+    // Petite pause pour s'assurer que VueJS est prêt
+    await new Promise(r => setTimeout(r, 1000));
 
-    // --- ÉTAPE 2 : ACTIVATION GPS ---
-    // Maintenant que la page est stable, on active le GPS
-    const context = browser.defaultBrowserContext();
-    await context.overridePermissions(BASE_URL, ['geolocation']);
-    await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
-    console.log("Permissions GPS accordées sur le Dashboard stable.");
-
-    // --- ÉTAPE 3 : RECHERCHE 'me' ---
+    // --- ÉTAPE 2 : RECHERCHE 'me' ---
     console.log("Saisie de 'me'...");
     await page.type('.search-input', 'me', { delay: 100 });
 
@@ -78,16 +71,36 @@ const puppeteer = require('puppeteer');
     await page.waitForNavigation({ waitUntil: 'networkidle2' });
     console.log("Redirection vers la liste des hôpitaux.");
 
+    // --- ÉTAPE 3 : Mock GPS  ---
+    console.log("Injection du Mock GPS (Bypassing permissions)...");
+
+    await page.evaluate(() => {
+      // On remplace la fonction officielle par la nôtre
+      window.navigator.geolocation.getCurrentPosition = (successCallback, errorCallback) => {
+        console.log("L'application a demandé le GPS, on envoie les fausses coordonnées.");
+        successCallback({
+          coords: {
+            latitude: 48.8566,
+            longitude: 2.3522,
+            accuracy: 10,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null
+          },
+          timestamp: Date.now()
+        });
+      };
+    });
+
     // --- ÉTAPE 4 : CLIC GPS ---
     const gpsBtn = 'button.btn-outline-primary';
     await page.waitForSelector(gpsBtn);
 
-    // Petite pause de sécurité pour que le JS du bouton soit prêt
-    await new Promise(r => setTimeout(r, 1000));
-
     console.log("Clic sur le bouton GPS...");
     await page.click(gpsBtn);
 
+    // On attend les résultats 
     await page.waitForSelector('.hospital-card', { timeout: 15000 });
     console.log("Résultats GPS affichés.");
 
@@ -95,6 +108,8 @@ const puppeteer = require('puppeteer');
     const firstReserveBtn = '.hospital-card .btn-success';
     await page.waitForSelector(firstReserveBtn);
     const hospitalName = await page.$eval('.hospital-card h5', el => el.textContent.trim());
+    console.log(`Tentative de réservation pour : ${hospitalName}`);
+
     await page.click(firstReserveBtn);
 
     // --- ÉTAPE 6 : VÉRIFICATION ---
