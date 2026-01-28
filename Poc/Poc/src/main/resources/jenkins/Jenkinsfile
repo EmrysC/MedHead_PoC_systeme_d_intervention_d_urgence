@@ -11,53 +11,37 @@ pipeline {
 
     stages {
 
-        stage('Initialisation Workspace') {
-            steps {
-                echo 'Récupération sécurisée du fichier .env depuis Jenkins...'
-                // Jenkins extrait le fichier secret et crée un chemin temporaire ($ENV_FILE)
-                withCredentials([file(credentialsId: 'medhead-env-file', variable: 'ENV_FILE')]) {
-                    // On copie ce fichier secret vers le dossier de ressources
-                    sh "cp \$ENV_FILE ${COMPOSE_DIR}/.env"
-                }
-                
-                dir("${COMPOSE_DIR}") {
-                    sh "ls -la .env && echo 'Succès : Fichier .env injecté.'"
-                }
-            }
-        }
 
-        stage('Nettoyage & Préparation') {
-            steps {
-                echo 'Redémarrage des services applicatifs...'
-                // On ne stoppe que l'app et la db pour garder SonarQube "chaud" (plus rapide)
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db"
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f app db"
-                // up -d s'assure que tout tourne sans réinitialiser Sonar s'il est déjà là
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db app sonarqube newman-db-cleaner"
-            }
-        }
-
+        // COMPILER 
         stage('Compilation') {
             steps {
-                echo 'Compilation du projet avec le Maven de Jenkins...'
-                // On se déplace dans le dossier contenant le fichier pom.xml (Poc/Poc)
+                echo 'Génération du nouveau JAR...'
                 dir("Poc/Poc") {
                     sh "mvn clean package -DskipTests"
                 }
             }
         }
 
-        stage('Lancement Application') {
+        stage('Nettoyage & Préparation') {
             steps {
-                echo 'Démarrage avec lecture directe du fichier .env par Docker...'
-                dir("${COMPOSE_DIR}") {
-                    sh "docker-compose --env-file .env up -d app"
-                }
-
-                echo 'Attente de stabilisation (40s)...'
-                sleep 40
+                echo 'Nettoyage et lancement des services de base...'
+                // On ne lance QUE la db et sonarqube ici, pas encore l'app
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml down -v --remove-orphans"
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db sonarqube newman-db-cleaner"
             }
         }
+
+        stage('Lancement Application') {
+            steps {
+                echo 'Construction de l image et démarrage de l application...'
+                dir("${COMPOSE_DIR}") {
+                    sh "docker-compose -f compose.yaml --env-file .env up -d --build app"
+                }
+                echo 'Attente de stabilisation (60s)...'
+                sleep 60 // Temps nécessaire pour que Spring Boot et la sécurité soient opérationnels
+            }
+        }
+
 
         stage('Analyse (SonarQube)') {
             steps {
@@ -122,11 +106,14 @@ pipeline {
 
         stage('Tests E2E (Selenium)') {
             steps {
-                echo 'Lancement des scénarios...'
+                echo 'Mise à jour et lancement des tests...'
+                
+                // Reconstruit de l image de test pour intégrer vos dernières modifs GitHub
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml build e2e-reservation"
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    // Montage sur /tmp/output pour ne PAS toucher au dossier /app du code
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm --build -v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
+                    // Montage sur /tmp/output pour extraire les images vers Jenkins
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {

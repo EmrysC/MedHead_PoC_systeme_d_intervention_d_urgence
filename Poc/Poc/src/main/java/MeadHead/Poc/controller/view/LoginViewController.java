@@ -9,7 +9,6 @@ public class LoginViewController {
     @GetMapping("/login")
     //@ResponseBody // test du controler
     public String loginPage() {
-        //return "Le contrôleur fonctionne !";
         return "login";
     }
 

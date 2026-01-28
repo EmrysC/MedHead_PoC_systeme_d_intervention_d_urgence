@@ -91,7 +91,7 @@ const puppeteer = require('puppeteer');
     // Capture d'écran de débuggage
     if (page && !page.isClosed()) {
       try {
-        // Sauvegarde directe à la racine du conteneur (/app) pour extraction Jenkins
+        // Sauvegarde directe à la racine du conteneur 
         await page.screenshot({ path: '/tmp/output/erreur_debug_saisie_adresse.png' });
         console.log("Screenshot d'erreur sauvegardé.");
       } catch (e) {
