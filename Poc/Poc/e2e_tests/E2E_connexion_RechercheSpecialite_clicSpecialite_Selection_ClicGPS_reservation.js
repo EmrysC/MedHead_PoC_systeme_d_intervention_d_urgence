@@ -10,14 +10,15 @@ const puppeteer = require('puppeteer');
       '--disable-dev-shm-usage',
       '--ignore-certificate-errors',
       '--allow-insecure-localhost',
-      '--disable-web-security'
+      '--disable-web-security',
+      '--proxy-server="direct://"',
+      '--proxy-bypass-list=*'
     ],
     headless: "new"
   });
 
-  const page = await browser.newPage();
   const BASE_URL = 'http://host.docker.internal:8080';
-
+  const page = await browser.newPage();
   let confirmationMessage = "";
 
   // Gestionnaire de dialogues (alertes navigateur)
@@ -32,17 +33,20 @@ const puppeteer = require('puppeteer');
   page.on('pageerror', err => console.error('ERREUR NAVIGATEUR:', err.message));
 
   try {
-    // --- ÉTAPE 0 : NAVIGATION & PERMISSIONS (CORRIGÉ) ---
-
-    // 1. On navigue d'abord vers la bonne page (HTML et non API)
+    // --- ÉTAPE 0 : NAVIGATION ---
     console.log(`Navigation vers ${BASE_URL}/api/login ...`);
     await page.goto(`${BASE_URL}/api/login`, { waitUntil: 'networkidle2', timeout: 30000 });
 
-    // 2. On applique les permissions APRES la navigation (sinon crash ProtocolError)
+    // --- ÉTAPE 0.5 : PERMISSIONS  ---
+    // On attend que la page soit chargée pour éviter le "Protocol Error"
+    await page.waitForSelector('input[type="email"]');
+
+    // On donne la permission, avant de se connecter.
+    // Comme ça, dès qu'on arrive sur le dashboard, le GPS est déjà autorisé.
     const context = browser.defaultBrowserContext();
     await context.overridePermissions(BASE_URL, ['geolocation']);
     await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
-    console.log("Permissions GPS accordées.");
+    console.log("Permissions GPS accordées préventivement.");
 
     // --- ÉTAPE 1 : CONNEXION ---
     await page.waitForSelector('input[type="email"]');
