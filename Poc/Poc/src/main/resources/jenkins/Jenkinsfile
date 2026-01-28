@@ -34,9 +34,15 @@ pipeline {
 
         stage('Nettoyage & Préparation') {
             steps {
-                echo 'Nettoyage et lancement des services de base...'
-                // On ne lance que la db et sonarqube ici, pas encore l'app
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml down -v --remove-orphans"
+                echo 'Nettoyage sélectif (sans toucher à Jenkins)...'
+                
+                // 1. On arrête uniquement les services de test et l'app
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db newman-db-cleaner"
+                
+                // 2. On supprime les conteneurs et les volumes associés (-v) pour ces services uniquement
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f -v app db newman-db-cleaner"
+                
+                // 3. On relance la DB et les outils 
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db sonarqube newman-db-cleaner"
             }
         }
