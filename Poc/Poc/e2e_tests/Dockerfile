@@ -16,6 +16,6 @@ COPY *.js .
 # On s'assure que les permissions sont bonnes
 RUN chmod -R 777 /app
 
-# Commande de lancement
-CMD ["node", "E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"]
 
+# Commande par défaut (sera écrasée par ton Jenkinsfile)
+CMD ["node", "E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"]

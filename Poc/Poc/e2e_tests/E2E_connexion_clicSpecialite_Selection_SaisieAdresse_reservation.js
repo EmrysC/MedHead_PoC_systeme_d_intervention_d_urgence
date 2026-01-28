@@ -8,7 +8,9 @@ const puppeteer = require('puppeteer');
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
-      '--unsafely-treat-insecure-origin-as-secure=http://app:8080'
+      '--ignore-certificate-errors',
+      '--allow-insecure-localhost',
+      '--disable-web-security'
     ],
     headless: "new"
   });
@@ -16,7 +18,6 @@ const puppeteer = require('puppeteer');
   const page = await browser.newPage();
   let confirmationMessage = "";
 
-  // Gestionnaire de dialogues (alertes)
   page.on('dialog', async dialog => {
     confirmationMessage = dialog.message();
     console.log('DIALOGUE DETECTE:', confirmationMessage);
@@ -28,7 +29,7 @@ const puppeteer = require('puppeteer');
 
   try {
     // --- ETAPE 1 : CONNEXION ---
-    await page.goto('http://app:8080/api/login', { waitUntil: 'networkidle2' });
+    await page.goto('http://app:8080/api/login', { waitUntil: 'networkidle2', timeout: 30000 });
     await page.waitForSelector('input[type="email"]');
     await page.type('input[type="email"]', 'utilisateur1@compte.com');
     await page.type('input[type="password"]', 'MotDePasseSecret&1');
@@ -57,7 +58,8 @@ const puppeteer = require('puppeteer');
     console.log("3. Resultats de recherche affiches.");
 
     // --- ETAPE 4 : RESERVATION DYNAMIQUE ---
-    const hospitalName = await page.$eval('.hospital-card h5', el => el.textContent);
+    // Ajout d'un .trim() pour nettoyer le nom de l'hôpital
+    const hospitalName = await page.$eval('.hospital-card h5', el => el.textContent.trim());
     console.log("4. Tentative de reservation pour : " + hospitalName);
 
     await page.click('.hospital-card .btn-success');
@@ -65,17 +67,24 @@ const puppeteer = require('puppeteer');
     // --- ETAPE 5 : VERIFICATION ---
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    if (confirmationMessage.includes("succès")) {
+    if (confirmationMessage.toLowerCase().includes("succès")) {
       console.log("SUCCES FINAL : Reservation effectuee chez " + hospitalName);
     } else {
       console.log("AVERTISSEMENT : Message de confirmation non detecte");
     }
 
-    await page.screenshot({ path: 'reservation_reussie.png' });
-
   } catch (error) {
     console.error("ECHEC DU TEST :", error.message);
-    await page.screenshot({ path: 'erreur_debug.png' });
+
+    // PROTECTION : On ne prend le screenshot que si la page est toujours active
+    if (page && !page.isClosed()) {
+      try {
+        await page.screenshot({ path: 'erreur_debug.png' });
+        console.log("Screenshot de l'erreur généré : erreur_debug.png");
+      } catch (e) {
+        console.error("Impossible de prendre le screenshot (page déconnectée)");
+      }
+    }
   } finally {
     await browser.close();
     console.log("Test termine, navigateur ferme.");

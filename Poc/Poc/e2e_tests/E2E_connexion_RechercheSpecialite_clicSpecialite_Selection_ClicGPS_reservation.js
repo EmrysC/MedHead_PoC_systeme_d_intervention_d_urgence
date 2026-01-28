@@ -8,7 +8,9 @@ const puppeteer = require('puppeteer');
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
-      '--unsafely-treat-insecure-origin-as-secure=http://app:8080'
+      '--ignore-certificate-errors',
+      '--allow-insecure-localhost',
+      '--disable-web-security'
     ],
     headless: "new"
   });

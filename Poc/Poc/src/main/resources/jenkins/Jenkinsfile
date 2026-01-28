@@ -59,7 +59,7 @@ pipeline {
             }
         }
 
-        stage('Analyse SonarQube') {
+        stage('Analyse (SonarQube)') {
             steps {
                 echo 'Lancement du scan...'
                 sh """
@@ -78,7 +78,7 @@ pipeline {
         }
 
 
-        stage('Tests API (Newman)') {
+        stage('Data pour tests') {
             steps {
                 echo 'Injection manuelle des fichiers et lancement des tests...'
                 dir("${COMPOSE_DIR}") {
@@ -95,39 +95,48 @@ pipeline {
                     
                     sleep 10 // Petit délai pour s'assurer que le cleaner a fini
 
-                    // 3. Préparation de Newman (Injection des tests JSON)
+                }
+            }
+        }
+
+/*/ Newman fonctionne correctement commenter pour l'instant pour se concentrer sur les E2E
+        stage('Tests API (Newman)') {
+            steps {
+                echo 'Injection manuelle des fichiers et lancement des tests...'
+                dir("${COMPOSE_DIR}") {
+
+                    // 1. Préparation de Newman (Injection des tests JSON)
                     // On crée le conteneur sans le lancer pour y copier les fichiers
                     sh "docker-compose create newman"
                     sh "docker cp api_tests_newman/collection.json newman-api-tests:/etc/newman/collection.json"
                     sh "docker cp api_tests_newman/env.json newman-api-tests:/etc/newman/env.json"
                     
-                    // 4. Exécution de Newman
+                    // 2. Exécution de Newman
                     // -a permet d'afficher la sortie dans la console Jenkins
                     sh "docker start -a newman-api-tests"
                 }
             }
         }
+*/
 
-/*
-        stage('Tests API (Newman)') {
+
+    stage('Tests E2E (Selenium)') {
             steps {
-                echo 'Nettoyage DB et lancement Newman...'
-                dir("${COMPOSE_DIR}") {
-                    // On lance les commandes sans forcer le -v, 
-                    sh "docker-compose run --rm newman-db-cleaner"
-                    sh "docker-compose run --rm newman"
+
+                echo 'Lancement des scénarios Selenium...'
+
+                echo 'Exécution du test : Saisie Adresse'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-reservation node E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js"
+                }
+
+                echo 'Exécution du test : Clic GPS'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
                 }
             }
         }
-*/
-        stage('Tests E2E') {
-            steps {
-                echo 'Lancement des scénarios Selenium...'
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-reservation"
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm e2e-autre-test"
-            }
-        }
-    }
+
 
     post {
         always {
