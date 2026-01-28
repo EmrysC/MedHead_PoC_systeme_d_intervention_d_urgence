@@ -42,7 +42,7 @@ pipeline {
                 echo 'Compilation du projet avec le Maven de Jenkins...'
                 // On se déplace dans le dossier contenant le fichier pom.xml (Poc/Poc)
                 dir("Poc/Poc") {
-                    sh "mvn clean compile"
+                    sh "mvn clean package -DskipTests"
                 }
             }
         }
@@ -54,8 +54,8 @@ pipeline {
                     sh "docker-compose --env-file .env up -d app"
                 }
 
-                echo 'Attente de stabilisation (30s)...'
-                sleep 30
+                echo 'Attente de stabilisation (40s)...'
+                sleep 40
             }
         }
 
@@ -130,7 +130,7 @@ pipeline {
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm --build-v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
+                    sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm -v \$(pwd):/tmp/output e2e-reservation node E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js"
                 }
             }
         }
