@@ -18,11 +18,6 @@ const puppeteer = require('puppeteer');
   const page = await browser.newPage();
   const BASE_URL = 'http://medhead_backend:8080'; // Utilisation du nom de service Docker
 
-  // --- CONFIGURATION GÉOLOCALISATION ---
-  const context = browser.defaultBrowserContext();
-  await context.overridePermissions(BASE_URL, ['geolocation']);
-  await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
-
   let confirmationMessage = "";
 
   // Gestionnaire de dialogues (alertes navigateur)
@@ -37,8 +32,19 @@ const puppeteer = require('puppeteer');
   page.on('pageerror', err => console.error('ERREUR NAVIGATEUR:', err.message));
 
   try {
+    // --- ÉTAPE 0 : NAVIGATION & PERMISSIONS (CORRIGÉ) ---
+
+    // 1. On navigue d'abord vers la bonne page (HTML et non API)
+    console.log(`Navigation vers ${BASE_URL}/login ...`);
+    await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle2', timeout: 30000 });
+
+    // 2. On applique les permissions APRES la navigation (sinon crash ProtocolError)
+    const context = browser.defaultBrowserContext();
+    await context.overridePermissions(BASE_URL, ['geolocation']);
+    await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
+    console.log("Permissions GPS accordées.");
+
     // --- ÉTAPE 1 : CONNEXION ---
-    await page.goto(`${BASE_URL}/api/login`, { waitUntil: 'networkidle2', timeout: 30000 });
     await page.waitForSelector('input[type="email"]');
     await page.type('input[type="email"]', 'utilisateur1@compte.com');
     await page.type('input[type="password"]', 'MotDePasseSecret&1');
@@ -49,7 +55,7 @@ const puppeteer = require('puppeteer');
     ]);
     console.log("1. Connexion réussie.");
 
-    // --- ÉTAPE 2 : RECHERCHE 'me' ET SÉLECTION ---
+    // --- ÉTAPE 2 : RECHERCHE 'me' ET SÉLECTION (LOGIQUE INCHANGÉE) ---
     await page.waitForSelector('.search-input');
     console.log("2. Saisie de 'me' dans la recherche...");
     await page.type('.search-input', 'me', { delay: 100 });
@@ -71,7 +77,7 @@ const puppeteer = require('puppeteer');
     await page.waitForNavigation({ waitUntil: 'networkidle2' });
     console.log("4. Redirection vers la recherche d'hôpital.");
 
-    // --- ÉTAPE 3 : CLIC GPS ---
+    // --- ÉTAPE 3 : CLIC GPS (LOGIQUE INCHANGÉE) ---
     const gpsBtn = 'button.btn-outline-primary';
     await page.waitForSelector(gpsBtn);
     console.log("5. Clic sur le bouton GPS...");
@@ -80,7 +86,7 @@ const puppeteer = require('puppeteer');
     await page.waitForSelector('.hospital-card', { timeout: 15000 });
     console.log("6. Résultats affichés via GPS.");
 
-    // --- ÉTAPE 4 : RÉSERVATION ---
+    // --- ÉTAPE 4 : RÉSERVATION (LOGIQUE INCHANGÉE) ---
     const firstReserveBtn = '.hospital-card .btn-success';
     await page.waitForSelector(firstReserveBtn);
 
@@ -89,7 +95,7 @@ const puppeteer = require('puppeteer');
 
     await page.click(firstReserveBtn);
 
-    // --- ÉTAPE 5 : VÉRIFICATION ---
+    // --- ÉTAPE 5 : VÉRIFICATION (LOGIQUE INCHANGÉE) ---
     // Attente de l'alerte de succès
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -113,6 +119,8 @@ const puppeteer = require('puppeteer');
         console.error("Impossible de capturer l'écran (page fermée)");
       }
     }
+    // Indispensable pour que Jenkins marque le test en ROUGE
+    process.exit(1);
   } finally {
     if (browser) await browser.close();
     console.log("Navigateur fermé, test terminé.");

@@ -18,7 +18,7 @@ const puppeteer = require('puppeteer');
     headless: "new"
   });
 
-  const BASE_URL = 'http://medhead_backend:8080'; // Utilise le container_name Docker
+  const BASE_URL = 'http://medhead_backend:8080'; // Correct pour Docker interne
   const page = await browser.newPage();
   let confirmationMessage = "";
 
@@ -35,7 +35,10 @@ const puppeteer = require('puppeteer');
 
   try {
     // --- ÉTAPE 1 : CONNEXION ---
-    await page.goto(`${BASE_URL}/api/login`, { waitUntil: 'networkidle2', timeout: 30000 });
+    // CORRECTION CRITIQUE ICI : On retire "/api" pour taper sur la page HTML
+    console.log(`Navigation vers ${BASE_URL}/login ...`);
+    await page.goto(`${BASE_URL}/login`, { waitUntil: 'networkidle2', timeout: 30000 });
+
     await page.waitForSelector('input[type="email"]');
     await page.type('input[type="email"]', 'utilisateur1@compte.com');
     await page.type('input[type="password"]', 'MotDePasseSecret&1');
@@ -79,7 +82,7 @@ const puppeteer = require('puppeteer');
 
     if (confirmationMessage.toLowerCase().includes("succès")) {
       console.log(`SUCCÈS FINAL : Réservation effectuée chez ${hospitalName}`);
-      await page.screenshot({ path: '/tmp/output/reservation_reussie.png' }); // Sauvegarde à la racine pour Jenkins
+      await page.screenshot({ path: '/tmp/output/reservation_reussie.png' });
     } else {
       console.log("AVERTISSEMENT : Message de confirmation non détecté");
       await page.screenshot({ path: '/tmp/output/alerte_inattendue.png' });
@@ -88,16 +91,16 @@ const puppeteer = require('puppeteer');
   } catch (error) {
     console.error("ECHEC DU TEST :", error.message);
 
-    // Capture d'écran de débuggage
     if (page && !page.isClosed()) {
       try {
-        // Sauvegarde directe à la racine du conteneur 
         await page.screenshot({ path: '/tmp/output/erreur_debug_saisie_adresse.png' });
         console.log("Screenshot d'erreur sauvegardé.");
       } catch (e) {
         console.error("Impossible de capturer l'écran (page fermée)");
       }
     }
+    // Force l'échec du build Jenkins
+    process.exit(1);
   } finally {
     if (browser) await browser.close();
     console.log("Test terminé, navigateur fermé.");
