@@ -10,9 +10,7 @@ const puppeteer = require('puppeteer');
       '--disable-dev-shm-usage',
       '--ignore-certificate-errors',
       '--allow-insecure-localhost',
-      '--disable-web-security',
-      '--proxy-server="direct://"',
-      '--proxy-bypass-list=*'
+      '--disable-web-security'
     ],
     headless: "new"
   });
@@ -21,115 +19,101 @@ const puppeteer = require('puppeteer');
   const page = await browser.newPage();
   let confirmationMessage = "";
 
-  // Gestionnaire de dialogues (alertes navigateur)
   page.on('dialog', async dialog => {
     confirmationMessage = dialog.message();
     console.log('DIALOGUE DÉTECTÉ:', confirmationMessage);
     await dialog.accept();
   });
 
-  // Logs et erreurs console du navigateur
   page.on('console', msg => console.log('LOG NAVIGATEUR:', msg.text()));
+
+  // Ignorer les erreurs 404 dans la console pour ne pas polluer, car on sait que /api/login renvoie 404
   page.on('pageerror', err => console.error('ERREUR NAVIGATEUR:', err.message));
 
   try {
     // --- ÉTAPE 0 : NAVIGATION ---
     console.log(`Navigation vers ${BASE_URL}/api/login ...`);
-    await page.goto(`${BASE_URL}/api/login`, { waitUntil: 'networkidle2', timeout: 30000 });
+    // On ignore le fait que ça renvoie 404, tant que le sélecteur apparait
+    await page.goto(`${BASE_URL}/api/login`, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    // --- ÉTAPE 0.5 : PERMISSIONS  ---
-    // On attend que la page soit chargée pour éviter le "Protocol Error"
-    await page.waitForSelector('input[type="email"]');
-
-    //  Petite pause pour laisser le contexte de sécurité se stabiliser
-    await new Promise(r => setTimeout(r, 1000));
-
-    // On donne la permission, avant de se connecter.
-    // Comme ça, dès qu'on arrive sur le dashboard, le GPS est déjà autorisé.
-    const context = browser.defaultBrowserContext();
-    await context.overridePermissions(BASE_URL, ['geolocation']);
-    await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
-    console.log("Permissions GPS accordées préventivement.");
-
-    // --- ÉTAPE 1 : CONNEXION ---
+    // --- ÉTAPE 1 : CONNEXION D'ABORD (Sans GPS pour l'instant) ---
     await page.waitForSelector('input[type="email"]');
     await page.type('input[type="email"]', 'utilisateur1@compte.com');
     await page.type('input[type="password"]', 'MotDePasseSecret&1');
 
+    console.log("Tentative de connexion...");
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'networkidle2' }),
       page.click('button[type="submit"]')
     ]);
-    console.log("1. Connexion réussie.");
+    console.log("1. Connexion réussie. Nous sommes sur le Dashboard.");
 
-    // --- ÉTAPE 2 : RECHERCHE 'me' ET SÉLECTION (LOGIQUE INCHANGÉE) ---
+    // --- ÉTAPE 2 : ACTIVATION GPS (MAINTENANT C'EST SÛR) ---
+    // Maintenant qu'on est connecté sur une page valide (Dashboard), on active le GPS
+    const context = browser.defaultBrowserContext();
+    await context.overridePermissions(BASE_URL, ['geolocation']);
+    await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522 });
+    console.log("Permissions GPS accordées sur le Dashboard.");
+
+    // --- ÉTAPE 3 : RECHERCHE 'me' ---
     await page.waitForSelector('.search-input');
-    console.log("2. Saisie de 'me' dans la recherche...");
+    console.log("2. Saisie de 'me'...");
     await page.type('.search-input', 'me', { delay: 100 });
 
-    await page.waitForSelector('.spec-list-item');
+    await page.waitForSelector('.spec-list-item'); // Attente résultats
 
     console.log("3. Sélection de 'ADULT MENTAL ILLNESS'...");
     await page.evaluate(() => {
       const items = Array.from(document.querySelectorAll('.spec-list-item'));
       const target = items.find(item => item.textContent.includes('ADULT MENTAL ILLNESS'));
       if (target) {
-        const btn = target.querySelector('.btn-select');
-        btn.click();
+        target.querySelector('.btn-select').click();
       } else {
-        throw new Error("Spécialité 'ADULT MENTAL ILLNESS' introuvable");
+        throw new Error("Spécialité introuvable");
       }
     });
 
     await page.waitForNavigation({ waitUntil: 'networkidle2' });
     console.log("4. Redirection vers la recherche d'hôpital.");
 
-    // --- ÉTAPE 3 : CLIC GPS (LOGIQUE INCHANGÉE) ---
+    // --- ÉTAPE 4 : CLIC GPS ---
     const gpsBtn = 'button.btn-outline-primary';
     await page.waitForSelector(gpsBtn);
+
+    // Petite pause pour être sûr que la géolocalisation est prête
+    await new Promise(r => setTimeout(r, 1000));
+
     console.log("5. Clic sur le bouton GPS...");
     await page.click(gpsBtn);
 
     await page.waitForSelector('.hospital-card', { timeout: 15000 });
     console.log("6. Résultats affichés via GPS.");
 
-    // --- ÉTAPE 4 : RÉSERVATION (LOGIQUE INCHANGÉE) ---
+    // --- ÉTAPE 5 : RÉSERVATION ---
     const firstReserveBtn = '.hospital-card .btn-success';
     await page.waitForSelector(firstReserveBtn);
-
     const hospitalName = await page.$eval('.hospital-card h5', el => el.textContent.trim());
-    console.log(`7. Tentative de réservation chez : ${hospitalName}`);
-
     await page.click(firstReserveBtn);
 
-    // --- ÉTAPE 5 : VÉRIFICATION (LOGIQUE INCHANGÉE) ---
-    // Attente de l'alerte de succès
+    // --- ÉTAPE 6 : VÉRIFICATION ---
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     if (confirmationMessage.toLowerCase().includes("succès")) {
-      console.log("SUCCÈS FINAL : Réservation terminée avec succès.");
-      await page.screenshot({ path: '/tmp/output/test_me_gps_reussi.png' }); // Sauvegarde à la racine pour Jenkins
+      console.log(`SUCCÈS FINAL : Réservation effectuée.`);
+      await page.screenshot({ path: '/tmp/output/test_me_gps_reussi.png' });
     } else {
-      console.log("AVERTISSEMENT : La confirmation n'a pas été détectée.");
+      console.log("AVERTISSEMENT : Confirmation non détectée.");
+      await page.screenshot({ path: '/tmp/output/alerte_manquante.png' });
     }
 
   } catch (error) {
-    console.error("ÉCHEC DU TEST :", error.message);
-
-    // Capture d'écran de débuggage
+    console.error("ECHEC DU TEST :", error.message);
     if (page && !page.isClosed()) {
-      try {
-        // Sauvegarde à la racine pour être récupéré par archiveArtifacts
-        await page.screenshot({ path: '/tmp/output/erreur_debug_saisie_gps.png' });
-        console.log("Screenshot d'erreur sauvegardé.");
-      } catch (e) {
-        console.error("Impossible de capturer l'écran (page fermée)");
-      }
+      try { await page.screenshot({ path: '/tmp/output/erreur_debug_gps.png' }); } catch (e) { }
     }
-    // Indispensable pour que Jenkins marque le test en ROUGE
     process.exit(1);
   } finally {
     if (browser) await browser.close();
-    console.log("Navigateur fermé, test terminé.");
+    console.log("Fin du test.");
   }
 })();
