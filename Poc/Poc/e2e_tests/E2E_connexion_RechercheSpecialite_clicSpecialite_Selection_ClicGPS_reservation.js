@@ -16,7 +16,7 @@ const puppeteer = require('puppeteer');
   });
 
   const page = await browser.newPage();
-  const BASE_URL = 'http://medhead_backend:8080'; // Utilisation du nom de service Docker
+  const BASE_URL = 'http://host.docker.internal:8080';
 
   let confirmationMessage = "";
 

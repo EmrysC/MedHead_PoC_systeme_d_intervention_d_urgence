@@ -18,7 +18,7 @@ const puppeteer = require('puppeteer');
     headless: "new"
   });
 
-  const BASE_URL = 'http://medhead_backend:8080'; // Correct pour Docker interne
+  const BASE_URL = 'http://host.docker.internal:8080';
   const page = await browser.newPage();
   let confirmationMessage = "";
 
