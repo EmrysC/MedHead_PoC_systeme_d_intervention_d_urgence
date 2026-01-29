@@ -19,7 +19,7 @@ Thread.start {
     // ========================================================================
     // PARTIE 1 : CONFIGURATION DES IDENTIFIANTS (Credentials)
     // ========================================================================
-    def sonarCredsId = "sonarqube-admin" // Identifiant utilisé par le plugin Sonar
+    def sonarCredsId = "sonarqube-admin" 
     try {
         println "--- [INIT] Configuration des credentials 'sonarqube-admin' ---"
         
@@ -58,12 +58,11 @@ Thread.start {
         
         def sonarGlobalConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
         
-        // Création de l'installation liée aux credentials créés en Partie 1
         def sonarInst = new SonarInstallation(
-            sonarServerName,    // Nom (doit correspondre à withSonarQubeEnv dans le Jenkinsfile)
+            sonarServerName,    // Nom utilisé dans le Jenkinsfile
             sonarServerUrl,     // URL interne Docker
             sonarCredsId,       // Utilisation de l'ID "sonarqube-admin"
-            null,               // Token (null car on utilise login/pass)
+            null,               // Token (vide car login/pass utilisés)
             null,               // Webhook Secret
             null,               // Extra Properties
             null,               // Triggers
@@ -71,9 +70,48 @@ Thread.start {
             null                // Additional Analysis Properties
         )
         
-        // Forçage de la configuration dans le plugin
         sonarGlobalConfig.setInstallations([sonarInst] as SonarInstallation[])
         sonarGlobalConfig.save()
         instance.save()
         
-        println "--- [INIT] Serveur SonarQube '${sonarServerName
+        println "--- [INIT] Serveur SonarQube '${sonarServerName}' activé avec succès ---"
+
+    } catch (Exception e) {
+        println "--- [ERREUR] Configuration Serveur Sonar : ${e.message} ---"
+    }
+
+    // ========================================================================
+    // PARTIE 3 : CONFIGURATION DU JOB (Pipeline)
+    // ========================================================================
+    def jobName = "MedHead_Pipeline"
+    def xmlPath = "/var/jenkins_home/init.groovy.d/job_config.xml"
+    def xmlFile = new File(xmlPath)
+
+    try {
+        if (xmlFile.exists()) {
+            println "--- [INIT] Configuration du Job : ${jobName} ---"
+            def jobXml = xmlFile.text
+            def existingJob = instance.getItem(jobName)
+            
+            if (existingJob != null) {
+                def xmlStream = new ByteArrayInputStream(jobXml.getBytes("UTF-8"))
+                existingJob.updateByXml(new StreamSource(xmlStream))
+                existingJob.save()
+            } else {
+                def xmlStream = new ByteArrayInputStream(jobXml.getBytes("UTF-8"))
+                instance.createProjectFromXML(jobName, xmlStream)
+            }
+
+            instance.save()
+            sleep(5000) 
+            
+            def job = instance.getItem(jobName)
+            if (job != null && !job.isBuilding() && !job.isInQueue()) {
+                job.scheduleBuild2(0)
+                println "--- [SUCCÈS] Job '${jobName}' prêt et build lancé ---"
+            }
+        }
+    } catch (Exception e) {
+        println "--- [ERREUR] Initialisation du Job : ${e.message} ---"
+    }
+}
