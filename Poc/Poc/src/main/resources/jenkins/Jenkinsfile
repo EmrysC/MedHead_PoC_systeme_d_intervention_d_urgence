@@ -59,40 +59,34 @@ pipeline {
 
         stage('Configuration Webhook SonarQube') {
             steps {
-                echo 'Création du Webhook dans SonarQube via API...'
-                // On utilise le réseau Docker interne (sonarqube-poc:9000)
-                // L'URL de retour pointe vers le conteneur Jenkins (jenkins_poc:8080)
+                echo 'Création automatique du Webhook dans SonarQube...'
+                // Cette commande curl assure que SonarQube saura renvoyer le verdict à Jenkins
+                // On utilise les noms de services Docker internes
                 sh """
-                    curl -u admin:admin -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Le webhook existe déjà ou SonarQube est indisponible."
+                    curl -u admin:admin -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré ou serveur indisponible."
                 """
             }
         }
 
-
         stage('Analyse (SonarQube)') {
             steps {
-                echo 'Lancement du scan avec le scanner interne (Dossier Partagé Jenkins)...'
+                echo 'Lancement du scan natif et attente du verdict...'
                 
-                // On se place là où Maven a compilé le projet
                 dir("Poc/Poc") { 
-                    
-                    // On utilise le serveur configuré automatiquement 
+                    // On utilise le serveur configuré dans Jenkins via le script init.groovy
                     withSonarQubeEnv('sonarqube-poc') { 
-                        // ON UTILISE LE SCANNER  DOCKERFILE 
+                        // On retire login/password car withSonarQubeEnv les injecte proprement
                         sh """
                             sonar-scanner \
                             -Dsonar.projectKey=MedHead_PoC \
                             -Dsonar.projectName=MedHead_PoC_System \
-                            -Dsonar.host.url=http://sonarqube-poc:9000 \
-                            -Dsonar.login=admin \
-                            -Dsonar.password=admin \
                             -Dsonar.sources=src/main/java \
                             -Dsonar.java.binaries=target/classes \
                             -Dsonar.exclusions=**/target/**,**/*.env
                         """
                     }
 
-                    // Jenkins trouvera le rapport 
+                    // On attend que SonarQube envoie le signal de réussite/échec via le Webhook
                     timeout(time: 5, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
