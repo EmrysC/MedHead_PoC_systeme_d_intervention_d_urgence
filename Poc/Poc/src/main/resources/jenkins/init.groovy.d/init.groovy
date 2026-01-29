@@ -5,8 +5,7 @@ import hudson.plugins.sonar.model.*
 import hudson.plugins.sonar.utils.*
 import com.cloudbees.plugins.credentials.*
 import com.cloudbees.plugins.credentials.domains.*
-import com.cloudbees.plugins.credentials.impl.* 
-import org.jenkinsci.plugins.plaincredentials.impl.*
+import com.cloudbees.plugins.credentials.impl.* import org.jenkinsci.plugins.plaincredentials.impl.*
 import hudson.util.Secret
 import java.io.ByteArrayInputStream
 import javax.xml.transform.stream.StreamSource
@@ -51,40 +50,42 @@ Thread.start {
         // 2. Configuration du Serveur 
         def sonarGlobalConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
         
-        // Utilisation du constructeur compatible avec les versions récentes
-        // Nom, Url, TokenId
-        def sonarInst = new SonarInstallation(
-            sonarServerName,
-            sonarServerUrl,
-            sonarCredsId,
-            null, // mojoVersion
-            null, // additionalProperties
-            null, // additionalAnalysisProperties
-            null, // triggers
-            null  // sonarRunnerName
-        )
+
+        def sonarInst
+        try {
+            // Tentative 1 : Constructeur complet 
+            sonarInst = new SonarInstallation(
+                sonarServerName, sonarServerUrl, sonarCredsId,
+                null, null, null, null, null
+            )
+        } catch (Exception e1) {
+            try {
+                // Tentative 2 : Constructeur simplifié
+                sonarInst = new SonarInstallation(
+                    sonarServerName, sonarServerUrl, sonarCredsId
+                )
+            } catch (Exception e2) {
+                // Tentative 3 : Constructeur "Vide" et setters 
+                 println "--- [INFO] Utilisation méthode de secours ---"
+                 sonarInst = new SonarInstallation(
+                    (String)sonarServerName, 
+                    (String)sonarServerUrl, 
+                    (String)sonarCredsId
+                 )
+            }
+        }
         
-        sonarGlobalConfig.setInstallations(sonarInst)
-        sonarGlobalConfig.save()
-        println "--- [INIT] Serveur SonarQube '${sonarServerName}' activé ---"
+        if (sonarInst != null) {
+            sonarGlobalConfig.setInstallations(sonarInst)
+            sonarGlobalConfig.save()
+            println "--- [INIT] Serveur SonarQube '${sonarServerName}' activé ---"
+        } else {
+             println "--- [ERREUR] Impossible de créer l'objet SonarInstallation ---"
+        }
 
     } catch (Exception e) {
-        println "--- [ERREUR] Problème config SonarQube : ${e.message} ---"
-        // Tentative de fallback (plan B) pour les versions très récentes
-        try {
-             println "--- [INFO] Tentative Plan B pour SonarQube ---"
-             def desc = Jenkins.instance.getDescriptorByType(SonarGlobalConfiguration.class)
-             def inst = new SonarInstallation(
-                "sonarqube-poc",
-                "http://sonarqube-poc:9000",
-                "sonar-admin-creds"
-             )
-             desc.setInstallations(inst)
-             desc.save()
-             println "--- [SUCCES] Plan B réussi ---"
-        } catch (Exception e2) {
-             println "--- [ERREUR FATALE] Impossible de configurer Sonar : ${e2.message} ---"
-        }
+        println "--- [ERREUR FATALE] Config Sonar : ${e.message} ---"
+        e.printStackTrace()
     }
 
     // ========================================================================
