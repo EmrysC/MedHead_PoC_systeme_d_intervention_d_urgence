@@ -57,8 +57,14 @@ pipeline {
                 echo 'Vérification et création du Webhook...'
                 withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'MY_TOKEN')]) {
                     sh """
-                        # On utilise le Token pour créer le lien retour vers Jenkins
-                        curl -u '${MY_TOKEN}': -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré."
+                        # On attend que l'API soit vraiment répondante
+                        until curl -s http://sonarqube-poc:9000/api/system/status | grep -q '"status":"UP"'; do
+                        echo "Attente de l'API SonarQube..."
+                        sleep 5
+                        done
+
+                        # Création forcée (on affiche la réponse pour débugger)
+                        curl -v -u '${MY_TOKEN}': -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/"
                     """
                 }
             }
@@ -70,30 +76,42 @@ pipeline {
                     withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'MY_TOKEN')]) {
                         withSonarQubeEnv('sonarqube-poc') { 
                             
-                            echo 'Attente que SonarQube soit prêt (Statut UP)...'
+                            // Attente que SonarQube soit UP
                             sh """
                                 until curl -s http://sonarqube-poc:9000/api/system/status | grep -q '"status":"UP"'; do
-                                  echo "SonarQube charge ses composants... attente de 5s"
+                                  echo "Attente de SonarQube..."
                                   sleep 5
                                 done
                             """
 
-                            echo 'Lancement du scan avec SONARQUBE_TOKEN...'
-                            sh """
-                                sonar-scanner \
-                                -Dsonar.projectKey=MedHead_PoC \
-                                -Dsonar.projectName=MedHead_PoC_System \
-                                -Dsonar.sources=src/main/java \
-                                -Dsonar.java.binaries=target/classes \
-                                -Dsonar.exclusions=**/target/**,**/*.env \
-                                -Dsonar.token='${MY_TOKEN}'
-                            """
+                            // Lancement du Scan
+                            sh "sonar-scanner -Dsonar.projectKey=MedHead_PoC -Dsonar.token='${MY_TOKEN}' -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes"
                         }
-                    }
 
-                    echo 'Attente du verdict du Quality Gate (via le Webhook)...'
-                    timeout(time: 5, unit: 'MINUTES') {
-                        waitForQualityGate abortPipeline: true
+                        // --- REMPLACEMENT DU WAIT FOR QUALITY GATE PAR POLLING ---
+                        echo 'Attente du verdict via API (Polling)...'
+                        timeout(time: 5, unit: 'MINUTES') {
+                            script {
+                                def qgStatus = ""
+                                waitUntil {
+                                    def response = sh(
+                                        script: "curl -u ${MY_TOKEN}: -s http://sonarqube-poc:9000/api/qualitygates/project_status?projectKey=MedHead_PoC",
+                                        returnStdout: true
+                                    ).trim()
+                                    
+                                    // Extraction du statut via un petit hack shell ou groovy
+                                    if (response.contains('"status":"OK"')) qgStatus = "SUCCESS"
+                                    else if (response.contains('"status":"ERROR"')) qgStatus = "FAILURE"
+                                    
+                                    echo "Statut actuel : ${qgStatus ?: 'EN COURS'}"
+                                    return (qgStatus == "SUCCESS" || qgStatus == "FAILURE")
+                                }
+                                
+                                if (qgStatus == "FAILURE") {
+                                    error "Le Quality Gate a échoué !"
+                                }
+                            }
+                        }
                     }
                 }
             }
