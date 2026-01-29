@@ -5,7 +5,8 @@ import hudson.plugins.sonar.model.*
 import hudson.plugins.sonar.utils.*
 import com.cloudbees.plugins.credentials.*
 import com.cloudbees.plugins.credentials.domains.*
-import com.cloudbees.plugins.credentials.impl.* import org.jenkinsci.plugins.plaincredentials.impl.*
+import com.cloudbees.plugins.credentials.impl.* 
+import org.jenkinsci.plugins.plaincredentials.impl.*
 import hudson.util.Secret
 import java.io.ByteArrayInputStream
 import javax.xml.transform.stream.StreamSource
