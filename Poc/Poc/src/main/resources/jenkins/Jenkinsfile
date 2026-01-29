@@ -51,7 +51,7 @@ pipeline {
                 sleep 40 // Temps nécessaire pour que Spring Boot et la sécurité soient opérationnels
             }
         }
-
+        /*
         stage('Configuration Webhook SonarQube') {
             steps {
                 echo 'Vérification et création du Webhook...'
@@ -68,7 +68,7 @@ pipeline {
                     """
                 }
             }
-        }
+        }*/
 
         stage('Analyse (SonarQube)') {
             steps {
