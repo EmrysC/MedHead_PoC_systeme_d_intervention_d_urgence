@@ -53,17 +53,19 @@ pipeline {
                     sh "docker-compose -f compose.yaml --env-file .env up -d --build app"
                 }
                 echo 'Attente de stabilisation (30s)...'
-                sleep 30 // Temps nécessaire pour que Spring Boot et la sécurité soient opérationnels
+                sleep 40 // Temps nécessaire pour que Spring Boot et la sécurité soient opérationnels
             }
         }
 
         stage('Configuration Webhook SonarQube') {
             steps {
-                echo 'Création automatique du Webhook via API...'
-                // On utilise admin:admin uniquement pour l'appel API de configuration initiale
-                sh """
-                    curl -u admin:admin -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré."
-                """
+                echo 'Configuration du Webhook via API...'
+                // On utilise le nouveau nom SONARCUBE_TOKEN pour s'authentifier auprès de l'API
+                withCredentials([string(credentialsId: 'SONARCUBE_TOKEN', variable: 'MY_TOKEN')]) {
+                    sh """
+                        curl -u '${MY_TOKEN}': -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré."
+                    """
+                }
             }
         }
 
