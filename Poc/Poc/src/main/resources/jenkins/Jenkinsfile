@@ -63,7 +63,7 @@ pipeline {
             steps {
                 echo 'Lancement du scan et attente du verdict...'
                 
-                // 1. On "enveloppe" la commande pour que Jenkins sache qu'un scan est en cours
+                // On utilise le wrapper pour que Jenkins récupère les infos du serveur
                 withSonarQubeEnv('sonarqube-poc') { 
                     sh """
                         docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
@@ -75,7 +75,7 @@ pipeline {
                         -Dsonar.password=admin \
                         -Dsonar.sources=. \
                         -Dsonar.java.binaries=. \
-                        -Dsonar.working.directory=/usr/src/Poc/Poc/src/main/resources/.scannerwork \
+                        -Dsonar.working.directory=/usr/src/.scannerwork \
                         -Dsonar.exclusions=**/target/**,**/*.env
                     """
                 }
