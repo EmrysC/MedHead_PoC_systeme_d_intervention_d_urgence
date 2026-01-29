@@ -107,8 +107,6 @@ services:
   # docker logs jenkins_poc   va afficher le mdp admin initial
   # user : admin
   #recup mdp : docker exec jenkins_poc cat /var/jenkins_home/secrets/initialAdminPassword
-
-
   jenkins:
     build:
       context: ./jenkins
