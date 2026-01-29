@@ -57,7 +57,7 @@ pipeline {
             }
         }
 
-stage('Configuration Webhook SonarQube') {
+        stage('Configuration Webhook SonarQube') {
             steps {
                 echo 'Création automatique du Webhook via API...'
                 // On utilise admin:admin uniquement pour l'appel API de configuration initiale

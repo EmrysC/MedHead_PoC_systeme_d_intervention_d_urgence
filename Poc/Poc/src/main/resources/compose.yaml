@@ -186,6 +186,11 @@ services:
       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
       - SONAR_FORCEAUTHENTICATION=true
     restart: always
+    # AJOUT DES VOLUMES POUR GARDER LES DONNÉES
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:9000/api/system/status | grep -q UP" ]
       interval: 10s # Vérifie toutes les 10s
