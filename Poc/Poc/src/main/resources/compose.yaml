@@ -242,6 +242,7 @@ volumes:
   sonarqube_logs:
   db_data:
 
-  networks:
-    sonar-net:
-      driver: bridge
+
+networks:
+  sonar-net:
+    driver: bridge
