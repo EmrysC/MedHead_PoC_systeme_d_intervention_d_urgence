@@ -33,15 +33,10 @@ pipeline {
 
         stage('Nettoyage & Préparation') {
             steps {
-                echo 'Nettoyage sélectif (sans toucher à Jenkins)...'
-                
-                // 1. On arrête uniquement les services de test et l'app
+                echo 'Nettoyage sélectif (sans supprimer les volumes persistants)...'
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml stop app db newman-db-cleaner"
-                
-                // 2. On supprime les conteneurs et les volumes associés (-v) pour ces services uniquement
-                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f -v app db newman-db-cleaner"
-                
-                // 3. On relance la DB et les outils 
+                // On ne met pas le -v ici pour garder ton Token SonarQube en mémoire
+                sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml rm -f app db newman-db-cleaner"
                 sh "docker-compose -f ${COMPOSE_DIR}/compose.yaml up -d db sonarqube newman-db-cleaner"
             }
         }
@@ -59,12 +54,10 @@ pipeline {
 
         stage('Configuration Webhook SonarQube') {
             steps {
-                echo 'Vérification et création du Webhook...'
-                // Utilisation de SONARQUBE_TOKEN 
+                echo 'Vérification et création du Webhook via API...'
                 withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'MY_TOKEN')]) {
                     sh """
-                        # On utilise le Token pour créer le webhook
-                        curl -u '${MY_TOKEN}': -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré."
+                        curl -u '${MY_TOKEN}': -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré ou erreur mineure."
                     """
                 }
             }
@@ -73,19 +66,20 @@ pipeline {
         stage('Analyse (SonarQube)') {
             steps {
                 dir("Poc/Poc") { 
-                    // Utilisation de SONARQUBE_TOKEN 
                     withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'MY_TOKEN')]) {
                         withSonarQubeEnv('sonarqube-poc') { 
                             
-                            // Attente que SonarQube soit prêt
+                            // Attente que SonarQube soit prêt pour éviter l'erreur de Bootstrap
+                            echo 'Vérification de la santé de SonarQube...'
                             sh """
                                 until curl -s http://sonarqube-poc:9000/api/system/status | grep -q '"status":"UP"'; do
-                                  echo "SonarQube démarre... attente de 5s"
+                                  echo "SonarQube est en cours de démarrage... attente de 5s"
                                   sleep 5
                                 done
                             """
 
-                            // Utilisation de '${MY_TOKEN}' (guillemets simples) pour la sécurité
+                            echo 'Lancement du scan...'
+                            // Utilisation des simples quotes pour masquer le secret dans la console
                             sh """
                                 sonar-scanner \
                                 -Dsonar.projectKey=MedHead_PoC \
@@ -98,7 +92,7 @@ pipeline {
                         }
                     }
 
-                    echo 'Attente du verdict du Quality Gate...'
+                    echo 'Attente du verdict du Quality Gate (via Webhook)...'
                     timeout(time: 5, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
@@ -148,7 +142,7 @@ pipeline {
         }
         */
 
-        /*/ E2E Selenium fonctionne correctement commenter pour l'instant pour se concentrer sur sonarcube
+        /*/ E2E Selenium fonctionne correctement commenter pour l'instant pour se concentrer sur sonarqube
         stage('Tests E2E (Selenium)') {
             steps {
                 echo 'Mise à jour et lancement des tests...'
