@@ -21,8 +21,7 @@ pipeline {
                 }
             }
         }
-
-        // COMPILER 
+ 
         stage('Compilation') {
             steps {
                 echo 'Génération du nouveau JAR...'
@@ -55,6 +54,17 @@ pipeline {
                 }
                 echo 'Attente de stabilisation (30s)...'
                 sleep 30 // Temps nécessaire pour que Spring Boot et la sécurité soient opérationnels
+            }
+        }
+
+        stage('Configuration Webhook SonarQube') {
+            steps {
+                echo 'Création du Webhook dans SonarQube via API...'
+                // On utilise le réseau Docker interne (sonarqube-poc:9000)
+                // L'URL de retour pointe vers le conteneur Jenkins (jenkins_poc:8080)
+                sh """
+                    curl -u admin:admin -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Le webhook existe déjà ou SonarQube est indisponible."
+                """
             }
         }
 
