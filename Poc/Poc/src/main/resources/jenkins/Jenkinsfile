@@ -54,10 +54,11 @@ pipeline {
 
         stage('Configuration Webhook SonarQube') {
             steps {
-                echo 'Vérification et création du Webhook via API...'
+                echo 'Vérification et création du Webhook...'
                 withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'MY_TOKEN')]) {
                     sh """
-                        curl -u '${MY_TOKEN}': -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré ou erreur mineure."
+                        # On utilise le Token pour créer le lien retour vers Jenkins
+                        curl -u '${MY_TOKEN}': -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré."
                     """
                 }
             }
@@ -69,17 +70,15 @@ pipeline {
                     withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'MY_TOKEN')]) {
                         withSonarQubeEnv('sonarqube-poc') { 
                             
-                            // Attente que SonarQube soit prêt pour éviter l'erreur de Bootstrap
-                            echo 'Vérification de la santé de SonarQube...'
+                            echo 'Attente que SonarQube soit prêt (Statut UP)...'
                             sh """
                                 until curl -s http://sonarqube-poc:9000/api/system/status | grep -q '"status":"UP"'; do
-                                  echo "SonarQube est en cours de démarrage... attente de 5s"
+                                  echo "SonarQube charge ses composants... attente de 5s"
                                   sleep 5
                                 done
                             """
 
-                            echo 'Lancement du scan...'
-                            // Utilisation des simples quotes pour masquer le secret dans la console
+                            echo 'Lancement du scan avec SONARQUBE_TOKEN...'
                             sh """
                                 sonar-scanner \
                                 -Dsonar.projectKey=MedHead_PoC \
@@ -92,7 +91,7 @@ pipeline {
                         }
                     }
 
-                    echo 'Attente du verdict du Quality Gate (via Webhook)...'
+                    echo 'Attente du verdict du Quality Gate (via le Webhook)...'
                     timeout(time: 5, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
