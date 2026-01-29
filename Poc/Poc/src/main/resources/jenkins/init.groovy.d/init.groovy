@@ -4,89 +4,121 @@ import hudson.plugins.sonar.*
 import hudson.plugins.sonar.model.*
 import com.cloudbees.plugins.credentials.*
 import com.cloudbees.plugins.credentials.domains.*
+import org.jenkinsci.plugins.plaincredentials.*
+import org.jenkinsci.plugins.plaincredentials.impl.*
 import hudson.util.Secret
 import java.io.ByteArrayInputStream
 import javax.xml.transform.stream.StreamSource
 
-// Initialisation asynchrone pour ne pas bloquer le démarrage de Jenkins
+// Initialisation asynchrone pour laisser le temps aux services de démarrer
 Thread.start {
     println "--- [INIT] Attente de 30s pour stabilisation de Jenkins ---"
     sleep(30000) 
 
     def instance = Jenkins.get()
-    
+    def envCredId = ".env"          // L'ID de ton credential fichier existant
+    def sonarCredsId = "SONARCUBE_TOKEN" 
+    def extractedToken = null
+
     // ========================================================================
-    // PARTIE 1 : ENREGISTREMENT DU SERVEUR SONARQUBE
+    // PARTIE 1 : EXTRACTION AUTOMATIQUE DEPUIS L'IDENTIFIANT ".env"
     // ========================================================================
     try {
-        println "--- [INIT] Liaison du serveur 'sonarqube-poc' au token 'SONARCUBE_TOKEN' ---"
+        def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
+        def credentials = credentialsStore.getCredentials(Domain.global())
         
-        def sonarServerName = "sonarqube-poc"
-        def sonarServerUrl = "http://sonarqube-poc:9000"
-        def sonarCredsId = "SONARCUBE_TOKEN" // Utilisation de votre ID existant
-        
-        def sonarGlobalConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
-        
-        // On crée l'installation en pointant sur votre credential "Secret Text"
-        def sonarInst = new SonarInstallation(
-            sonarServerName,    // Name
-            sonarServerUrl,     // Server URL
-            sonarCredsId,       // Credentials ID (votre token Jenkins)
-            null,               // Webhook Secret ID
-            null,               // Extra Properties
-            null,               // Triggers
-            null,               // Mojo Version
-            null,               // Additional Analysis Properties
-            null                // Additional Analysis Properties (versioning plugin)
-        )
-        
-        // Application de la configuration (en tableau pour la compatibilité)
-        sonarGlobalConfig.setInstallations([sonarInst] as SonarInstallation[])
-        sonarGlobalConfig.save()
-        instance.save()
-        
-        println "--- [INIT] Serveur '${sonarServerName}' configuré avec succès ---"
+        // Recherche de l'identifiant ".env"
+        def envCred = credentials.find { it.id == envCredId }
 
+        if (envCred instanceof FileCredentials) {
+            println "--- [INIT] Lecture du contenu de l'identifiant '.env' ---"
+            def content = envCred.getContent().text
+            
+            // Extraction de la valeur après SONARCUBE_TOKEN=
+            content.eachLine { line ->
+                if (line.contains("SONARCUBE_TOKEN=")) {
+                    extractedToken = line.split("=")[1].trim()
+                }
+            }
+        } else {
+            println "--- [ERREUR] Identifiant '.env' introuvable dans Jenkins ---"
+        }
     } catch (Exception e) {
-        println "--- [ERREUR] Configuration Serveur Sonar : ${e.message} ---"
+        println "--- [ERREUR] Extraction : ${e.message} ---"
     }
 
     // ========================================================================
-    // PARTIE 2 : CONFIGURATION DU JOB (Pipeline)
+    // PARTIE 2 : CONFIGURATION DU SECRET TEXT ET DU SERVEUR SONAR
+    // ========================================================================
+    if (extractedToken) {
+        try {
+            println "--- [INIT] Token trouvé. Configuration du serveur SonarQube ---"
+            def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
+            
+            // Création/Mise à jour du Secret Text "SONARCUBE_TOKEN"
+            def sonarTokenCred = new StringCredentialsImpl(
+                CredentialsScope.GLOBAL, 
+                sonarCredsId, 
+                "Token extrait automatiquement du fichier .env", 
+                Secret.fromString(extractedToken)
+            )
+
+            def existing = credentialsStore.getCredentials(Domain.global()).find { it.id == sonarCredsId }
+            if (existing) { 
+                credentialsStore.updateCredentials(Domain.global(), existing, sonarTokenCred) 
+            } else { 
+                credentialsStore.addCredentials(Domain.global(), sonarTokenCred) 
+            }
+
+            // Enregistrement de l'installation SonarQube
+            def sonarConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
+            def sonarInst = new SonarInstallation(
+                "sonarqube-poc", 
+                "http://sonarqube-poc:9000", 
+                sonarCredsId, 
+                null, null, null, null, null, null
+            )
+            
+            sonarConfig.setInstallations([sonarInst] as SonarInstallation[])
+            sonarConfig.save()
+            instance.save()
+            println "--- [INIT] Serveur 'sonarqube-poc' configuré avec succès ---"
+
+        } catch (Exception e) {
+            println "--- [ERREUR] Configuration Sonar : ${e.message} ---"
+        }
+    }
+
+    // ========================================================================
+    // PARTIE 3 : CONFIGURATION ET LANCEMENT DU JOB
     // ========================================================================
     def jobName = "MedHead_Pipeline"
     def xmlPath = "/var/jenkins_home/init.groovy.d/job_config.xml"
-    def xmlFile = new File(xmlPath)
-
+    
     try {
+        def xmlFile = new File(xmlPath)
         if (xmlFile.exists()) {
             println "--- [INIT] Synchronisation du Job : ${jobName} ---"
             def jobXml = xmlFile.text
             def existingJob = instance.getItem(jobName)
             
             if (existingJob != null) {
-                def xmlStream = new ByteArrayInputStream(jobXml.getBytes("UTF-8"))
-                existingJob.updateByXml(new StreamSource(xmlStream))
+                existingJob.updateByXml(new StreamSource(new ByteArrayInputStream(jobXml.getBytes("UTF-8"))))
                 existingJob.save()
-                println "--- [INIT] Job mis à jour ---"
             } else {
-                def xmlStream = new ByteArrayInputStream(jobXml.getBytes("UTF-8"))
-                instance.createProjectFromXML(jobName, xmlStream)
-                println "--- [INIT] Job créé ---"
+                instance.createProjectFromXML(jobName, new ByteArrayInputStream(jobXml.getBytes("UTF-8")))
             }
 
             instance.save()
-            sleep(5000) // Petit délai avant le premier build
+            sleep(5000) 
             
             def job = instance.getItem(jobName)
             if (job != null && !job.isBuilding() && !job.isInQueue()) {
                 job.scheduleBuild2(0)
-                println "--- [SUCCÈS] Job '${jobName}' prêt et build lancé ---"
+                println "--- [SUCCÈS] Job '${jobName}' lancé avec succès ---"
             }
-        } else {
-            println "--- [ALERTE] Fichier ${xmlPath} introuvable, job non configuré ---"
         }
     } catch (Exception e) {
-        println "--- [ERREUR] Initialisation du Job : ${e.message} ---"
+        println "--- [ERREUR] Job Init : ${e.message} ---"
     }
 }
