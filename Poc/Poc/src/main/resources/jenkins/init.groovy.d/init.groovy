@@ -1,71 +1,89 @@
 import jenkins.model.*
 import hudson.model.*
-import java.io.File
-import java.io.ByteArrayInputStream
-import javax.xml.transform.stream.StreamSource
 import hudson.plugins.sonar.*
 import hudson.plugins.sonar.model.*
+import hudson.plugins.sonar.utils.*
 import com.cloudbees.plugins.credentials.*
 import com.cloudbees.plugins.credentials.domains.*
-import com.cloudbees.plugins.credentials.impl.* 
-import org.jenkinsci.plugins.plaincredentials.impl.*
+import com.cloudbees.plugins.credentials.impl.* import org.jenkinsci.plugins.plaincredentials.impl.*
 import hudson.util.Secret
+import java.io.ByteArrayInputStream
+import javax.xml.transform.stream.StreamSource
 
 Thread.start {
-    // Augmenté à 30s pour laisser le temps aux plugins Docker/Git/Sonar de charger
     println "--- [INIT] Attente de 30s pour stabilisation Jenkins ---"
     sleep(30000) 
 
     def instance = Jenkins.getInstance()
     
     // ========================================================================
-    // PARTIE 1 : CONFIGURATION SONARQUBE (Mode Login/Password)
+    // PARTIE 1 : CONFIGURATION SONARQUBE
     // ========================================================================
     try {
         println "--- [INIT] Début configuration SonarQube (Admin/Admin) ---"
         
         def sonarServerName = "sonarqube-poc"
         def sonarServerUrl = "http://sonarqube-poc:9000"
-        def sonarCredsId = "sonar-admin-creds" // ID interne dans Jenkins
+        def sonarCredsId = "sonar-admin-creds"
         
-        // A. Création des identifiants (Username / Password)
+        // 1. Création des identifiants (Username / Password)
         def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
         def domain = Domain.global()
         
-        // On crée l'objet "Username with Password" avec admin/admin
         def sonarCredential = new UsernamePasswordCredentialsImpl(
             CredentialsScope.GLOBAL,
             sonarCredsId,
             "Identifiants Admin SonarQube (Auto)",
-            "admin", // Login
-            "admin"  // Mot de passe
+            "admin",
+            "admin"
         )
 
-        // On met à jour ou on crée
         def existingCreds = credentialsStore.getCredentials(domain).find { it.id == sonarCredsId }
         if (existingCreds) {
             credentialsStore.updateCredentials(domain, existingCreds, sonarCredential)
-            println "--- [INIT] Credentials 'admin/admin' mis à jour ---"
+            println "--- [INIT] Credentials mis à jour ---"
         } else {
             credentialsStore.addCredentials(domain, sonarCredential)
-            println "--- [INIT] Credentials 'admin/admin' créés ---"
+            println "--- [INIT] Credentials créés ---"
         }
 
-        // B. Configuration du Serveur dans Jenkins
+        // 2. Configuration du Serveur 
         def sonarGlobalConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
+        
+        // Utilisation du constructeur compatible avec les versions récentes
+        // Nom, Url, TokenId
         def sonarInst = new SonarInstallation(
             sonarServerName,
             sonarServerUrl,
-            sonarCredsId, // On lie l'ID créé juste avant
-            null, null, null, null, null
+            sonarCredsId,
+            null, // mojoVersion
+            null, // additionalProperties
+            null, // additionalAnalysisProperties
+            null, // triggers
+            null  // sonarRunnerName
         )
+        
         sonarGlobalConfig.setInstallations(sonarInst)
         sonarGlobalConfig.save()
-        println "--- [INIT] Serveur SonarQube '${sonarServerName}' activé avec admin/admin ---"
+        println "--- [INIT] Serveur SonarQube '${sonarServerName}' activé ---"
 
     } catch (Exception e) {
         println "--- [ERREUR] Problème config SonarQube : ${e.message} ---"
-        e.printStackTrace()
+        // Tentative de fallback (plan B) pour les versions très récentes
+        try {
+             println "--- [INFO] Tentative Plan B pour SonarQube ---"
+             def desc = Jenkins.instance.getDescriptorByType(SonarGlobalConfiguration.class)
+             def inst = new SonarInstallation(
+                "sonarqube-poc",
+                "http://sonarqube-poc:9000",
+                "sonar-admin-creds"
+             )
+             desc.setInstallations(inst)
+             desc.save()
+             println "--- [SUCCES] Plan B réussi ---"
+        } catch (Exception e2) {
+             println "--- [ERREUR FATALE] Impossible de configurer Sonar : ${e2.message} ---"
+        }
     }
 
     // ========================================================================
