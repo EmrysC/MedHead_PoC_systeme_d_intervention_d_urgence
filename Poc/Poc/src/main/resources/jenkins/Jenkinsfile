@@ -146,7 +146,7 @@ pipeline {
             }
         }
 
-        /*/ Newman fonctionne correctement commenter pour l'instant pour se concentrer sur les E2E
+        // Newman fonctionne correctement commenter pour l'instant pour se concentrer sur les E2E
         stage('Tests API (Newman)') {
             steps {
                 echo 'Injection manuelle des fichiers et lancement des tests...'
@@ -164,9 +164,9 @@ pipeline {
                 }
             }
         }
-        */
+        
 
-        /*/ E2E Selenium fonctionne correctement commenter pour l'instant pour se concentrer sur sonarqube
+        // E2E Selenium fonctionne correctement commenter pour l'instant pour se concentrer sur sonarqube
         stage('Tests E2E (Selenium)') {
             steps {
                 echo 'Mise à jour et lancement des tests...'
@@ -184,7 +184,7 @@ pipeline {
                 }
             }
         }
-        */
+        
 
     }
     post {
