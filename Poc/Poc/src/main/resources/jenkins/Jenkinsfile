@@ -22,11 +22,11 @@ pipeline {
             }
         }
  
-        stage('Compilation') {
+        stage('Compilation & Tests') {
             steps {
-                echo 'Génération du nouveau JAR...'
+                echo 'Compilation, exécution des tests et génération des rapports de couverture...'
                 dir("Poc/Poc") {
-                    sh "mvn clean package -DskipTests"
+                    sh "mvn clean package jacoco:report"
                 }
             }
         }
