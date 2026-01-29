@@ -61,30 +61,33 @@ pipeline {
 
         stage('Analyse (SonarQube)') {
             steps {
-                echo 'Lancement du scan et attente du verdict...'
-                
-                // On utilise le wrapper pour que Jenkins récupère les infos du serveur
-                withSonarQubeEnv('sonarqube-poc') { 
-                    sh """
+                echo 'Analyse SonarQube...'
+
+                withSonarQubeEnv('sonarqube-poc') {
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+
+                        sh """
                         docker-compose -f ${COMPOSE_DIR}/compose.yaml run --rm \
-                        sonar-scanner \
-                        -Dsonar.projectKey=MedHead_PoC \
-                        -Dsonar.projectName=MedHead_PoC_System \
-                        -Dsonar.host.url=http://sonarqube-poc:9000 \
-                        -Dsonar.login=admin \
-                        -Dsonar.password=admin \
-                        -Dsonar.sources=. \
-                        -Dsonar.java.binaries=. \
-                        -Dsonar.working.directory=/usr/src/.scannerwork \
-                        -Dsonar.exclusions=**/target/**,**/*.env
-                    """
+                            -e SONAR_HOST_URL=\$SONAR_HOST_URL \
+                            -e SONAR_TOKEN=\$SONAR_TOKEN \
+                            sonar-scanner \
+                            sonar-scanner \
+                            -Dsonar.projectKey=MedHead_PoC \
+                            -Dsonar.projectName=MedHead_PoC_System \
+                            -Dsonar.sources=. \
+                            -Dsonar.java.binaries=. \
+                            -Dsonar.login=\$SONAR_TOKEN \
+                            -Dsonar.working.directory=/usr/src/.scannerwork \
+                            -Dsonar.exclusions=**/target/**,**/*.env
+                        """
+                    }
                 }
+            }
+        }
 
-                // Petit délai pour s'assurer que le fichier est bien écrit sur le disque
-                sleep 10
-
-                // 2. On met le pipeline en PAUSE tant que SonarQube n'a pas validé la sécurité
-                timeout(time: 5, unit: 'MINUTES') {
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
