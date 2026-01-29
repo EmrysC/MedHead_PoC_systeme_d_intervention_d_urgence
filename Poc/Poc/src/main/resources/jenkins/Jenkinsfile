@@ -53,8 +53,8 @@ pipeline {
                 dir("${COMPOSE_DIR}") {
                     sh "docker-compose -f compose.yaml --env-file .env up -d --build app"
                 }
-                echo 'Attente de stabilisation (60s)...'
-                sleep 60 // Temps nécessaire pour que Spring Boot et la sécurité soient opérationnels
+                echo 'Attente de stabilisation (30s)...'
+                sleep 30 // Temps nécessaire pour que Spring Boot et la sécurité soient opérationnels
             }
         }
 
@@ -148,7 +148,7 @@ pipeline {
             }
         }
         */
-        
+
     }
     post {
         always {
