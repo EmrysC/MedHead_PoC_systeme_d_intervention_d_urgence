@@ -75,12 +75,15 @@ pipeline {
                         -Dsonar.password=admin \
                         -Dsonar.sources=. \
                         -Dsonar.java.binaries=. \
+                        -Dsonar.working.directory=/usr/src/Poc/Poc/src/main/resources/.scannerwork \
                         -Dsonar.exclusions=**/target/**,**/*.env
                     """
                 }
 
+                // Petit délai pour s'assurer que le fichier est bien écrit sur le disque
+                sleep 10
+
                 // 2. On met le pipeline en PAUSE tant que SonarQube n'a pas validé la sécurité
-                // Si le "Quality Gate" est rouge (fail), le pipeline s'arrête ici.
                 timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
