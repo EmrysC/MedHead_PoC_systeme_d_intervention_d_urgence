@@ -61,15 +61,15 @@ pipeline {
 
         stage('Analyse (SonarQube)') {
             steps {
-                echo 'Lancement du scan et attente du verdict...'
+                echo 'Lancement du scan avec le scanner interne (Dossier Partagé Jenkins)...'
                 
-                // On se place physiquement dans le dossier du projet pour que 
-                // Jenkins cherche le rapport au même endroit que Docker
+                // On se place là où Maven a compilé le projet
                 dir("Poc/Poc") { 
                     
+                    // On utilise le serveur configuré automatiquement 
                     withSonarQubeEnv('sonarqube-poc') { 
+                        // ON UTILISE LE SCANNER  DOCKERFILE 
                         sh """
-                            docker-compose -f src/main/resources/compose.yaml run --rm \
                             sonar-scanner \
                             -Dsonar.projectKey=MedHead_PoC \
                             -Dsonar.projectName=MedHead_PoC_System \
@@ -78,15 +78,11 @@ pipeline {
                             -Dsonar.password=admin \
                             -Dsonar.sources=src/main/java \
                             -Dsonar.java.binaries=target/classes \
-                            -Dsonar.working.directory=.scannerwork \
                             -Dsonar.exclusions=**/target/**,**/*.env
                         """
                     }
 
-                    // On laisse 5 secondes pour que le fichier soit bien écrit sur le disque
-                    sleep 5
-
-                    // Jenkins cherchera maintenant report-task.txt dans Poc/Poc/.scannerwork/
+                    // Jenkins trouvera le rapport 
                     timeout(time: 5, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
