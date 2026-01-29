@@ -4,6 +4,7 @@ import hudson.plugins.sonar.*
 import hudson.plugins.sonar.model.*
 import com.cloudbees.plugins.credentials.*
 import com.cloudbees.plugins.credentials.domains.*
+import com.cloudbees.plugins.credentials.impl.* 
 import org.jenkinsci.plugins.plaincredentials.*
 import org.jenkinsci.plugins.plaincredentials.impl.*
 import hudson.util.Secret
@@ -19,27 +20,29 @@ Thread.start {
     def instance = Jenkins.get()
     def store = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
     def envPathInContainer = "/tmp/.env"
-    def envFileCredId = "medhead-env-file" // ID utilisé dans ton Jenkinsfile
+    def envFileCredId = "medhead-env-file"
     def sonarCredsId = "SONARQUBE_TOKEN"
 
     if (Files.exists(Paths.get(envPathInContainer))) {
         try {
-            // ========================================================================
-            // PARTIE 1 : CRÉATION AUTOMATIQUE DU "SECRET FILE" (.env)
-            // ========================================================================
+            // --- PARTIE 1 : SECRET FILE ---
             println "--- [INIT] Création du Credential Fichier '${envFileCredId}' ---"
             def fileContent = Files.readAllBytes(Paths.get(envPathInContainer))
+            
+            //  Utilisation de SecretBytes et constructeur propre
             def secretFile = new FileCredentialsImpl(
-                CredentialsScope.GLOBAL, envFileCredId, "Fichier .env auto-importé", "env", SecretBytes.fromBytes(fileContent)
+                CredentialsScope.GLOBAL, 
+                envFileCredId, 
+                "Fichier .env auto-importé", 
+                "env", 
+                SecretBytes.fromBytes(fileContent)
             )
 
             def existingFile = store.getCredentials(Domain.global()).find { it.id == envFileCredId }
             if (existingFile) { store.updateCredentials(Domain.global(), existingFile, secretFile) }
             else { store.addCredentials(Domain.global(), secretFile) }
 
-            // ========================================================================
-            // PARTIE 2 : EXTRACTION DU TOKEN ET CRÉATION DU "SECRET TEXT"
-            // ========================================================================
+            // --- PARTIE 2 : SONAR TOKEN ---
             def extractedToken = null
             new String(fileContent).eachLine { line ->
                 if (line.contains("SONARQUBE_TOKEN=")) {
@@ -57,18 +60,32 @@ Thread.start {
                 if (existingText) { store.updateCredentials(Domain.global(), existingText, sonarTokenCred) }
                 else { store.addCredentials(Domain.global(), sonarTokenCred) }
 
-                // Configuration du serveur
+                // --- CONFIGURATION SERVEUR SONAR ---
+                // Utilisation du descripteur pour une config propre
                 def sonarConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
-                def sonarInst = new SonarInstallation("sonarqube-poc", "http://sonarqube-poc:9000", sonarCredsId, null, null, null, null, null, null)
-                sonarConfig.setInstallations([sonarInst] as SonarInstallation[])
+                
+                // constructeur SonarInstallation 
+                def sonarInst = new SonarInstallation(
+                    "sonarqube-poc",                 // Name
+                    "http://sonarqube-poc:9000",     // Server URL
+                    sonarCredsId,                    // Credentials ID
+                    null,                            // webhookSecretId
+                    new TriggersConfig(),            // triggers
+                    null,                            // additionalProperties
+                    null,                            // additionalAnalysisProperties
+                    null                             // serverVersion
+                )
+                
+                sonarConfig.setInstallations(sonarInst)
                 sonarConfig.save()
             }
             
             instance.save()
-            println "--- [SUCCÈS] Identifiants configurés à partir du .env ---"
+            println "--- [SUCCÈS] Configuration terminée ---"
 
         } catch (Exception e) {
-            println "--- [ERREUR] Initialisation Credentials : ${e.message} ---"
+            println "--- [ERREUR] : ${e.toString()} ---"
+            e.printStackTrace()
         }
     }
 

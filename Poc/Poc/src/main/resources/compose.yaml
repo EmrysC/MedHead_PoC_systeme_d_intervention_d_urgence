@@ -54,6 +54,8 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: example
       MARIADB_DATABASE: poc_db
+    networks:
+      - sonar-net
     ports:
       - 3307:3306
     volumes:
@@ -78,6 +80,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/poc_db
       - SPRING_PROFILES_ACTIVE=dev
     # L'application attend maintenant que la DB soit "healthy" 
+    networks:
+      - sonar-net
     depends_on:
       db:
         condition: service_healthy
@@ -92,6 +96,8 @@ services:
   adminer:
     image: adminer
     restart: always
+    networks:
+      - sonar-net
     ports:
       - 8081:8080
 
@@ -114,6 +120,8 @@ services:
       - 50000:50000
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Xmx2048m -Xms512m
+    networks:
+      - sonar-net
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
@@ -129,6 +137,8 @@ services:
       context: ../../../e2e_tests
     container_name: e2e-tests-reservation1
     #    command: [ "node", "E2E_connexion_clicSpecialite_Selection_SaisieAdresse_reservation.js" ]
+    networks:
+      - sonar-net
     depends_on:
       app:
         condition: service_healthy
@@ -141,6 +151,8 @@ services:
       context: ../../../e2e_tests
     container_name: e2e-tests-reservation2
     #   command: [ "node", "E2E_connexion_RechercheSpecialite_clicSpecialite_Selection_ClicGPS_reservation.js" ]
+    networks:
+      - sonar-net
     depends_on:
       app:
         condition: service_healthy
@@ -150,6 +162,8 @@ services:
     image: mariadb:12.1
     container_name: newman-db-cleaner
     command: tail -f /dev/null # Garde le conteneur actif pour le pipeline
+    networks:
+      - sonar-net
     depends_on:
       db:
         condition: service_healthy
@@ -161,6 +175,8 @@ services:
     volumes:
       - newman_reports:/etc/newman # Utilise le volume NOMMÉ pour Jenkins
     working_dir: /etc/newman
+    networks:
+      - sonar-net
     depends_on:
       app:
         condition: service_healthy
@@ -171,6 +187,8 @@ services:
     image: nginx:alpine
     container_name: newman-dashboard
     restart: always # Ajout pour maintenir le dashboard en vie
+    networks:
+      - sonar-net
     ports:
       - "8083:80"
     volumes:
@@ -185,6 +203,8 @@ services:
     environment:
       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
       - SONAR_FORCEAUTHENTICATION=true
+    networks:
+      - sonar-net
     restart: always
     # AJOUT DES VOLUMES POUR GARDER LES DONNÉES
     volumes:
@@ -208,6 +228,8 @@ services:
     # On utilise les identifiants par défaut admin/admin
     #command: >
     #  sonar-scanner  -Dsonar.login=admin  -Dsonar.password=admin  -Dsonar.projectKey=MedHead_PoC  -Dsonar.sources=.  -Dsonar.host.url=http://sonarqube:9000  -Dsonar.java.binaries=target/classes
+    networks:
+      - sonar-net
     depends_on:
       sonarqube:
         condition: service_healthy
@@ -219,3 +241,7 @@ volumes:
   sonarqube_extensions:
   sonarqube_logs:
   db_data:
+
+  networks:
+    sonar-net:
+      driver: bridge
