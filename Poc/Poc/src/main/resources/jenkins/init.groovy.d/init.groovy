@@ -20,7 +20,7 @@ Thread.start {
     def store = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
     def envPathInContainer = "/tmp/.env"
     def envFileCredId = "medhead-env-file" // ID utilisé dans ton Jenkinsfile
-    def sonarCredsId = "SONARCUBE_TOKEN"
+    def sonarCredsId = "SONARQUBE_TOKEN"
 
     if (Files.exists(Paths.get(envPathInContainer))) {
         try {
@@ -42,7 +42,7 @@ Thread.start {
             // ========================================================================
             def extractedToken = null
             new String(fileContent).eachLine { line ->
-                if (line.contains("SONARCUBE_TOKEN=")) {
+                if (line.contains("SONARQUBE_TOKEN=")) {
                     extractedToken = line.split("=")[1].trim()
                 }
             }

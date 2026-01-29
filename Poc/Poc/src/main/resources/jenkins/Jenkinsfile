@@ -59,10 +59,11 @@ pipeline {
 
         stage('Configuration Webhook SonarQube') {
             steps {
-                echo 'Configuration du Webhook via API...'
-                // On utilise le nouveau nom SONARCUBE_TOKEN pour s'authentifier auprès de l'API
-                withCredentials([string(credentialsId: 'SONARCUBE_TOKEN', variable: 'MY_TOKEN')]) {
+                echo 'Vérification et création du Webhook...'
+                // Utilisation de SONARQUBE_TOKEN 
+                withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'MY_TOKEN')]) {
                     sh """
+                        # On utilise le Token pour créer le webhook
                         curl -u '${MY_TOKEN}': -X POST "http://sonarqube-poc:9000/api/webhooks/create?name=Jenkins-Webhook&url=http://jenkins_poc:8080/sonarqube-webhook/" || echo "Webhook déjà configuré."
                     """
                 }
@@ -71,13 +72,20 @@ pipeline {
 
         stage('Analyse (SonarQube)') {
             steps {
-                echo 'Lancement du scan natif avec SONARCUBE_TOKEN...'
-                
                 dir("Poc/Poc") { 
-                    // On récupère manuellement le secret pour être certain de son injection
-                    withCredentials([string(credentialsId: 'SONARCUBE_TOKEN', variable: 'MY_TOKEN')]) {
-                        
+                    // Utilisation de SONARQUBE_TOKEN 
+                    withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'MY_TOKEN')]) {
                         withSonarQubeEnv('sonarqube-poc') { 
+                            
+                            // Attente que SonarQube soit prêt
+                            sh """
+                                until curl -s http://sonarqube-poc:9000/api/system/status | grep -q '"status":"UP"'; do
+                                  echo "SonarQube démarre... attente de 5s"
+                                  sleep 5
+                                done
+                            """
+
+                            // Utilisation de '${MY_TOKEN}' (guillemets simples) pour la sécurité
                             sh """
                                 sonar-scanner \
                                 -Dsonar.projectKey=MedHead_PoC \
@@ -85,7 +93,7 @@ pipeline {
                                 -Dsonar.sources=src/main/java \
                                 -Dsonar.java.binaries=target/classes \
                                 -Dsonar.exclusions=**/target/**,**/*.env \
-                                -Dsonar.token=${MY_TOKEN}
+                                -Dsonar.token='${MY_TOKEN}'
                             """
                         }
                     }
