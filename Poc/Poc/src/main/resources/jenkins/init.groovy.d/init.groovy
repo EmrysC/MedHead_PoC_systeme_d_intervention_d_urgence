@@ -60,23 +60,23 @@ Thread.start {
                 if (existingText) { store.updateCredentials(Domain.global(), existingText, sonarTokenCred) }
                 else { store.addCredentials(Domain.global(), sonarTokenCred) }
 
-                // --- CONFIGURATION SERVEUR SONAR ---
-                // Utilisation du descripteur pour une config propre
                 def sonarConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
-                
-                // constructeur SonarInstallation 
+
+                // On utilise un constructeur stable à 8 paramètres pour la version LTS
                 def sonarInst = new SonarInstallation(
-                    "sonarqube-poc",                 // Name
-                    "http://sonarqube-poc:9000",     // Server URL
-                    sonarCredsId,                    // Credentials ID
-                    null,                            // webhookSecretId
-                    new TriggersConfig(),            // triggers
-                    null,                            // additionalProperties
-                    null,                            // additionalAnalysisProperties
-                    null                             // serverVersion
+                    "sonarqube-poc",              // Name
+                    "http://sonarqube-poc:9000",  // Server URL
+                    sonarCredsId,                 // Credentials ID
+                    null,                         // webhookSecretId (null est OK)
+                    new TriggersConfig(),         // triggers
+                    "",                           // additionalProperties (utiliser vide au lieu de null)
+                    "",                           // additionalAnalysisProperties (utiliser vide au lieu de null)
+                    ""                            // serverVersion (utiliser vide au lieu de null)
                 )
-                
-                sonarConfig.setInstallations(sonarInst)
+
+                // Crucial : Jenkins attend un tableau (Array), même pour un seul serveur
+                def sonarInstallations = [sonarInst] as SonarInstallation[]
+                sonarConfig.setInstallations(sonarInstallations)
                 sonarConfig.save()
             }
             
