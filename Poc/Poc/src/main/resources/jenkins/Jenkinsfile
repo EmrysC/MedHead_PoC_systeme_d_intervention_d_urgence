@@ -63,8 +63,7 @@ pipeline {
             steps {
                 echo 'Lancement du scan et attente du verdict...'
                 
-                // 1. On se place physiquement dans le dossier du projet Java
-                // Cela permet au scanner de trouver le code et à Jenkins de trouver le rapport de sortie
+                // 1. On se place dans le dossier du projet pour que Jenkins voit le rapport final
                 dir("Poc/Poc") { 
                     
                     withSonarQubeEnv('sonarqube-poc') { 
@@ -76,18 +75,17 @@ pipeline {
                             -Dsonar.host.url=http://sonarqube-poc:9000 \
                             -Dsonar.login=admin \
                             -Dsonar.password=admin \
-                            -Dsonar.sources=src/main/java \
+                            -Dsonar.sources=. \
                             -Dsonar.java.binaries=target/classes \
-                            -Dsonar.working.directory=/usr/src/Poc/Poc/src/main/resources/.scannerwork \
+                            -Dsonar.working.directory=/usr/src/.scannerwork \
                             -Dsonar.exclusions=**/target/**,**/*.env
                         """
                     }
 
-                    // 2. Pause de sécurité pour l'écriture du fichier report-task.txt
+                    // 2. Pause pour laisser le temps au fichier report-task.txt de s'écrire
                     sleep 5
 
-                    // 3. Attente du verdict (Quality Gate)
-                    // Jenkins cherchera le rapport dans le dossier courant (Poc/Poc)
+                    // 3. Attente du verdict (Jenkins cherche maintenant dans Poc/Poc/.scannerwork)
                     timeout(time: 5, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
