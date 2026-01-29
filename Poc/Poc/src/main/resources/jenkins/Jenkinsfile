@@ -72,17 +72,20 @@ stage('Configuration Webhook SonarQube') {
                 echo 'Lancement du scan natif avec SONARCUBE_TOKEN...'
                 
                 dir("Poc/Poc") { 
-                    // Jenkins utilise l'ID de credential SONARCUBE_TOKEN lié au serveur 'sonarqube-poc'
-                    withSonarQubeEnv('sonarqube-poc') { 
-                        // On ne passe plus d'identifiants ici, Jenkins les injecte de manière sécurisée
-                        sh """
-                            sonar-scanner \
-                            -Dsonar.projectKey=MedHead_PoC \
-                            -Dsonar.projectName=MedHead_PoC_System \
-                            -Dsonar.sources=src/main/java \
-                            -Dsonar.java.binaries=target/classes \
-                            -Dsonar.exclusions=**/target/**,**/*.env
-                        """
+                    // On récupère manuellement le secret pour être certain de son injection
+                    withCredentials([string(credentialsId: 'SONARCUBE_TOKEN', variable: 'MY_TOKEN')]) {
+                        
+                        withSonarQubeEnv('sonarqube-poc') { 
+                            sh """
+                                sonar-scanner \
+                                -Dsonar.projectKey=MedHead_PoC \
+                                -Dsonar.projectName=MedHead_PoC_System \
+                                -Dsonar.sources=src/main/java \
+                                -Dsonar.java.binaries=target/classes \
+                                -Dsonar.exclusions=**/target/**,**/*.env \
+                                -Dsonar.token=${MY_TOKEN}
+                            """
+                        }
                     }
 
                     echo 'Attente du verdict du Quality Gate...'
