@@ -5,7 +5,7 @@ import hudson.plugins.sonar.model.*
 import hudson.plugins.sonar.utils.*
 import com.cloudbees.plugins.credentials.*
 import com.cloudbees.plugins.credentials.domains.*
-import com.cloudbees.plugins.credentials.impl.* 
+import com.cloudbees.plugins.credentials.impl.*
 import org.jenkinsci.plugins.plaincredentials.impl.*
 import hudson.util.Secret
 import java.io.ByteArrayInputStream
@@ -18,16 +18,12 @@ Thread.start {
     def instance = Jenkins.getInstance()
     
     // ========================================================================
-    // PARTIE 1 : CONFIGURATION SONARQUBE
+    // PARTIE 1 : CONFIGURATION DES CREDENTIALS (Admin/Admin)
     // ========================================================================
     try {
-        println "--- [INIT] Début configuration SonarQube (Admin/Admin) ---"
+        println "--- [INIT] Création des identifiants... ---"
         
-        def sonarServerName = "sonarqube-poc"
-        def sonarServerUrl = "http://sonarqube-poc:9000"
         def sonarCredsId = "sonar-admin-creds"
-        
-        // 1. Création des identifiants (Username / Password)
         def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
         def domain = Domain.global()
         
@@ -42,47 +38,45 @@ Thread.start {
         def existingCreds = credentialsStore.getCredentials(domain).find { it.id == sonarCredsId }
         if (existingCreds) {
             credentialsStore.updateCredentials(domain, existingCreds, sonarCredential)
-            println "--- [INIT] Credentials mis à jour ---"
         } else {
             credentialsStore.addCredentials(domain, sonarCredential)
-            println "--- [INIT] Credentials créés ---"
         }
+        println "--- [INIT] Credentials OK ---"
 
-        // 2. Configuration du Serveur 
+    } catch (Exception e) {
+        println "--- [ERREUR] Credentials : ${e.message} ---"
+    }
+
+    // ========================================================================
+    // PARTIE 2 : CONFIGURATION SONARQUBE 
+    // ========================================================================
+    try {
+        println "--- [INIT] Configuration Serveur SonarQube... ---"
+        
+        def sonarServerName = "sonarqube-poc"
+        def sonarServerUrl = "http://sonarqube-poc:9000"
+        def sonarCredsId = "sonar-admin-creds"
+        
         def sonarGlobalConfig = instance.getDescriptorByType(SonarGlobalConfiguration.class)
         
 
-        def sonarInst
-        try {
-            // Tentative 1 : Constructeur complet 
-            sonarInst = new SonarInstallation(
-                sonarServerName, sonarServerUrl, sonarCredsId,
-                null, null, null, null, null
-            )
-        } catch (Exception e1) {
-            try {
-                // Tentative 2 : Constructeur simplifié
-                sonarInst = new SonarInstallation(
-                    sonarServerName, sonarServerUrl, sonarCredsId
-                )
-            } catch (Exception e2) {
-                // Tentative 3 : Constructeur "Vide" et setters 
-                 println "--- [INFO] Utilisation méthode de secours ---"
-                 sonarInst = new SonarInstallation(
-                    (String)sonarServerName, 
-                    (String)sonarServerUrl, 
-                    (String)sonarCredsId
-                 )
-            }
-        }
+        def sonarInst = new SonarInstallation(
+            sonarServerName,    // 1. Name
+            sonarServerUrl,     // 2. Server Url
+            sonarCredsId,       // 3. Credentials ID
+            null,               // 4. Server Auth Token (obsolète/vide ici)
+            null,               // 5. Webhook Secret
+            null,               // 6. Extra Properties
+            null,               // 7. Triggers
+            null,               // 8. Mojo Version / Env Vars
+            null                // 9. Additional Analysis Properties
+        )
         
-        if (sonarInst != null) {
-            sonarGlobalConfig.setInstallations(sonarInst)
-            sonarGlobalConfig.save()
-            println "--- [INIT] Serveur SonarQube '${sonarServerName}' activé ---"
-        } else {
-             println "--- [ERREUR] Impossible de créer l'objet SonarInstallation ---"
-        }
+        // IMPORTANT : On passe un TABLEAU ([...]) à setInstallations
+        sonarGlobalConfig.setInstallations([sonarInst] as SonarInstallation[])
+        sonarGlobalConfig.save()
+        
+        println "--- [INIT] Serveur SonarQube '${sonarServerName}' activé avec succès ---"
 
     } catch (Exception e) {
         println "--- [ERREUR FATALE] Config Sonar : ${e.message} ---"
@@ -90,7 +84,7 @@ Thread.start {
     }
 
     // ========================================================================
-    // PARTIE 2 : CONFIGURATION DU JOB 
+    // PARTIE 3 : CONFIGURATION DU JOB 
     // ========================================================================
     def jobName = "MedHead_Pipeline"
     def xmlPath = "/var/jenkins_home/init.groovy.d/job_config.xml"
