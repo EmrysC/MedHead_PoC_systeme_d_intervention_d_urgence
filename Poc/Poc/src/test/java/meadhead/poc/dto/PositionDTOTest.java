@@ -34,16 +34,16 @@ class PositionDTOTest {
     @DisplayName("OnlyAdresseIsValid : Test des différents scénarios classiques")
     void testOnlyAdresseIsValid() {
         // Cas : Uniquement adresse
-        assertThat(new PositionDTO("Paris", null, null).OnlyAdresseIsValid()).isTrue();
+        assertThat(new PositionDTO("Paris", null, null).onlyAdresseIsValid()).isTrue();
 
         // Cas : Adresse + GPS (doit être faux car "Only" adresse)
-        assertThat(new PositionDTO("Paris", 48.0, 2.0).OnlyAdresseIsValid()).isFalse();
+        assertThat(new PositionDTO("Paris", 48.0, 2.0).onlyAdresseIsValid()).isFalse();
 
         // Cas : Uniquement GPS
-        assertThat(new PositionDTO(null, 48.0, 2.0).OnlyAdresseIsValid()).isFalse();
+        assertThat(new PositionDTO(null, 48.0, 2.0).onlyAdresseIsValid()).isFalse();
 
         // Cas : Vide
-        assertThat(new PositionDTO(null, null, null).OnlyAdresseIsValid()).isFalse();
+        assertThat(new PositionDTO(null, null, null).onlyAdresseIsValid()).isFalse();
     }
 
     @Test
@@ -64,7 +64,7 @@ class PositionDTOTest {
         // adresseIsValid = true AND positionIsValid = false (car GPS incomplet)
         // Le résultat attendu pour "OnlyAdresse" est donc TRUE
         PositionDTO pos = new PositionDTO("Paris", 48.85, null);
-        assertThat(pos.OnlyAdresseIsValid()).isTrue();
+        assertThat(pos.onlyAdresseIsValid()).isTrue();
     }
 
     @Test

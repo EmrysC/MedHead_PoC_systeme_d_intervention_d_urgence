@@ -75,7 +75,7 @@ public class UniteSoinsService {
         if (uniteSoinsDisponibles.size() > limitDestinations) {
 
             // Calculé la position GPS si on a seulemment l adresse
-            if (positionDTO.OnlyAdresseIsValid()) {
+            if (positionDTO.onlyAdresseIsValid()) {
                 googleMapsClient.setPositionWithAdresse(positionDTO);
             }
 

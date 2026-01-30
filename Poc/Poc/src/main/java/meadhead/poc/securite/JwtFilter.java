@@ -9,14 +9,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import meadhead.poc.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import meadhead.poc.service.UserService;
 
 @RequiredArgsConstructor
+@Slf4j
 public class JwtFilter extends OncePerRequestFilter {
 
     private final UserService userService;
@@ -40,7 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 isTokenExpired = jwtService.isTokenExpired(token);
                 email = jwtService.extractedEmail(token);
             } catch (Exception e) {
-                System.out.println("JwtFilter: Erreur lors de l'extraction du token: " + e.getMessage());
+                log.error("JwtFilter: Erreur lors de l'extraction du token: " + e.getMessage());
             }
         }
 
@@ -54,7 +56,7 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 userDetails = this.userService.loadUserByUsername(email);
             } catch (UsernameNotFoundException e) {
-                System.out.println("JwtFilter: Utilisateur non trouvé : " + email);
+                log.warn("JwtFilter: Utilisateur non trouvé : " + email);
             }
         }
 
@@ -70,9 +72,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 );
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                System.out.println("JwtFilter: Authentification réussie pour : " + email);
+                log.info("JwtFilter: Authentification réussie pour : " + email);
             } else {
-                System.out.println("JwtFilter: ÉCHEC: Aucune autorité (rôle) pour : " + email);
+                log.error("JwtFilter: ÉCHEC: Aucune autorité (rôle) pour : " + email);
             }
         }
 

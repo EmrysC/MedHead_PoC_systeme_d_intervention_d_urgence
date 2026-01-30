@@ -34,7 +34,7 @@ public class PositionDTO {
         return null;
     }
 
-    public boolean OnlyAdresseIsValid() {
+    public boolean onlyAdresseIsValid() {
         return adresseIsValid() && !positionIsValid();
     }
 

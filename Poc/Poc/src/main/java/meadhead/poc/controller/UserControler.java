@@ -13,10 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import meadhead.poc.dto.UserCreationDTO;
-import meadhead.poc.dto.UserLoginDTO;
-import meadhead.poc.securite.JwtService;
-import meadhead.poc.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,6 +21,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import meadhead.poc.dto.UserCreationDTO;
+import meadhead.poc.dto.UserLoginDTO;
+import meadhead.poc.securite.JwtService;
+import meadhead.poc.service.UserService;
 
 @Slf4j
 @AllArgsConstructor
@@ -69,9 +69,8 @@ public class UserControler {
 
         SecurityContextHolder.getContext().setAuthentication(authenticate);
 
-        Map<String, String> tokenMap = jwtService.generateToken(loginRequestDto.getEmail());
+        return jwtService.generateToken(loginRequestDto.getEmail());
 
-        return tokenMap;
     }
 
     // @formatter:off

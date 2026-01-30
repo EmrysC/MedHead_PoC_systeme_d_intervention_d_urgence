@@ -9,12 +9,14 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
 import meadhead.poc.dto.SpecialisationGroupeDTO;
 import meadhead.poc.dto.SpecialisationOptionDTO;
 import meadhead.poc.entites.GroupeSpecialite;
 import meadhead.poc.repository.GroupeSpecialiteRepository;
 
 @Service
+@Slf4j
 public class GroupeSpecialiteService {
 
     @Autowired
@@ -27,7 +29,7 @@ public class GroupeSpecialiteService {
 
         List<GroupeSpecialite> entities = groupeRepository.findAll();
 
-        List<SpecialisationGroupeDTO> dtoList = entities.stream()
+        return entities.stream()
                 .map(entity -> {
 
                     // Mapping des options (Specialisation entité vers SpecialisationOptionDTO)
@@ -46,12 +48,12 @@ public class GroupeSpecialiteService {
                 // Tri alphabétique des groupes par le champ 'nom' du DTO
                 .sorted(Comparator.comparing(SpecialisationGroupeDTO::getNom))
                 .collect(Collectors.toList());
-        return dtoList;
+
     }
 
     @CacheEvict(value = CACHE_SPECIALITES, key = "'all'")
     public void clearSpecialitesCache() {
-        System.out.println(">>> CACHE VIDÉ : Le cache des groupes de spécialités a été vidé.");
+        log.info(">>> CACHE VIDÉ : Le cache des groupes de spécialités a été vidé.");
     } // A appelé a la MAJ des spécilitées / redemarer serveur
 
 }

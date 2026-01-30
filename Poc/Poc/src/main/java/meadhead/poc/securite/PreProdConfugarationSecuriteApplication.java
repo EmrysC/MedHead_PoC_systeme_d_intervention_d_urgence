@@ -21,7 +21,7 @@ import meadhead.poc.service.UserService;
 @Configuration
 @EnableWebSecurity
 @Profile("pre_prod")
-public class Pre_prodConfugarationSecuriteApplication {
+public class PreProdConfugarationSecuriteApplication {
 
     @Bean
     public JwtFilter jwtFilter(UserService userService, JwtService jwtService) {

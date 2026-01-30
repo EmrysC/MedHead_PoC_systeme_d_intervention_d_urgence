@@ -24,10 +24,10 @@ import meadhead.poc.enums.TypeDeRole;
 import meadhead.poc.service.UserService;
 
 @WebMvcTest(UserControler.class)
-@Import({Pre_prodConfugarationSecuriteApplication.class, PasswordConfig.class})
+@Import({PreProdConfugarationSecuriteApplication.class, PasswordConfig.class})
 @ActiveProfiles("pre_prod")
 @SuppressWarnings({"null", "unused"})
-class Pre_prodConfugarationSecuriteApplicationTest {
+class PreProdConfugarationSecuriteApplicationTest {
 
     @Autowired
     private MockMvc mockMvc;

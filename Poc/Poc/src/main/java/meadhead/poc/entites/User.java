@@ -8,7 +8,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import meadhead.poc.enums.TypeDeRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,6 +21,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import meadhead.poc.enums.TypeDeRole;
 
 @Getter
 @Setter
@@ -68,7 +68,6 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return this.email;
-        //return this.nom + " " + this.prenom;
     }
 
     @Override
