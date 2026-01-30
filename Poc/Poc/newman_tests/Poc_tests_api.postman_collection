@@ -1131,7 +1131,7 @@
                           "    \r",
                           "    // Vérification de l'exception BadCredentials\r",
                           "    pm.expect(jsonData.errors).to.have.property(\"BadCredentialsException\");\r",
-                          "    pm.expect(jsonData.errors.BadCredentialsException).to.eql(\"Bad credentials\");\r",
+                          "    pm.expect(jsonData.errors.BadCredentialsException).to.eql(\"Les identifications sont erronées\");\r",
                           "});\r",
                           "\r",
                           "// 3. Vérifier la structure et le chemin\r",
