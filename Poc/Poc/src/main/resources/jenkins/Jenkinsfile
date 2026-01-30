@@ -86,14 +86,12 @@ pipeline {
 
                             // Lancement du Scan
                             sh """
-                                sonar-scanner \
+                                mvn sonar:sonar \
                                 -Dsonar.projectKey=MedHead_PoC \
                                 -Dsonar.token=$MY_TOKEN \
-                                -Dsonar.sources=src/main/java \
-                                -Dsonar.java.binaries=target/classes \
-                                -Dsonar.java.libraries=target/*.jar \
+                                -Dsonar.host.url=http://sonarqube-poc:9000 \
                                 -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-                            """                       
+                            """                     
                         }
 
                         // --- REMPLACEMENT DU WAIT FOR QUALITY GATE PAR POLLING ---
