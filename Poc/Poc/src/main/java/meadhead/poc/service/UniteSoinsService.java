@@ -98,6 +98,7 @@ public class UniteSoinsService {
         List<UniteeSoinsTrajetDTO> uniteSoinsDisponiblesTrajetsValides = trajetResultatAPI.getUnitesSoinsTrajets()
                 .stream()
                 .filter(trajet -> trajet.getDestinationCalculee().isTrajetValide())
+                .sorted(Comparator.comparingLong(trajet -> trajet.getDestinationCalculee().getDistanceMetres()))
                 .toList();
 
         // Vérifier si la liste des trajets valides est vide (Gestion 503)
@@ -106,10 +107,6 @@ public class UniteSoinsService {
                     Map.of("trajets",
                             "Impossible de calculer les trajets optimisés : le service externe n'a retourné aucun itinéraire valide (même si des destinations étaient disponibles)."));
         }
-
-        // Tri par distance (ascendante)
-        uniteSoinsDisponiblesTrajetsValides.sort(
-                Comparator.comparingLong(trajet -> trajet.getDestinationCalculee().getDistanceMetres()));
 
         // Construction et retour de l'objet de réponse composite
         return TrajetResultatDTO.builder()
