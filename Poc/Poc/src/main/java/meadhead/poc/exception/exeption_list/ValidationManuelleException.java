@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class ValidationManuelleException extends RuntimeException {
 
-    private final BindingResult bindingResult;
+    private final transient BindingResult bindingResult;
 
     public ValidationManuelleException(BindingResult bindingResult) {
         super("Erreur de validation manuelle");

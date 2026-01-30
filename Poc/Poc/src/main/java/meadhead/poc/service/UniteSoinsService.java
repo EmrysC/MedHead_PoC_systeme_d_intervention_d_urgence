@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -88,7 +87,7 @@ public class UniteSoinsService {
                             u.getLatitude().doubleValue(),
                             u.getLongitude().doubleValue())))
                     .limit(limitDestinations) // On ne garde que les N meilleurs pour Google Maps
-                    .collect(Collectors.toList());
+                    .toList();
         } else {
             topNProches = uniteSoinsDisponibles;
         }
@@ -99,7 +98,7 @@ public class UniteSoinsService {
         List<UniteeSoinsTrajetDTO> uniteSoinsDisponiblesTrajetsValides = trajetResultatAPI.getUnitesSoinsTrajets()
                 .stream()
                 .filter(trajet -> trajet.getDestinationCalculee().isTrajetValide())
-                .collect(Collectors.toList());
+                .toList();
 
         // Vérifier si la liste des trajets valides est vide (Gestion 503)
         if (uniteSoinsDisponiblesTrajetsValides.isEmpty()) {

@@ -9,7 +9,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -107,7 +106,7 @@ public class UniteSoinsControler {
             @RequestParam Long specialisationId,
             @RequestParam(required = false) Double latitude,
             @RequestParam(required = false) Double longitude,
-            @RequestParam(required = false) String adresse) throws MethodArgumentNotValidException {
+            @RequestParam(required = false) String adresse) {
 
         // Arrondi des coordonnées GPS à 7 décimales
         if (latitude != null) {

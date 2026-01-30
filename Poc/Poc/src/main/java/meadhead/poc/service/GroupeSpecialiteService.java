@@ -2,7 +2,6 @@ package meadhead.poc.service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -38,7 +37,7 @@ public class GroupeSpecialiteService {
                             String.valueOf(specEntity.getId()),
                             specEntity.getNom()))
                             .sorted(Comparator.comparing(SpecialisationOptionDTO::getNom))
-                            .collect(Collectors.toList());
+                            .toList();
 
                     return new SpecialisationGroupeDTO(
                             entity.getId(),
@@ -47,7 +46,7 @@ public class GroupeSpecialiteService {
                 })
                 // Tri alphabétique des groupes par le champ 'nom' du DTO
                 .sorted(Comparator.comparing(SpecialisationGroupeDTO::getNom))
-                .collect(Collectors.toList());
+                .toList();
 
     }
 
