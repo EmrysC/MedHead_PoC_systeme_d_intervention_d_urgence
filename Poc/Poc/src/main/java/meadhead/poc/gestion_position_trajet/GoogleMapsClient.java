@@ -58,6 +58,11 @@ public class GoogleMapsClient {
                 origins,
                 Objects.requireNonNull(destinations));
 
+        if (response == null) {
+            throw new GoogleMapsServiceFailureException(
+                    Map.of("communication", "La réponse du service Google Maps est vide."));
+        }
+
         if (response.path(STATUS).asText().equals("ZERO_RESULTS")) {
             return TrajetResultatDTO.builder()
                     .unitesSoinsTrajets(List.of())
