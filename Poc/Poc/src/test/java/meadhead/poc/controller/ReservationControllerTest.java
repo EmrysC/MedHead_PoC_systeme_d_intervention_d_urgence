@@ -1,4 +1,4 @@
-package MeadHead.Poc.controler;
+package meadhead.poc.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,10 +19,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import MeadHead.Poc.controller.ReservationController;
-import MeadHead.Poc.dto.ReservationRequestDTO;
-import MeadHead.Poc.entites.User;
-import MeadHead.Poc.service.ReservationService;
+import meadhead.poc.dto.ReservationRequestDTO;
+import meadhead.poc.entites.User;
+import meadhead.poc.service.ReservationService;
 
 @WebMvcTest(ReservationController.class) // Test uniquement la couche Web
 @ActiveProfiles("pre_prod")

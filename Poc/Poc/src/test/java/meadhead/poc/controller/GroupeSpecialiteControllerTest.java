@@ -1,4 +1,4 @@
-package MeadHead.Poc.controler;
+package meadhead.poc.controller;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,10 +16,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import MeadHead.Poc.controller.GroupeSpecialiteController;
-import MeadHead.Poc.dto.SpecialisationGroupeDTO;
-import MeadHead.Poc.exception.GlobalExceptionHandler;
-import MeadHead.Poc.service.GroupeSpecialiteService;
+import meadhead.poc.dto.SpecialisationGroupeDTO;
+import meadhead.poc.exception.GlobalExceptionHandler;
+import meadhead.poc.service.GroupeSpecialiteService;
 
 @WebMvcTest(controllers = {GroupeSpecialiteController.class, GlobalExceptionHandler.class}, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ActiveProfiles("pre_prod")

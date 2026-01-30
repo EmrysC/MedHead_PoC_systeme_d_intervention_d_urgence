@@ -1,4 +1,4 @@
-package MeadHead.Poc.controler;
+package meadhead.poc.controller;
 
 import java.util.Map;
 
@@ -26,11 +26,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import MeadHead.Poc.controller.UserControler;
-import MeadHead.Poc.dto.UserCreationDTO;
-import MeadHead.Poc.dto.UserLoginDTO;
-import MeadHead.Poc.securite.JwtService;
-import MeadHead.Poc.service.UserService;
+import meadhead.poc.dto.UserCreationDTO;
+import meadhead.poc.dto.UserLoginDTO;
+import meadhead.poc.securite.JwtService;
+import meadhead.poc.service.UserService;
 
 @WebMvcTest(UserControler.class)
 @AutoConfigureMockMvc(addFilters = false)

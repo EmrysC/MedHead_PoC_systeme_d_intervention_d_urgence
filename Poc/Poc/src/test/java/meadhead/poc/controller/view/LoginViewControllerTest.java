@@ -1,4 +1,4 @@
-package MeadHead.Poc.controler.view;
+package meadhead.poc.controller.view;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,8 +9,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-
-import MeadHead.Poc.controller.view.LoginViewController;
 
 @WebMvcTest(LoginViewController.class)
 // On désactive les filtres pour éviter les 401 sur les pages de login/dashboard

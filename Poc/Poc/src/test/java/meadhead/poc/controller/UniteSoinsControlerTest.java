@@ -1,4 +1,4 @@
-package MeadHead.Poc.controler;
+package meadhead.poc.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,12 +17,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
-import MeadHead.Poc.controller.UniteSoinsControler;
-import MeadHead.Poc.dto.TrajetReponseDTO;
-import MeadHead.Poc.exception.GlobalExceptionHandler;
-import MeadHead.Poc.exception.exeption_list.ValidationManuelleException;
-import MeadHead.Poc.repository.UniteSoinsRepository;
-import MeadHead.Poc.service.UniteSoinsService;
+import meadhead.poc.dto.TrajetReponseDTO;
+import meadhead.poc.exception.GlobalExceptionHandler;
+import meadhead.poc.exception.exeption_list.ValidationManuelleException;
+import meadhead.poc.repository.UniteSoinsRepository;
+import meadhead.poc.service.UniteSoinsService;
 
 @WebMvcTest(controllers = {UniteSoinsControler.class, GlobalExceptionHandler.class}, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ActiveProfiles("pre_prod")
