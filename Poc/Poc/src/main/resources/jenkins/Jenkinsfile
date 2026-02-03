@@ -78,7 +78,7 @@ pipeline {
                             
                             // Attente que SonarQube soit UP
                             sh """
-                                until curl -s http://sonarqube-poc:9000/api/system/status | grep -q '"status":"UP"'; do
+                                until curl -s http://sonarqube:9000/api/system/status | grep -q '"status":"UP"'; do
                                   echo "Attente de SonarQube..."
                                   sleep 5
                                 done
@@ -89,7 +89,7 @@ pipeline {
                                 mvn sonar:sonar \
                                 -Dsonar.projectKey=MedHead_PoC \
                                 -Dsonar.token=$MY_TOKEN \
-                                -Dsonar.host.url=http://sonarqube-poc:9000 \
+                                -Dsonar.host.url=http://sonarqube:9000 \
                                 -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                             """                     
                         }
@@ -101,7 +101,7 @@ pipeline {
                                 def qgStatus = ""
                                 waitUntil {
                                     def response = sh(
-                                        script: "curl -u ${MY_TOKEN}: -s http://sonarqube-poc:9000/api/qualitygates/project_status?projectKey=MedHead_PoC",
+                                        script: "curl -u ${MY_TOKEN}: -s http://sonarqube:9000/api/qualitygates/project_status?projectKey=MedHead_PoC",
                                         returnStdout: true
                                     ).trim()
                                     
