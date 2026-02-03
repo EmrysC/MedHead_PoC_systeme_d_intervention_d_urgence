@@ -14,8 +14,10 @@ MedHead Dispatch is a specialized logistics and decision-support application des
 
 * Instant Resource Reservation: To prevent hospitals from becoming overwhelmed and to guarantee patient care upon arrival, the system enables the immediate reservation of a bed in a specific unit with a single click.
 
+## Demo Video
+[![Démonstration MedHead](https://img.youtube.com/vi/7hYXP1wDDu4/maxresdefault.jpg)](https://www.youtube.com/watch?v=7hYXP1wDDu4)
 
-## Tech used
+## Stack
 
 #### Data
 ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
@@ -34,40 +36,58 @@ MedHead Dispatch is a specialized logistics and decision-support application des
 ## Prerequisites
 
 * **Git**: To clone the repository. [Download here](https://git-scm.com/downloads)
-*  **Docker & Docker Compose**: To run the application and the database in containers. [Get Docker](https://docs.docker.com/get-docker/)
+*  **Docker & Docker Compose**: To run the application and the database in containers. [Download here](https://docs.docker.com/get-docker/)
 
+##  Sart the app
+
+1°/ Open the command prompt where you want to place the project.
+2°/ Clone the prject
 
 ```sh
-git clone [https://github.com/EmrysC/MedHead_PoC_systeme_d_intervention_d_urgence.git]
-cd MedHead_PoC_systeme_d_intervention_d_urgence/src/main/resources
+git clone https://github.com/EmrysC/MedHead_PoC_systeme_d_intervention_d_urgence 
 ```
+3°/ Move on the docker's folder
+
+```sh
+cd "MedHead_PoC_systeme_d_intervention_d_urgence/Poc/Poc/src/main/resources" 
+```
+
+4°/ Put the .env in the same folder
+
+![Configuration Environnement](https://raw.githubusercontent.com/EmrysC/MedHead_PoC_systeme_d_intervention_d_urgence/main/documentation/Readme_doc/env.png)
+
+[Click here to see the .env example file](https://github.com/EmrysC/MedHead_PoC_systeme_d_intervention_d_urgence/blob/main/documentation/Readme_doc/exemple.env)
+
+5°/Run the app
+```sh
+docker-compose up -d app 
+```
+![Run the app](https://raw.githubusercontent.com/EmrysC/MedHead_PoC_systeme_d_intervention_d_urgence/main/documentation/Readme_doc/docker_app.png)
+
+6°/ Populating the Database
+
+The database schema is intentionally initialized without data at startup. Therefore, a dataset must be imported manually. We will use the same dataset utilized by our CI/CD pipeline.
+
+```sh
+Get-Content "sql-init/import.sql" | docker exec -i resources-db mariadb -u root -pexample poc_db
+```
+
+> You can launch the database management interface by running: `docker-compose up -d adminer` 
+
+7°/ Acces to the app with Services & Access
 
 ## Services & Access
 
+
 | Docker Command (Run) | Access Link | Description | Connection |
 | :--- | :--- | :--- | :--- |
-| `docker-compose up -d app` | [http://localhost:8080](http://localhost:8080/api/login ) | **Main Application**: Access the MedHead emergency system interface. |  utilisateur1@compte.com / MotDePasseSecret&1
+| `docker-compose up -d app` | [http://localhost:8080](http://localhost:8080/api/login ) | **Main Application**: Access the MedHead emergency system interface (also sart the db docker). |  utilisateur1@compte.com / MotDePasseSecret&1
 |  | [http://localhost:8080/api/swagger-ui/index.html](http://localhost:8080/api/swagger-ui/index.html) | **Swagger UI**: End point documantation. |
-| `docker-compose up -d adminer` | [http://localhost:8081](http://localhost:8081) | **MariaDB Database**: Persistent storage for hospitals and emergency data. |   root / example
+| `docker-compose up -d adminer` | [http://localhost:8081](http://localhost:8081) | **MariaDB Database**: Persistent storage for hospitals and emergency data(the data base need to be sarted). |   root / example
 | `docker-compose up -d jenkins` | [http://localhost:8082](http://localhost:8082) | **Jenkins Server**: Automation server for CI/CD pipelines (you need some setup credentials) . |
 | `docker-compose up -d newman-dashboard` | [http://localhost:8083](http://localhost:8083) | **Newman Reports**: ewman Reports: Dashboard for viewing Postman API test results. |
 | `docker-compose up -d sonarqube` | [http://localhost:8084](http://localhost:8084) | **SonarQube Dashboard**: Code quality and security analysis platform. |  admin / admin
 
-### Credentials & Environment
+## Set up CI/CD pipeline
 
-##### Create SonarQube Token 
-    - Connect on sonarqude
-    - clic on A (administrator) on le top right
-    - clic on My account
-    - clic on Security
-    - generate token Generate SONARCUBE_TOKEN / Global / No expiration 
-    - save the token
-
-##### Create Jenkins's credentials  
-    - Connect on ⚙ Adminnistrer Jenkins
-    - clic on credentials
-    - clic on global
-    - clic add Credentials
-    - You will need to have : 
-            - Type :  secret file  / Portée : Global / File : take your .env file  / ID : medhead-env-file
-            -  Type :  nom d'utilisateur et mot de passe / Portée : Global / Secret : Concealed  / ID : SONARQUBE_TOKEN
+[Click here to see the CICD configuration](https://github.com/EmrysC/MedHead_PoC_systeme_d_intervention_d_urgence/blob/main/documentation/cicd/CICD_conf.pdf)
